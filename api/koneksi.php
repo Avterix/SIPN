@@ -1,13 +1,13 @@
 <?php
-// Sesuaikan dengan settingan server lokal lu (biasanya pakai XAMPP)
-$host = "localhost";
-$user = "root";      
-$pass = "";           
-$db   = "db_siacad_smk";
+$host = getenv('mysql-sipn-sipn.k.aivencloud.com'); 
+$user = getenv('avnadmin');                         
+$pass = getenv('AVNS_KAd4LB1vjSZmU_r8gYu');     
+$db   = getenv('defaultdb'); 
+$port = getenv('19675');   
 
-$koneksi = mysqli_connect($host, $user, $pass, $db);
+$koneksi = mysqli_connect($host, $user, $pass, $db, $port);
 
 if (!$koneksi) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+    die("Koneksi ke Database Cloud Gagal: " . mysqli_connect_error());
 }
 ?>
