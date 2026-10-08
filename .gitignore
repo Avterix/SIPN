@@ -1,0 +1,6 @@
+# Abaikan file pengunci temporary
+.*.php#
+.~lock.*
+
+# Abaikan folder lokal XAMPP jika ada
+.DS_Store
