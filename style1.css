@@ -832,7 +832,9 @@ img, svg {
 }
 
 .file-item:hover {
-    transform: translateX(6px);
+    background: #f0f0f0;
+    border-radius: 10px;
+    padding: 8px 5px;
 }
 
 .file-info {
@@ -1463,7 +1465,7 @@ img, svg {
   top: -40px;
   left: -35px;
   width: 8%;
-  height: 30%;
+  height: 35%;
   flex-shrink: 0;
   z-index: 1; 
   filter: brightness(1); 

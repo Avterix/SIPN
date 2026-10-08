@@ -5,7 +5,6 @@ session_start();
 
 include "koneksi.php";
 
-// 1. CEK SESSION & ROLE
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -13,16 +12,28 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id  = $_SESSION['user_id'];
 $role     = strtolower($_SESSION['role'] ?? '');
-$username = $_SESSION['username'] ?? 'User';
-$foto_db  = $_SESSION['foto'] ?? '';
 
-// 2. AMBIL DATA DETAIL USER & SISWA (FIXED FOTO PROFILE)
+// 1. AMBIL DATA USER & FOTO
 $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id = '$user_id'");
 $user_data = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_user) : [];
 
-// Ambil foto dari DB (prioritas foto lokal, kalau tidak ada pakai github_avatar)
-$foto_db = $user_data['foto'] ?? $_SESSION['foto'] ?? '';
-$github_avatar = $user_data['github_avatar'] ?? '';
+$username     = $user_data['username'] ?? $_SESSION['username'] ?? 'User';
+$foto_db      = $user_data['foto'] ?? '';
+$gh_connected = !empty($user_data['github_connected']) && $user_data['github_connected'] == 1;
+$gh_avatar    = $user_data['github_avatar'] ?? '';
+
+// Hirarki Foto Profil (LOGIKA DIPISAH TOTAL)
+$avatar_src = '';
+if (!empty($foto_db)) {
+    if (strpos($foto_db, 'data:image') === 0 || filter_var($foto_db, FILTER_VALIDATE_URL)) {
+        $avatar_src = $foto_db;
+    } elseif (file_exists('uploads/avatars/' . $foto_db)) {
+        $avatar_src = 'uploads/avatars/' . $foto_db;
+    }
+}
+if (empty($avatar_src) && $gh_connected && !empty($gh_avatar)) {
+    $avatar_src = $gh_avatar;
+}
 
 // Ambil Profil Siswa
 $q_siswa = mysqli_query($koneksi, "SELECT * FROM siswa WHERE user_id = '$user_id'");
@@ -33,15 +44,7 @@ $nama_lengkap = $siswa_data['nama'] ?? $username;
 $nis          = $siswa_data['nis'] ?? '-';
 $kelas        = $siswa_data['kelas'] ?? '-';
 
-// Path Avatar (Cek Uploads -> GitHub Avatar -> Kosong)
-$avatar_src = '';
-if (!empty($foto_db) && file_exists('uploads/avatars/' . $foto_db)) {
-    $avatar_src = 'uploads/avatars/' . $foto_db;
-} elseif (!empty($github_avatar)) {
-    $avatar_src = $github_avatar;
-}
-
-// 3. QUERY FETCH NILAI RAPOR (SESUAI TABEL nilai_rapor)
+// 2. QUERY FETCH NILAI RAPOR
 $sql_nilai = "SELECT nr.*, m.nama_mapel, m.kode_mapel 
               FROM nilai_rapor nr 
               JOIN mapel m ON nr.mapel_id = m.id 
@@ -63,10 +66,8 @@ if ($q_nilai && mysqli_num_rows($q_nilai) > 0) {
         $pengetahuan  = $row['nilai_pengetahuan'] ?? 0;
         $keterampilan = $row['nilai_keterampilan'] ?? 0;
 
-        // Hitung Nilai Akhir (Rata-rata Pengetahuan & Keterampilan)
         $nilai_akhir = round(($pengetahuan + $keterampilan) / 2, 1);
 
-        // Tentukan Predikat
         if ($nilai_akhir >= 90) $predikat = 'A';
         elseif ($nilai_akhir >= 80) $predikat = 'B';
         elseif ($nilai_akhir >= 70) $predikat = 'C';
@@ -105,201 +106,39 @@ if ($count_mapel == 0) $min_nilai = 0;
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        .rapor-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
-
-        .card-box {
-            background-color: var(--card-bg, #ffffff);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        }
-
-        .student-banner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: linear-gradient(135deg, #231c32 0%, #3b2d54 100%);
-            color: #ffffff;
-            border-radius: 16px;
-            padding: 24px 28px;
-            box-shadow: 0 8px 20px rgba(35, 28, 50, 0.15);
-        }
-
-        .student-info-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .student-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            background: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #231c32;
-        }
-
-        .student-details h2 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .student-details p {
-            font-size: 13px;
-            opacity: 0.85;
-            display: flex;
-            gap: 16px;
-        }
-
-        .student-details p span {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .stat-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 18px 20px;
-            border: 1px solid rgba(0,0,0,0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stat-meta h4 {
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .stat-meta .number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
+        .rapor-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.5s ease-out forwards; }
+        .card-box { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .student-banner { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #231c32 0%, #3b2d54 100%); color: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 8px 20px rgba(35, 28, 50, 0.15); }
+        .student-info-left { display: flex; align-items: center; gap: 20px; }
+        .student-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.3); background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #231c32; }
+        .student-details h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .student-details p { font-size: 13px; opacity: 0.85; display: flex; gap: 16px; }
+        .student-details p span { display: inline-flex; align-items: center; gap: 6px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .stat-card { background: #ffffff; border-radius: 14px; padding: 18px 20px; border: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; }
+        .stat-meta h4 { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .stat-meta .number { font-size: 24px; font-weight: 700; color: #0f172a; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .icon-purple { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
         .icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .icon-orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
         .icon-blue { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
-
-        .table-filter-header {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-            gap: 12px;
-        }
-
-        .btn-print {
-            background-color: #231c32;
-            color: #ffffff;
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
-        }
-
+        .table-filter-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; gap: 12px; }
+        .btn-print { background-color: #231c32; color: #ffffff; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
         .btn-print:hover { opacity: 0.9; }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13px;
-        }
-
-        .data-table th {
-            background-color: #f8fafc;
-            color: #475569;
-            font-weight: 700;
-            padding: 12px 16px;
-            border-bottom: 2px solid #e2e8f0;
-            white-space: nowrap;
-        }
-
-        .data-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
-        }
-
-        .data-table tr:hover {
-            background-color: #f8fafc;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-block;
-        }
-
-        .badge-success {color: #95a5a6; }
-        .badge-danger {color: #f4f5f8; }
-
-        .badge-predikat {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 12px;
-        }
-
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .data-table th { background-color: #f8fafc; color: #475569; font-weight: 700; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+        .data-table tr:hover { background-color: #f8fafc; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .badge-success { color: #95a5a6; }
+        .badge-danger { color: #f4f5f8; }
+        .badge-predikat { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
         .pred-A { color: #15803d; }
         .pred-B { color: #0369a1; }
         .pred-C { color: #b45309; }
         .pred-D { color: #b91c1c; }
-
         @media print {
             body * { visibility: hidden; }
             .rapor-container, .rapor-container * { visibility: visible; }
@@ -307,21 +146,15 @@ if ($count_mapel == 0) $min_nilai = 0;
             .rapor-container { position: absolute; left: 0; top: 0; width: 100%; }
             .card-box { border: none; box-shadow: none; }
         }
-
-        @media (max-width: 768px) {
-            .student-banner { flex-direction: column; text-align: center; gap: 16px; }
-            .student-info-left { flex-direction: column; }
-            .student-details p { flex-direction: column; gap: 6px; }
-        }
     </style>
 </head>
 <body>
 <?php include "loader.php"; ?>
-		<div class="video">
-  		<video autoplay muted playsinline id="bg-video">
-   		 <source src="background/main_bg.mp4" type="video/mp4">
-  		  Browser Anda tidak mendukung tag video.
-  		</video>
+<div class="video">
+    <video autoplay muted playsinline id="bg-video">
+        <source src="background/main_bg.mp4" type="video/mp4">
+        Browser Anda tidak mendukung tag video.
+    </video>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
@@ -344,27 +177,9 @@ if ($count_mapel == 0) $min_nilai = 0;
 
             <ul class="sidebar-menu">
                 <li><a href="dashboard.php"><i class="dashboard"></i> Dashboard</a></li>
-                
-                <?php if ($role === 'admin'): ?>
-                <li class="has-submenu">
-                    <a href="#"><i class="fa-solid fa-folder-tree"></i> Master Data <i class="fa-solid fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="daftar_user.php"><span class="dot user"></span> Kelola User</a></li>
-                        <li><a href="daftar_siswa.php"><span class="dot siswa"></span> Kelola Siswa</a></li>
-                        <li><a href="daftar_guru.php"><span class="dot guru"></span> Kelola Guru</a></li>
-                        <li><a href="daftar_mapel.php"><span class="dot mapel"></span> Mata Pelajaran</a></li>
-                    </ul>
-                </li>
-                <?php endif; ?>
-
-                <?php if ($role === 'guru'): ?>
-                <li><a href="daftar_nilai.php"><i class="fa-solid fa-pen-to-square"></i> Kelola Nilai</a></li>
-                <?php endif; ?>
-
                 <?php if ($role === 'siswa'): ?>
                 <li><a href="lihat_nilai.php" class="active"><i class="report"></i> View Report Card Grades</a></li>
                 <?php endif; ?>
-
                 <li><a href="profile.php"><i class="profile"></i> Manage Profile</a></li>
             </ul>
 
@@ -398,8 +213,6 @@ if ($count_mapel == 0) $min_nilai = 0;
             </header>
 
             <div class="rapor-container">
-                
-                <!-- STUDENT HEADER BANNER -->
                 <div class="student-banner">
                     <div class="student-info-left">
                         <?php if (!empty($avatar_src)): ?>
@@ -419,16 +232,13 @@ if ($count_mapel == 0) $min_nilai = 0;
                     </div>
                 </div>
 
-                <!-- STATS CARDS SUMMARY -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-meta">
                             <h4>Rata-Rata Nilai</h4>
                             <div class="number"><?= $rata_rata; ?></div>
                         </div>
-                        <div class="stat-icon icon-purple">
-                            <i class="fa-solid fa-chart-line"></i>
-                        </div>
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-chart-line"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -436,9 +246,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Total Mata Pelajaran</h4>
                             <div class="number"><?= $count_mapel; ?></div>
                         </div>
-                        <div class="stat-icon icon-blue">
-                            <i class="fa-solid fa-book-bookmark"></i>
-                        </div>
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-book-bookmark"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -446,9 +254,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Nilai Tertinggi</h4>
                             <div class="number"><?= $max_nilai; ?></div>
                         </div>
-                        <div class="stat-icon icon-green">
-                            <i class="fa-solid fa-trophy"></i>
-                        </div>
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-trophy"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -456,13 +262,10 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Mata Pelajaran Tuntas</h4>
                             <div class="number"><?= $tuntas_count; ?> / <?= $count_mapel; ?></div>
                         </div>
-                        <div class="stat-icon icon-orange">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-circle-check"></i></div>
                     </div>
                 </div>
 
-                <!-- TABLE CARD -->
                 <div class="card-box">
                     <div class="table-filter-header">
                         <button onclick="window.print()" class="btn-print">
@@ -498,17 +301,11 @@ if ($count_mapel == 0) $min_nilai = 0;
                                             <td style="text-align: center; font-weight: 600;"><?= $row['kkm_val']; ?></td>
                                             <td style="text-align: center;"><?= $row['pengetahuan_val']; ?></td>
                                             <td style="text-align: center;"><?= $row['keterampilan_val']; ?></td>
-                                            <td style="text-align: center; font-weight: 700; color: #0f172a;">
-                                                <?= $row['computed_akhir']; ?>
-                                            </td>
+                                            <td style="text-align: center; font-weight: 700; color: #0f172a;"><?= $row['computed_akhir']; ?></td>
                                             <td style="text-align: center;">
-                                                <span class="badge-predikat pred-<?= $row['computed_predikat']; ?>">
-                                                    <?= $row['computed_predikat']; ?>
-                                                </span>
+                                                <span class="badge-predikat pred-<?= $row['computed_predikat']; ?>"><?= $row['computed_predikat']; ?></span>
                                             </td>
-                                            <td style="text-align: center; color: #64748b;">
-                                                <?= htmlspecialchars($row['keterangan'] ?? '-'); ?>
-                                            </td>
+                                            <td style="text-align: center; color: #64748b;"><?= htmlspecialchars($row['keterangan'] ?? '-'); ?></td>
                                             <td style="text-align: center;">
                                                 <?php if ($row['is_tuntas']): ?>
                                                     <span class="badge badge-success">✔</span>
@@ -534,21 +331,6 @@ if ($count_mapel == 0) $min_nilai = 0;
             </div>
         </main>
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const menuLinks = document.querySelectorAll(".sidebar-menu a");
-            menuLinks.forEach(link => {
-                link.addEventListener("click", function(e) {
-                    if(this.parentElement.classList.contains("has-submenu")) {
-                        e.preventDefault();
-                        const submenu = this.nextElementSibling;
-                        submenu.style.display = submenu.style.display === "flex" ? "none" : "flex";
-                        return;
-                    }
-                });
-            });
-        });
-    </script>
+</div>
 </body>
 </html>

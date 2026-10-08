@@ -1,19 +1,30 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
-require_once "koneksi.php";
-require_once "config_github.php";
+
+require_once __DIR__ . "/config_github.php";
+
+$redirect_profile = "profile.php";
+$redirect_login   = "login.php";
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: " . $redirect_login);
     exit;
 }
 
 $user_id = $_SESSION['user_id'];
 
-if (empty($_GET['code']) || empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-    $_SESSION['pesan_error'] = "Gagal memverifikasi request OAuth GitHub.";
-    header("Location: profile.php");
+if (empty($_GET['code']) || empty($_GET['state']) || ($_GET['state'] !== ($_SESSION['oauth2state'] ?? ''))) {
+    $_SESSION['msg_type'] = "error";
+    $_SESSION['msg_text'] = "Gagal memverifikasi request OAuth GitHub.";
+    header("Location: " . $redirect_profile);
     exit;
+}
+
+// Cek modul cURL PHP
+if (!function_exists('curl_init')) {
+    die("Fatal Error: Ekstensi cURL belum aktif di PHP/XAMPP kamu. Aktifkan extension=curl di php.ini");
 }
 
 $code = $_GET['code'];
@@ -35,8 +46,9 @@ curl_close($ch);
 $access_token = $response['access_token'] ?? null;
 
 if (!$access_token) {
-    $_SESSION['pesan_error'] = "Gagal mendapatkan Access Token dari GitHub.";
-    header("Location: profile.php");
+    $_SESSION['msg_type'] = "error";
+    $_SESSION['msg_text'] = "Gagal mendapatkan Access Token dari GitHub.";
+    header("Location: " . $redirect_profile);
     exit;
 }
 
@@ -56,16 +68,15 @@ if (isset($github_user['id'])) {
     $gh_username = mysqli_real_escape_string($koneksi, $github_user['login']);
     $gh_avatar   = mysqli_real_escape_string($koneksi, $github_user['avatar_url']);
 
-    // CEK APAKAH AKUN GITHUB INI SUDAH DIPAKAI USER LAIN DI DATABASE
     $q_cek = mysqli_query($koneksi, "SELECT id, username FROM users WHERE github_id = '$gh_id' AND id != '$user_id'");
     if (mysqli_num_rows($q_cek) > 0) {
         $user_lain = mysqli_fetch_assoc($q_cek);
-        $_SESSION['pesan_error'] = "Akun GitHub @$gh_username sudah terhubung ke user lain (" . $user_lain['username'] . ")!";
-        header("Location: profile.php");
+        $_SESSION['msg_type'] = "error";
+        $_SESSION['msg_text'] = "Akun GitHub @$gh_username sudah terhubung ke user lain (" . $user_lain['username'] . ")!";
+        header("Location: " . $redirect_profile);
         exit;
     }
 
-    // UPDATE DATA KE AKUN USER YANG SEDANG LOGIN SAAT INI
     $sql = "UPDATE users SET 
             github_id = '$gh_id', 
             github_username = '$gh_username', 
@@ -74,13 +85,17 @@ if (isset($github_user['id'])) {
             WHERE id = '$user_id'";
             
     if (mysqli_query($koneksi, $sql)) {
-        $_SESSION['pesan_sukses'] = "Akun GitHub @$gh_username berhasil dihubungkan!";
+        $_SESSION['msg_type'] = "success";
+        $_SESSION['msg_text'] = "Akun GitHub @$gh_username berhasil dihubungkan!";
     } else {
-        $_SESSION['pesan_error'] = "Gagal menyimpan data GitHub ke database.";
+        $_SESSION['msg_type'] = "error";
+        $_SESSION['msg_text'] = "Gagal menyimpan data GitHub ke database.";
     }
 } else {
-    $_SESSION['pesan_error'] = "Gagal mengambil data akun GitHub.";
+    $_SESSION['msg_type'] = "error";
+    $_SESSION['msg_text'] = "Gagal mengambil data akun GitHub.";
 }
 
-header("Location: profile.php");
+header("Location: " . $redirect_profile);
 exit;
+?>

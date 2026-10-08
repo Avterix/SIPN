@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Set timezone sesuai lokasi lu biar harinya akurat
 date_default_timezone_set('Asia/Jakarta');
 include "koneksi.php";
 
@@ -9,17 +8,28 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$role = strtolower($_SESSION['role'] ?? '');
-$username = $_SESSION['username'] ?? 'User';
-$user_id = $_SESSION['user_id'] ?? 0;
+$user_id = $_SESSION['user_id'];
+$q_user  = mysqli_query($koneksi, "SELECT * FROM users WHERE id = '$user_id'");
+$user_data = mysqli_fetch_assoc($q_user);
 
-// AMBIL FOTO PROFILE DARI DATABASE
-$foto_db = '';
-$q_user = mysqli_query($koneksi, "SELECT foto FROM users WHERE id = '$user_id'");
-if ($q_user && $u_row = mysqli_fetch_assoc($q_user)) {
-    $foto_db = $u_row['foto'] ?? '';
+$username     = $user_data['username'] ?? '';
+$role         = strtolower($_SESSION['role'] ?? '');
+$foto_db      = $user_data['foto'] ?? '';
+$gh_connected = !empty($user_data['github_connected']) && $user_data['github_connected'] == 1;
+$gh_avatar    = $user_data['github_avatar'] ?? '';
+
+// Hirarki Foto Profil (LOGIKA DIPISAH TOTAL)
+$avatar_src = '';
+if (!empty($foto_db)) {
+    if (strpos($foto_db, 'data:image') === 0 || filter_var($foto_db, FILTER_VALIDATE_URL)) {
+        $avatar_src = $foto_db;
+    } elseif (file_exists('uploads/avatars/' . $foto_db)) {
+        $avatar_src = 'uploads/avatars/' . $foto_db;
+    }
 }
-$avatar_src = (!empty($foto_db) && file_exists('uploads/avatars/' . $foto_db)) ? 'uploads/avatars/' . $foto_db : '';
+if (empty($avatar_src) && $gh_connected && !empty($gh_avatar)) {
+    $avatar_src = $gh_avatar;
+}
 
 // 1. Ambil statistik database secara aman
 $tot_siswa = 0;
@@ -40,9 +50,9 @@ if ($q_mapel && $row = mysqli_fetch_assoc($q_mapel)) {
     $tot_mapel = $row['total'] ?? 0;
 }
 
-// 2. LOGIKA KHUSUS SISWA: Ambil data nilai, jadwal real-time & presensi
+// 2. LOGIKA KHUSUS SISWA
 $grades_data = [];
-$jadwal_hari_ini = []; // Diubah namanya biar logis
+$jadwal_hari_ini = [];
 $kehadiran = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'persentase' => 100];
 $hari_ini = ''; 
 
@@ -50,15 +60,13 @@ if ($role === 'siswa') {
     $siswa_id = 0;
     $siswa_kelas = '';
     
-    // Cari id siswa dan kelas berdasarkan user_id
     $q_siswa_info = mysqli_query($koneksi, "SELECT id, kelas FROM siswa WHERE user_id = '$user_id'");
     if ($q_siswa_info && mysqli_num_rows($q_siswa_info) > 0) {
         $d_siswa = mysqli_fetch_assoc($q_siswa_info);
         $siswa_id = $d_siswa['id'] ?? 0;
-        $siswa_kelas = $d_siswa['kelas'] ?? ''; // Tarik data kelas (Misal: "X RPL")
+        $siswa_kelas = $d_siswa['kelas'] ?? '';
     }
 
-    // Query dari tabel nilai_rapor
     $q_nilai = mysqli_query($koneksi, "
         SELECT m.nama_mapel, 
                ROUND((COALESCE(n.nilai_pengetahuan, 0) + COALESCE(n.nilai_keterampilan, 0)) / 2, 0) AS nilai
@@ -85,7 +93,6 @@ if ($role === 'siswa') {
         ];
     }
 
-    // MENDAPATKAN HARI INI DALAM BAHASA INDONESIA
     $hari_inggris = date('l');
     $translate_hari = [
         'Monday'    => 'Senin',
@@ -98,7 +105,6 @@ if ($role === 'siswa') {
     ];
     $hari_ini = $translate_hari[$hari_inggris];
 
-    // AMBIL DATA JADWAL HARI INI & KHUSUS KELAS SISWA TERSEBUT (DIUBAH PAKAI LEFT JOIN)
     $q_jadwal = mysqli_query($koneksi, "
         SELECT j.jam_mulai, j.jam_selesai, j.kelas, 
                COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel, 
@@ -124,7 +130,6 @@ if ($role === 'siswa') {
         }
     }
 
-    // DATA DUMMY KEHADIRAN / KEAKTIFAN SISWA
     $kehadiran = [
         'hadir' => 24,
         'sakit' => 1,
@@ -140,18 +145,17 @@ if ($role === 'siswa') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SIPN</title>
-    <!-- CSS Utama -->
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <?php include "loader.php"; ?>
-		<div class="video">
-  		<video autoplay muted playsinline id="bg-video">
-   		 <source src="background/main_bg.mp4" type="video/mp4">
-  		  Browser Anda tidak mendukung tag video.
-  		</video>
+<div class="video">
+    <video autoplay muted playsinline id="bg-video">
+        <source src="<?= $base_url; ?>/background/main_bg.mp4" type="video/mp4">
+        Browser Anda tidak mendukung tag video.
+    </video>
     <div class="dashboard-container">
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -162,7 +166,7 @@ if ($role === 'siswa') {
 
     <div class="user-profile-mini">
         <?php if (!empty($avatar_src)): ?>
-            <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" alt="Avatar">
+            <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" style="object-fit: cover;">
         <?php else: ?>
             <div class="user-avatar-initial"><?= strtoupper(substr($username, 0, 1)); ?></div>
         <?php endif; ?>
@@ -211,7 +215,6 @@ if ($role === 'siswa') {
 
         <!-- MAIN CONTENT AREA -->
         <main class="main-content">
-            <!-- TOP BAR -->
             <header class="topbar">
                 <div class="topbar-title">
                     <h1>Overview</h1>
@@ -222,8 +225,8 @@ if ($role === 'siswa') {
                         <i class="zoom"></i>
                         <input type="text" placeholder="Search records...">
                     </div>
-                    <button class="icon-btn notification-btn"><img class="icons" src="icons/dashboard/bell.png"></img></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="icons/dashboard/settings.png"></img></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
@@ -271,12 +274,9 @@ if ($role === 'siswa') {
 
             <!-- BOTTOM GRID SECTION -->
             <section class="bottom-grid">
-                
-                <!-- CARD DIAGRAM / GRADE CHART -->
-		<img class="elements" src="elements/element1.png"></img>
+                <img class="elements" src="<?= $base_url; ?>/elements/element1.png"/>
                 <div class="card storage-card">
                     <?php if ($role === 'siswa'): ?>
-                        <!-- Tampilan Bar Chart Khusus Siswa -->
                         <div class="card-header">
                             <h3>Academic Grade Chart</h3>
                             <i class="chart"></i>
@@ -303,18 +303,14 @@ if ($role === 'siswa') {
                             <span style="display:inline-block; width:8px; height:8px; background:#78bc9b; border-radius:50%; margin-right:4px;"></span> Ada Nilai
                             <span style="display:inline-block; width:8px; height:8px; background:#cbd5e1; border-radius:50%; margin-left:12px; margin-right:4px;"></span> Belum Ada Nilai
                         </div>
-
                     <?php else: ?>
-                        <!-- Donut Chart untuk Admin & Guru -->
                         <div class="card-header">
                             <h3>Database Ratio</h3>
                             <i class="chart"></i>
                         </div>
                         <div class="storage-content">
                             <div class="chart-container">
-                                <div class="donut-hole">
-                                    <strong>100%</strong>
-                                </div>
+                                <div class="donut-hole"><strong>100%</strong></div>
                             </div>
                             <div class="storage-legend">
                                 <div class="legend-item"><span class="bullet doc"></span> <div><strong>Students</strong><small><?= $tot_siswa; ?> Data</small></div></div>
@@ -326,7 +322,6 @@ if ($role === 'siswa') {
                     <?php endif; ?>
                 </div>
 
-                <!-- SYSTEM INFORMATION CARD -->
                 <div class="card files-card">
                     <div class="card-header">
                         <h3>System Information</h3>
@@ -338,16 +333,12 @@ if ($role === 'siswa') {
                                 <div class="file-ico psd"><i class="school"></i></div>
                                 <span>SMK Sangkuriang 1 Cimahi</span>
                             </div>
-                            <div class="file-users">
-                            </div>
                             <span class="file-date">2026/2027</span>
                         </div>
                         <div class="file-item">
                             <div class="file-info">
                                 <div class="file-ico jpg"><i class="curriculum"></i></div>
                                 <span>Rekayasa Perangkat Lunak</span>
-                            </div>
-                            <div class="file-users">
                             </div>
                             <span class="file-date">Curriculum</span>
                         </div>
@@ -356,8 +347,6 @@ if ($role === 'siswa') {
                                 <div class="file-ico pdf"><i class="status"></i></div>
                                 <span>Logged as: <?= htmlspecialchars($username); ?></span>
                             </div>
-                            <div class="file-users">
-                            </div>
                             <span class="file-date">Secure Session</span>
                         </div>
                     </div>
@@ -365,9 +354,7 @@ if ($role === 'siswa') {
             </section>
 
             <?php if ($role === 'siswa'): ?>
-            <!-- SECTION TAMBAHAN KHUSUS SISWA (JADWAL REALTIME & KEAKTIFAN PRESENSI) -->
             <section class="bottom-grid" style="margin-top: 24px;">
-                <!-- CARD JADWAL HARI INI & GURU PENGAJAR -->
                 <div class="card-badge schedule-card">
                     <div class="card-day">
                         <h3><i class="fa-solid fa-calendar-day" style="color: #6366f1; margin-right: 8px;"></i> Jadwal Pelajaran (<?= $hari_ini; ?>)</h3>
@@ -398,7 +385,6 @@ if ($role === 'siswa') {
                     </div>
                 </div>
 
-                <!-- CARD KEAKTIFAN PRESENSI SISWA -->
                 <div class="card-att attendance-card">
                     <div class="card-header">
                         <h3><i class="fa-solid fa-user-check" style="color: #10b981; margin-right: 8px;"></i> Keaktifan & Presensi</h3>
@@ -437,24 +423,8 @@ if ($role === 'siswa') {
                 </div>
             </section>
             <?php endif; ?>
-
         </main>
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const menuLinks = document.querySelectorAll(".sidebar-menu a");
-            menuLinks.forEach(link => {
-                link.addEventListener("click", function(e) {
-                    if(this.parentElement.classList.contains("has-submenu")) {
-                        e.preventDefault();
-                        const submenu = this.nextElementSibling;
-                        submenu.style.display = submenu.style.display === "flex" ? "none" : "flex";
-                        return;
-                    }
-                });
-            });
-        });
-    </script>
+</div>
 </body>
 </html>
