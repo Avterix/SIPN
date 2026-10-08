@@ -206,8 +206,8 @@ if ($gh_connected) $progress += 15;
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" placeholder="Search settings...">
                     </div>
-                    <button class="icon-btn notification-btn"><i class="fa-regular fa-bell"></i></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><i class="fa-solid fa-user-gear"></i></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/"></i></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
@@ -294,7 +294,7 @@ if ($gh_connected) $progress += 15;
 
                         <div class="github-integration-card">
                             <div class="gh-info-left">
-                                <i class="fa-brands fa-github"></i>
+                                <i class="github"></i>
                                 <div class="gh-text">
                                     <h4>GitHub Account</h4>
                                     <?php if ($gh_connected): ?>

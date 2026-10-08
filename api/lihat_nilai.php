@@ -206,8 +206,8 @@ if ($count_mapel == 0) $min_nilai = 0;
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" placeholder="Search report card...">
                     </div>
-                    <button class="icon-btn notification-btn"><i class="fa-regular fa-bell"></i></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><i class="fa-solid fa-user-gear"></i></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
