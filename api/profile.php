@@ -469,6 +469,10 @@ if ($gh_connected) $progress += 15;
             .form-grid-2 { grid-template-columns: 1fr; }
         }
     </style>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
 <?php include "loader.php"; ?>

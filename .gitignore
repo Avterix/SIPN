@@ -4,3 +4,6 @@
 
 # Abaikan folder lokal XAMPP jika ada
 .DS_Store
+
+# Node modules
+node_modules/
