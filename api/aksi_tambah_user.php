@@ -5,6 +5,7 @@ require_once 'koneksi.php';
 ?>
 <head>
     <link rel="stylesheet" href="style1.css">
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 
 <?php

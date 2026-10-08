@@ -314,6 +314,7 @@ if ($count_mapel == 0) $min_nilai = 0;
             .student-details p { flex-direction: column; gap: 6px; }
         }
     </style>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 <?php include "loader.php"; ?>

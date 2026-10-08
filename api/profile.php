@@ -469,6 +469,7 @@ if ($gh_connected) $progress += 15;
             .form-grid-2 { grid-template-columns: 1fr; }
         }
     </style>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 <?php include "loader.php"; ?>
