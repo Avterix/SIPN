@@ -92,6 +92,10 @@ while ($r = mysqli_fetch_assoc($q_g)) { $list_guru_opt[] = $r; }
         .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
         @media (max-width: 900px) { .form-grid-3 { grid-template-columns: 1fr; } }
     </style>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
 

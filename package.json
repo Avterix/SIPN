@@ -1,0 +1,12 @@
+{
+  "name": "sipn",
+  "version": "1.0.0",
+  "description": "SIPN - Sistem Informasi Penilaian",
+  "private": true,
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^1.1.0"
+  }
+}

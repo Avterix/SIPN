@@ -314,6 +314,10 @@ if ($count_mapel == 0) $min_nilai = 0;
             .student-details p { flex-direction: column; gap: 6px; }
         }
     </style>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
 <?php include "loader.php"; ?>
