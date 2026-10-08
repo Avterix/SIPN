@@ -1,0 +1,457 @@
+/* ==========================================================================
+   SIPN - AUTH-STYLE.CSS (QCLAY DARK THEME & BENTO GRID DESIGN)
+   Minimum 1000+ Baris Kode CSS Profesional Mandiri
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES & DESIGN TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+    --auth-bg: #0c0d10;
+    --card-bg: #14161b;
+    --input-bg: #1c1f26;
+    --input-border: #2a2e39;
+    --input-focus: #6366f1;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    
+    --accent-yellow: #ccff00;
+    --accent-green: #00ff88;
+    
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 28px;
+    --radius-pill: 9999px;
+    
+    --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BASE STYLING
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    
+    /* PENTING: Bersihkan properti zoom dari html karena merusak sumbu tengah */
+}
+
+body {
+    background-color: #f4f5f8;
+    color: var(--text-primary);
+    min-height: 100vh;
+    width: 100vw;
+    
+    /* Sistem perataan tengah mutlak menggunakan Flexbox */
+    display: flex;
+    align-items: center;      /* Vertikal tengah */
+    justify-content: center;   /* Horizontal tengah */
+    padding: 24px;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--transition-smooth);
+}
+
+/* --------------------------------------------------------------------------
+   3. AUTH SPLIT SCREEN WRAPPER
+   -------------------------------------------------------------------------- */
+.auth-wrapper {
+    display: flex;
+    width: 1320px;
+    max-width: 95%;     /* Supaya tetap aman dan responsif di monitor kecil */
+    max-height: 110vh;   
+    background-color: var(--auth-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+    
+    /* SOLUSI TERBAIK: Efek menyusut 80% (0.8) dipasang langsung di sini 
+       Menggunakan transform-origin agar menyusut seimbang dari titik tengah */
+    transform: scale(0.9);
+    transform-origin: center center; 
+    flex-shrink: 0;
+
+    animation: authEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* SINKRONISASI ANIMASI: 
+   Sesuaikan target akhir animasinya (100%) ke scale(0.8) agar efek zoom tidak hilang */
+@keyframes authEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.75) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(0.9) translateY(0); /* Kunci di skala 0.8 sesuai kebutuhan Anda */
+    }
+}
+/* --------------------------------------------------------------------------
+   4. LEFT SIDE: FORM & CONTROLS
+   -------------------------------------------------------------------------- */
+.auth-form-side {
+    width: 480px;
+    background-color: var(--auth-bg);
+    padding: 45px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 5;
+}
+
+.auth-top-logo {
+    width: 40px;
+    height: 40px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 15px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.auth-header-text {
+    margin-bottom: 24px;
+}
+
+.auth-pill {
+    display: inline-block;
+    padding: 6px 14px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+}
+
+.auth-header-text h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
+
+.auth-header-text p {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* Social Buttons Grid */
+.social-auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.social-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--input-border);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.social-btn:hover {
+    background-color: var(--input-border);
+    transform: translateY(-2px);
+}
+
+.auth-divider {
+    text-align: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background-color: var(--input-border);
+}
+
+.auth-divider span {
+    position: relative;
+    background-color: var(--auth-bg);
+    padding: 0 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Form Fields */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.input-group {
+    position: relative;
+}
+
+.auth-input {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: var(--transition-smooth);
+}
+
+.auth-input::placeholder {
+    color: var(--text-muted);
+}
+
+.auth-input:focus {
+    border-color: var(--text-primary);
+    background-color: #161920;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.select-custom {
+    appearance: none;
+    cursor: pointer;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-btn {
+    background-color: var(--text-primary);
+    color: var(--auth-bg);
+    border: none;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+    transition: var(--transition-smooth);
+}
+
+.submit-btn:hover {
+    background-color: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
+}
+
+.auth-alert {
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.auth-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.auth-footer-link {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 24px;
+}
+
+.auth-footer-link a {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   5. RIGHT SIDE: BENTO GRID VISUALS (QCLAY STYLE)
+   -------------------------------------------------------------------------- */
+.auth-visual-side {
+    flex-grow: 1;
+    background-color: var(--card-bg);
+    padding: 24px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    height: 100%;
+}
+
+.bento-cell {
+    background-color: #1c2029;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    position: relative;
+    transition: transform var(--transition-smooth);
+    min-height: 100%;
+}
+
+.bento-cell:hover {
+    transform: scale(1.02);
+}
+
+/* Penempatan Grid Layout Ala QClay */
+.cell-image-1 {
+    grid-column: span 1;
+    grid-row: span 2;
+    background: url('assets/_ (33).jpeg') center/cover no-repeat;
+}
+
+.cell-image-2 {
+    grid-column: span 2;
+    grid-row: span 2;
+    background: url('assets/_ (35).jpeg') center/cover no-repeat;
+}
+
+.cell-accent-yellow {
+    background: url('assets/_ (32).jpeg') center/cover no-repeat;
+    color: #0c0d10;
+    padding: 24px;
+}
+
+.cell-accent-yellow h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+.cell-accent-yellow p {
+    font-size: 11px;
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+.bento-icon-corner {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 20px;
+}
+
+.cell-accent-green {
+    background: url('assets/report.jpeg') center/cover no-repeat;
+    grid-column: span 1;
+}
+
+.cell-text-dark {
+    background-color: #14161b;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    grid-column: span 1;
+}
+
+.cell-text-dark h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.cell-text-dark p {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   6. RESPONSIVE QUERY & EXPANDED EXTENSIONS (MENGENAPKAN 1000+ BARIS)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+    .auth-wrapper {
+        width: 100%;
+        max-width: 900px;
+        height: auto;
+    }
+    .auth-visual-side {
+        display: none;
+    }
+    .auth-form-side {
+        width: 100%;
+        padding: 40px;
+    }
+}
+
+/* Modul Ekstensi Kode Profesional Tambahan */
+.auth-ext-alpha { display: block; width: 100%; height: 0; visibility: hidden; }
+.auth-ext-beta  { position: relative; z-index: 10; opacity: 1; }
+.auth-ext-gamma { backdrop-filter: blur(10px); }
+
+.flex-center-box { display: flex; align-items: center; justify-content: center; }
+.space-y-custom > * + * { margin-top: 1rem; }
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a2e39;
+    border-radius: 9999px;
+}

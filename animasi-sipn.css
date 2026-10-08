@@ -1,0 +1,106 @@
+/* ==========================================================================
+   ANIMASI & SVG SYSTEM - EXPERT MOTION GRAPHICS
+   ========================================================================== */
+
+/* 1. Global SVG Reset & Clean Hover Effects */
+.nav-icon svg, 
+.stat-icon-wrapper svg,
+.search-icon svg,
+.btn-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.2s ease;
+}
+
+.search-icon svg {
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+/* Hover Elastic Scaling pada Navigasi */
+.nav-item-link:hover .nav-icon svg {
+  transform: scale(1.18) rotate(-4deg);
+}
+
+.nav-item-link.active .nav-icon svg {
+  stroke: #1e1e2d;
+  transform: scale(1.08);
+}
+
+/* 2. Keyframe Animations (Non-Linear Physics Curves) */
+@keyframes elasticPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes staggerSlideRight {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlowSoft {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+  70% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+/* 3. Dynamic Stagger delays untuk Navigasi Sidebar */
+.sipn-sidebar .nav-item-link {
+  opacity: 0;
+  animation: staggerSlideRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sipn-sidebar .nav-item-link:nth-child(1) { animation-delay: 0.05s; }
+.sipn-sidebar .nav-item-link:nth-child(2) { animation-delay: 0.10s; }
+.sipn-sidebar .nav-item-link:nth-child(3) { animation-delay: 0.15s; }
+.sipn-sidebar .nav-item-link:nth-child(4) { animation-delay: 0.20s; }
+.sipn-sidebar .nav-item-link:nth-child(5) { animation-delay: 0.25s; }
+.sipn-sidebar .nav-item-link:nth-child(6) { animation-delay: 0.30s; }
+.sipn-sidebar .nav-item-link:nth-child(7) { animation-delay: 0.35s; }
+
+/* Elastic Entrance Card Dashboard & Auth */
+.auth-card, 
+.panel-card, 
+.stat-card {
+  animation: elasticPopIn 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Micro-Interactions pada Tombol */
+.btn {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  animation: pulseGlowSoft 1.2s infinite;
+}
