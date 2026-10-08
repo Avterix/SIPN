@@ -144,6 +144,7 @@ if ($role === 'siswa') {
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 <?php include "loader.php"; ?>

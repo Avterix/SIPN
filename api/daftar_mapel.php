@@ -92,6 +92,7 @@ while ($r = mysqli_fetch_assoc($q_g)) { $list_guru_opt[] = $r; }
         .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
         @media (max-width: 900px) { .form-grid-3 { grid-template-columns: 1fr; } }
     </style>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 

@@ -153,6 +153,7 @@ if (!empty($filter_kelas)) {
         .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     </style>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 

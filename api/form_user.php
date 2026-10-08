@@ -3,6 +3,7 @@ require 'navbar.php';
 ?>
 <head>
     <link rel="stylesheet" href="style1.css">
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <div class="form2" style="margin: 0 auto; width: 30%;">
     <div class="container text-center" style="margin: 0 auto;">
