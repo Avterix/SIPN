@@ -6,7 +6,18 @@
   },
   "routes": [
     {
-      "source": "/(.*)",
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(assets|background|gif|icons|webref)/(.*)",
+      "dest": "/$1/$2"
+    },
+    {
+      "src": "/(animasi-sipn.css|auth-style.css|style1.css)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/api/index.php"
     }
   ]
