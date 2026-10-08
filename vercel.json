@@ -1,9 +1,9 @@
 <?php
-$host = "mysql-sipn-sipn.k.aivencloud.com"; 
-$user = "avnadmin";                         
-$pass = "AVNS_KAd4LB1vjSZmU_r8gYu";     
-$db   = "defaultdb";
-$port = "19675";
+$host = getenv('mysql-sipn-sipn.k.aivencloud.com'); 
+$user = getenv('avnadmin');                         
+$pass = getenv('AVNS_KAd4LB1vjSZmU_r8gYu');     
+$db   = getenv('defaultdb'); 
+$port = getenv('19675');   
 
 $koneksi = mysqli_connect($host, $user, $pass, $db, $port);
 
