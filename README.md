@@ -38,10 +38,11 @@ Aplikasi ini dirancang untuk memfasilitasi pengelolaan data pengguna (Siswa, Gur
 
 | Komponen | Teknologi / Lingkungan | Deskripsi |
 | :---- | :---- | :---- |
+| **Frontend** | HTML5, CSS3, JavaScript, Vercel | Struktur UI, styling kustom, dan interaktivitas client-side |
 | **Backend** | PHP 7.4 / 8.x | Bahasa pemrograman utama logika bisnis & API handler |
-| **Database** | MySQL / MariaDB | Penyimpanan data relasional |
+| **Database** | MySQL / Beekeeper | Penyimpanan data relasional |
 | **Web Server** | Apache | Server HTTP (Direktori Web Root: `/opt/lampp/htdocs/SIPN`) |
-| **Frontend** | HTML5, CSS3, JavaScript | Struktur UI, styling kustom, dan interaktivitas client-side |
+| **Tools** | Aiven | Basis Data & Infrastruktur Data Terkelola |
 | **OAuth API** | GitHub REST API | Provider otorisasi dan identitas pihak ketiga |
 
 # **4\. Struktur Direktori Proyek**
