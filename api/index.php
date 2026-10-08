@@ -1,25 +1,34 @@
 <?php
-// Mengambil path URL yang diakses (misal: /login atau /daftar_siswa)
+// Mengambil path URL yang diakses (misal: /login.php atau /login)
 $request = $_SERVER['REQUEST_URI'];
-$base_path = '/api';
 
-// Bersihkan path dari query string (seperti ?id=1)
+// Bersihkan path dari query string (seperti ?id=1 atau ?pesan=gagal)
 $path = parse_url($request, PHP_URL_PATH);
 
-// Jika mengakses halaman utama, arahkan ke dashboard
+// Jika mengakses halaman utama terluar (/), langsung buka dashboard.php
 if ($path === '/' || $path === '/index.php') {
     require __DIR__ . '/dashboard.php';
     exit;
 }
 
-// Cari file PHP yang sesuai di dalam folder api
-$file = __DIR__ . $path . '.php';
+// Hapus awalan '/api' jika Vercel menyertakannya di URL internal
+if (strpos($path, '/api') === 0) {
+    $path = substr($path, 4);
+}
 
-if (file_exists($file)) {
-    require $file;
+// Cek 1: Jika user mengetik lengkap dengan .php (misal: /login.php)
+$file_langsung = __DIR__ . $path;
+
+// Cek 2: Jika user mengetik tanpa .php (misal: /login)
+$file_tanpa_ekstensi = __DIR__ . $path . '.php';
+
+if (file_exists($file_langsung) && is_file($file_langsung)) {
+    require $file_langsung;
+} elseif (file_exists($file_tanpa_ekstensi) && is_file($file_tanpa_ekstensi)) {
+    require $file_tanpa_ekstensi;
 } else {
-    // Jika file tidak ada, tampilkan error 404 buatan sendiri
+    // Jika benar-benar tidak ada filenya di folder api/
     http_response_code(404);
-    echo "Halaman tidak ditemukan (404)";
+    echo "Halaman tidak ditemukan (404) - File: " . htmlspecialchars($path);
 }
 ?>
