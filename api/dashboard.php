@@ -148,6 +148,7 @@ if ($role === 'siswa') {
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
 </head>
 <body>
 <?php include "loader.php"; ?>
@@ -274,9 +275,9 @@ if ($role === 'siswa') {
 
             <!-- BOTTOM GRID SECTION -->
             <section class="bottom-grid">
-                <img class="elements" src="<?= $base_url; ?>/elements/element1.png"/>
                 <div class="card storage-card">
                     <?php if ($role === 'siswa'): ?>
+<img class="elements" src="<?= $base_url; ?>/elements/element1.png"/>
                         <div class="card-header">
                             <h3>Academic Grade Chart</h3>
                             <i class="chart"></i>
@@ -357,7 +358,7 @@ if ($role === 'siswa') {
             <section class="bottom-grid" style="margin-top: 24px;">
                 <div class="card-badge schedule-card">
                     <div class="card-day">
-                        <h3><i class="fa-solid fa-calendar-day" style="color: #6366f1; margin-right: 8px;"></i> Jadwal Pelajaran (<?= $hari_ini; ?>)</h3>
+                        <h3><i class="calendar" style="margin-right: 8px;"></i> Jadwal Pelajaran (<?= $hari_ini; ?>)</h3>
                         <span class="tag-badge-day"><?= $hari_ini; ?></span>
                     </div>
                     <div class="schedule-list">
@@ -387,7 +388,7 @@ if ($role === 'siswa') {
 
                 <div class="card-att attendance-card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-user-check" style="color: #10b981; margin-right: 8px;"></i> Keaktifan & Presensi</h3>
+                        <h3><i class="presence" style="color: #10b981; margin-right: 8px;"></i> Keaktifan & Presensi</h3>
                         <span class="att-percentage"><?= $kehadiran['persentase']; ?>% High</span>
                     </div>
                     <div class="attendance-body">

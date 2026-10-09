@@ -67,7 +67,8 @@ while ($r = mysqli_fetch_assoc($q_ug)) { $users_guru[] = $r; }
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">   
+ <style>
         .page-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.4s ease-out forwards; }
         .card-box { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: all 0.3s ease; }
         .card-box.form-active { border: 2px solid #6366f1 !important; box-shadow: 0 0 16px rgba(99, 102, 241, 0.2) !important; }

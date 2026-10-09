@@ -1,0 +1,11 @@
+blue (condment blue)
+--accent-green: #90a4ae;
+--accent-purple: #607d8b;
+
+blue (dark)
+ --accent-green: #607d8b;
+ --accent-purple: #455a64;
+
+normal
+--accent-green: #8bb6a2;
+--accent-purple: #4d4e8e;

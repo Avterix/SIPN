@@ -100,6 +100,7 @@ if ($gh_connected) $progress += 15;
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
     <style>
         .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; animation: fadeInUp 0.5s ease-out forwards; }
         .profile-card-left { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -312,7 +313,7 @@ if ($gh_connected) $progress += 15;
                                     </a>
                                 <?php else: ?>
                                     <a href="github-login.php" class="btn-gh-connect">
-                                        <i class="fa-brands fa-github"></i> Connect GitHub
+                                        <i class="connect"></i> Connect GitHub
                                     </a>
                                 <?php endif; ?>
                             </div>

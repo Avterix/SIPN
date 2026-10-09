@@ -104,6 +104,7 @@ if ($count_mapel == 0) $min_nilai = 0;
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
     
     <style>
         .rapor-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.5s ease-out forwards; }

@@ -5,8 +5,8 @@
     --card-bg: #ffffff;
     --text-main: #2d3436;
     --text-muted: #95a5a6;
-    --accent-green: #8bb6a2;
-    --accent-purple: #4d4e8e;
+    --accent-green: #455a64;
+    --accent-purple: #165b6d;
     --accent-dark: #2d3436;
     --border-color: #e2e8f0;
     
@@ -632,12 +632,12 @@ img, svg {
 }
 
 .folder-card.bg-green {
-    background: #8bb6a2;
+    background: var(--accent-green);
     color: #ffffff;
 }
 
 .folder-card.bg-purple {
-    background: #4d4e8e;
+    background: var(--accent-purple);
     color: #ffffff;
 }
 
@@ -910,6 +910,39 @@ img, svg {
     }
 }
 
+@media (max-width: 720px) {
+/* Sidebar Fixed di Kiri */
+.sidebar {
+    position: fixed;
+    top: 350px;
+    left: 20px;
+    bottom: 20px;
+    width: 80px; /* Lebar default compact (cukup untuk logo & icon) */
+    height: 50vh;
+    background-color: #14161b;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 18px;
+    user-select: none;
+    z-index: 9999;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+/* Saat di-hover, sidebar melebar */
+.sidebar:hover {
+    width: 270px;
+    }
+    .sidebar-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
 /* --------------------------------------------------------------------------
    9. EXTENSIVE STRUCTURAL REFINEMENTS & EXPANDED UTILITIES (MENGGENAPKAN 1000+ BARIS)
    -------------------------------------------------------------------------- */
@@ -1017,15 +1050,15 @@ img, svg {
 }
 .students {
     display: inline-block;
-    width: 40px;          
-    height: 40px;         
+    width: 30px;          
+    height: 30px;         
     background: url('dashboard/user.png') center/contain no-repeat;
     margin-bottom: -5px;  
 }
 .teacher {
     display: inline-block;
-    width: 40px;          
-    height: 40px;         
+    width: 30px;          
+    height: 30px;         
     background: url('dashboard/teacher.png') center/contain no-repeat;
     margin-bottom: -5px;  
 }
@@ -1083,6 +1116,7 @@ img, svg {
     height: 20px;         
     background: url('icons/dashboard/university.png') center/contain no-repeat;
     flex-shrink: 0;
+    opacity: 0.8;
 }
 .curriculum {
     display: inline-block;
@@ -1090,6 +1124,7 @@ img, svg {
     height: 20px;         
     background: url('icons/dashboard/open-book.png') center/contain no-repeat;
     flex-shrink: 0;
+    opacity: 0.8;
 }
 .status {
     display: inline-block;
@@ -1097,6 +1132,7 @@ img, svg {
     height: 20px;         
     background: url('icons/dashboard/graduate.png') center/contain no-repeat;
     flex-shrink: 0;
+    opacity: 0.8;
 }
 .zoom {
     display: inline-block;
@@ -1104,6 +1140,41 @@ img, svg {
     height: 20px;         
     background: url('icons/dashboard/zoom.png') center/contain no-repeat;
     flex-shrink: 0;
+}
+.connect {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/profile/link.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.calendar {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('gif/system-outline-45-clock-hover-pinch.gif') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.presence {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('gif/system-outline-56-file-text-hover-pinch.gif') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.disc {
+    position: absolute;       /* Mengunci posisi agar tetap ikut saat layar di-scroll. Ubah ke 'absolute' jika ingin ikut ter-scroll */
+    transform: translateY(-100%); /* Penyeimbang agar benar-benar pas di tengah vertikal */
+    transform: translateX(50%);
+    bottom: 0px;    
+right: 300px;          /* Menggeser setengah badan (20px / 2 = 10px) ke luar layar sebelah kanan */
+    z-index: 1;         /* Memastikan gambar berada di lapisan paling atas agar tidak tertutup elemen lain */
+    display: inline-block; /* Properti bawaan Anda */
+    width: 100%;     
+    height: 100%;         
+    background: url('gif/Student transparent.gif') center/contain no-repeat;
+    flex-shrink: 0;
+    opacity: 1;
 }
 /* Bar Chart Diagram Nilai (Khusus Siswa) */
 .grade-chart-container {
@@ -1474,11 +1545,12 @@ img, svg {
 /* icons */
 .icons{
   position: relative;
-  width: 30%;
-  height: 30%;
+  width: 35%;
+  height: 35%;
   flex-shrink: 0;
   z-index: 1; 
-  filter: brightness(1); 
+  filter: brightness(1);
+  opacity: 0.5; 
 }
 
 /* loaders */

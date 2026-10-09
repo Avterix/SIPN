@@ -81,7 +81,8 @@ while ($row = mysqli_fetch_assoc($q_all)) {
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png"> 
+   <style>
         .page-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.4s ease-out forwards; }
         .card-box { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr 120px; gap: 16px; align-items: end; }
