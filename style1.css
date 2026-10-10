@@ -5,9 +5,9 @@
     --card-bg: #ffffff;
     --text-main: #2d3436;
     --text-muted: #95a5a6;
-    --accent-green: #455a64;
-    --accent-purple: #165b6d;
-    --accent-dark: #2d3436;
+--accent-green: #334e3e;   /* Dark Muted Olive */
+    --accent-purple: #3f3f46;  /* Zinc Charcoal */
+    --accent-dark: #8b5cf6;
     --border-color: #e2e8f0;
     
     --primary-color: #6366f1;
@@ -34,7 +34,20 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-     zoom: 0.8;
+    zoom: 0.8;
+    overflow-x: hidden;
+}
+
+/* Terapkan ke html dan body sekaligus */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Cadangan untuk Firefox dan Edge/IE */
+html, body {
+    -ms-overflow-style: none;  /* IE dan Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 
 body {
@@ -642,9 +655,7 @@ img, svg {
 }
 
 .folder-card.bg-dark {
-    background: url('assets/151 to go please.jpeg') center/contain no-repeat ;
-    object-shrink: 0;
-    object-fit: fill;
+    background: url('assets/swiss design notebook.jpeg') center/cover no-repeat;
     color: #ffffff;
     animation: slideInCard 0.5s ease 0.4s both;
 }
@@ -1162,20 +1173,6 @@ img, svg {
     background: url('gif/system-outline-56-file-text-hover-pinch.gif') center/contain no-repeat;
     flex-shrink: 0;
 }
-.disc {
-    position: absolute;       /* Mengunci posisi agar tetap ikut saat layar di-scroll. Ubah ke 'absolute' jika ingin ikut ter-scroll */
-    transform: translateY(-100%); /* Penyeimbang agar benar-benar pas di tengah vertikal */
-    transform: translateX(50%);
-    bottom: 0px;    
-right: 300px;          /* Menggeser setengah badan (20px / 2 = 10px) ke luar layar sebelah kanan */
-    z-index: 1;         /* Memastikan gambar berada di lapisan paling atas agar tidak tertutup elemen lain */
-    display: inline-block; /* Properti bawaan Anda */
-    width: 100%;     
-    height: 100%;         
-    background: url('gif/Student transparent.gif') center/contain no-repeat;
-    flex-shrink: 0;
-    opacity: 1;
-}
 /* Bar Chart Diagram Nilai (Khusus Siswa) */
 .grade-chart-container {
     display: flex;
@@ -1214,7 +1211,7 @@ right: 300px;          /* Menggeser setengah badan (20px / 2 = 10px) ke luar lay
     transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .grade-bar-fill.bar-active {
-    background: linear-gradient(180deg, #78bc9b 0%, #5fa983 100%);
+    background: var(--accent-purple);
     box-shadow: 0 4px 10px rgba(120, 188, 155, 0.3);
 }
 
@@ -1587,4 +1584,252 @@ right: 300px;          /* Menggeser setengah badan (20px / 2 = 10px) ke luar lay
 #page-loader.loader-hidden {
     opacity: 0;
     visibility: hidden;
+}
+
+/* =========================================================
+   FIXED RESPONSIVE MOBILE SYSTEM (LOGO & BRAND ALWAYS VISIBLE)
+   ========================================================= */
+
+@media (max-width: 768px) {
+    /* 1. Reset Scale & Body Padding */
+    html {
+        zoom: 1 !important;
+    }
+
+    body {
+        padding: 10px !important;
+    }
+
+    .dashboard-container {
+        flex-direction: column !important;
+        width: 100% !important;
+        min-height: auto !important;
+    }
+
+    /* 2. SIDEBAR FIXED DI ATAS (NAVBAR MELAYANG) */
+    .sidebar,
+    .organic-sidebar {
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: calc(100% - 20px) !important;
+        max-height: 62px !important; /* Pas untuk Logo + Text tanpa terpotong */
+        padding: 10px 16px !important;
+        border-radius: 20px !important;
+        z-index: 99999 !important;
+        background-color: #14161b !important; /* Kunci warna gelap khas sidebar */
+        color: #ffffff !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        overflow: hidden !important;
+        /* TRANSISI ANIMASI MELUNCUR SMOOTH */
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s ease !important;
+        backdrop-filter: blur(12px);
+    }
+
+    /* 3. LOGO DAN TULISAN SIPN SELALU MUNCUL DARI AWAL (TANPA DI-HOVER) */
+    .sidebar-brand,
+    .organic-sidebar .sidebar-brand {
+        margin-bottom: 0 !important;
+        width: 100% !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        cursor: pointer;
+    }
+
+    .brand-logo,
+    .bubble-logo {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        background: #ffffff !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .brand-logo .home,
+    .bubble-logo .home,
+    .sidebar-brand .home {
+        display: inline-block !important;
+        width: 24px !important;
+        height: 24px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .sidebar-brand h2,
+    .organic-sidebar .sidebar-brand h2 {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 4. MENU & PROFIL (DILIPAT SAAT DEFAULT, FADE-IN SAAT EXPAND) */
+    .sidebar-menu,
+    .user-profile-mini,
+    .sidebar-footer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.3s ease 0.05s, visibility 0.3s ease !important;
+    }
+
+    .sidebar-menu {
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 16px !important;
+        padding-bottom: 12px !important;
+    }
+
+    .sidebar-menu li a {
+        padding: 10px 14px !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+        color: #94a3b8 !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .sidebar-menu li a:hover,
+    .sidebar-menu li a.active {
+        color: #ffffff !important;
+        background-color: var(--primary-color, #6366f1) !important;
+    }
+
+    .sidebar-menu li a span.menu-label {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+    }
+
+    /* 5. SMOOTH EXPAND DROPDOWN SAAT HOVER / TAP / FOCUS */
+    .sidebar:hover,
+    .sidebar:focus-within,
+    .sidebar:active,
+    .organic-sidebar:hover,
+    .organic-sidebar:focus-within,
+    .organic-sidebar:active {
+        max-height: 520px !important; /* Meluncur kebawah dengan smooth */
+        overflow-y: auto !important;
+        padding-bottom: 18px !important;
+        border-radius: 24px !important;
+    }
+
+    .sidebar:hover .sidebar-menu,
+    .sidebar:focus-within .sidebar-menu,
+    .sidebar:active .sidebar-menu,
+    .sidebar:hover .user-profile-mini,
+    .sidebar:focus-within .user-profile-mini,
+    .sidebar:active .user-profile-mini,
+    .sidebar:hover .sidebar-footer,
+    .sidebar:focus-within .sidebar-footer,
+    .sidebar:active .sidebar-footer,
+    .organic-sidebar:hover .sidebar-menu,
+    .organic-sidebar:focus-within .sidebar-menu {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .user-profile-mini {
+        display: flex !important;
+        margin-top: 14px !important;
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .user-meta-mini {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+    }
+
+    /* 6. MARGIN AMAN UNTUK ELEMEN PERTAMA (JARAK DARI NAVBAR FIXED) */
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 80px !important; /* Jarak aman agar elemen teratas tidak tertutup navbar */
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    /* 7. TOPBAR & BENTO CARDS RESPONSIF MOBILE */
+    .topbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .topbar-actions {
+        width: 100% !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .search-box {
+        width: 100% !important;
+    }
+
+    .search-box input,
+    .search-box input:focus {
+        width: 100% !important;
+    }
+
+    .hero-text h2 {
+        font-size: 22px !important;
+        margin-right: 0 !important;
+    }
+
+    .folders-slider {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .folder-card,
+    .folder-card2 {
+        width: 100% !important;
+        height: 140px !important;
+    }
+
+    .bottom-grid,
+    .asymmetric-widget-grid,
+    .student-widgets-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .card-badge,
+    .card-att,
+    .card {
+        width: 100% !important;
+        left: 0 !important;
+    }
+#page-loader {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important; /* Akurat 100% mengikuti tinggi layar HP */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+    }
 }

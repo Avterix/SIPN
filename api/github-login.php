@@ -5,13 +5,7 @@ session_start();
 
 require_once __DIR__ . "/config_github.php";
 
-$redirect_login   = "login.php";
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: " . $redirect_login);
-    exit;
-}
-
+// Set state OAuth untuk keamanan
 $_SESSION['oauth2state'] = bin2hex(random_bytes(16));
 
 $params = [

@@ -43,10 +43,20 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    
-    /* PENTING: Bersihkan properti zoom dari html karena merusak sumbu tengah */
+    overflow-x: hidden;
 }
 
+/* Terapkan ke html dan body sekaligus */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Cadangan untuk Firefox dan Edge/IE */
+html, body {
+    -ms-overflow-style: none;  /* IE dan Edge */
+    scrollbar-width: none;  /* Firefox */
+}
 body {
     background-color: #f4f5f8;
     color: var(--text-primary);
@@ -455,3 +465,16 @@ a {
     background: #2a2e39;
     border-radius: 9999px;
 }
+.google {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/login/google.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.github {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/login/github-white-icon.png') center/contain no-repeat;
+    flex-shrink: 0;
