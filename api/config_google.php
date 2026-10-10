@@ -5,13 +5,20 @@ define('GOOGLE_CLIENT_ID', '925370081719-opeco2afn67hklmtoqqmata15i2plrm2.apps.g
 define('GOOGLE_CLIENT_SECRET', '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');
 
 $host = $_SERVER['HTTP_HOST'];
+
 if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-
-    $redirect_url = "http://" . $host . "/School_Project/assignment/SIPN/api/google-callback.php";
+    // --- MODE LOCALHOST ---
+    $redirect_url = "http://" . $host . "/School_Project/assignment/SIPN/google-callback.php";
 } else {
-
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $redirect_url = $protocol . "://" . $host . "/api/google-callback.php"; 
+    // --- MODE VERCEL / PRODUCTION ---
+    // Cek HTTPS via proxy header Vercel
+    $is_https = (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') 
+             || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+             
+    $protocol = $is_https ? "https" : "http";
+    
+    // Sesuaikan path jika file google-callback.php ada di dalam folder /api/
+    $redirect_url = $protocol . "://" . $host . "/google-callback.php"; 
 }
 
 define('GOOGLE_REDIRECT_URI', $redirect_url);
