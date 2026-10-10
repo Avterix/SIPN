@@ -18,10 +18,11 @@ $foto_db      = $user_data['foto'] ?? '';
 $gh_connected = !empty($user_data['github_connected']) && $user_data['github_connected'] == 1;
 $gh_avatar    = $user_data['github_avatar'] ?? '';
 
-// Hirarki Foto Profil (LOGIKA DIPISAH TOTAL)
+
+// Hirarki Foto Profil (Fix Google Avatar & URL CDN)
 $avatar_src = '';
 if (!empty($foto_db)) {
-    if (strpos($foto_db, 'data:image') === 0 || filter_var($foto_db, FILTER_VALIDATE_URL)) {
+    if (strpos($foto_db, 'data:image') === 0 || strpos($foto_db, 'http://') === 0 || strpos($foto_db, 'https://') === 0) {
         $avatar_src = $foto_db;
     } elseif (file_exists('uploads/avatars/' . $foto_db)) {
         $avatar_src = 'uploads/avatars/' . $foto_db;
@@ -166,17 +167,16 @@ if ($role === 'siswa') {
     </div>
 
     <div class="user-profile-mini">
-        <?php if (!empty($avatar_src)): ?>
-            <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" style="object-fit: cover;">
-        <?php else: ?>
-            <div class="user-avatar-initial"><?= strtoupper(substr($username, 0, 1)); ?></div>
-        <?php endif; ?>
-        <div class="user-meta-mini">
-            <span class="user-name"><?= htmlspecialchars($username); ?></span>
-            <span class="user-role-badge"><?= htmlspecialchars($role); ?></span>
-        </div>
+    <?php if (!empty($avatar_src)): ?>
+        <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" style="object-fit: cover;" referrerpolicy="no-referrer">
+    <?php else: ?>
+        <div class="user-avatar-initial"><?= strtoupper(substr($username, 0, 1)); ?></div>
+    <?php endif; ?>
+    <div class="user-meta-mini">
+        <span class="user-name"><?= htmlspecialchars($username); ?></span>
+        <span class="user-role-badge"><?= htmlspecialchars($role); ?></span>
     </div>
-
+</div>
     <ul class="sidebar-menu">
         <li><a href="dashboard.php" class="active"><i class="dashboard"></i> <span class="menu-label">Dashboard</span></a></li>
         
@@ -228,6 +228,9 @@ if ($role === 'siswa') {
                     </div>
                     <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
                     <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
+		    <button type="button" id="themeToggleBtn" class="icon-btn" title="Switch Theme">
+  			  <i class="fa-solid fa-moon" id="themeIcon"></i>
+			</button>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>

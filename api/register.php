@@ -80,8 +80,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div class="social-auth-grid">
-                <button type="button" class="social-btn"><i class="fa-brands fa-google"></i></button>
-                <button type="button" class="social-btn"><i class="fa-brands fa-github"></i></button>
+                <button type="button" class="social-btn">
+ 		 <a href="google-login.php" class="btn-google">
+   		 <i class="google"></i>
+ 		 </a>
+		</button>
+                <button type="button" class="social-btn">
+ 		 <a href="github-login.php" class="btn-github">
+   		 <i class="github"></i>
+ 		 </a>
+		</button>
             </div>
 
             <div class="auth-divider"><span>or</span></div>

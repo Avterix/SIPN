@@ -9,3 +9,8 @@ blue (dark)
 normal
 --accent-green: #8bb6a2;
 --accent-purple: #4d4e8e;
+
+clean
+:root {
+    --accent-green: #52796f;   /* Muted Sage */
+    --accent-purple: #475569;  /* Slate Blue Gray */
