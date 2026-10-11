@@ -1,0 +1,54 @@
+# ----------------------------------------------------------------------
+# 1. KEAMANAN & PRIVASI DIREKTORI
+# ----------------------------------------------------------------------
+# Matikan directory listing biar orang gak bisa ngintip isi folder
+Options -Indexes
+
+# Sembunyikan informasi server
+ServerSignature Off
+
+# Blokir akses langsung ke file sensitif (.env, .git, .sql, .json, dll)
+<FilesMatch "\.(env|log|git|sql|json|md)$">
+    Require all denied
+</FilesMatch>
+
+# Security Headers dasar untuk mencegah clickjacking & XSS
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 2. KOMPRESI GZIP / DEFLATE (Memangkas ukuran HTML, CSS, JS, & JSON)
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. BROWSER CACHING (Nyimpan ikon & aset statis di browser visitor)
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+
+    # Gambar & Ikon di folder icons/ & elements/
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # CSS & JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 4. ENCODING DEFAULT
+# ----------------------------------------------------------------------
+AddDefaultCharset UTF-8

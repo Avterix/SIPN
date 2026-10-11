@@ -154,7 +154,7 @@ if ($role === 'siswa') {
 <body>
 <?php include "loader.php"; ?>
 <div class="video">
-    <video autoplay muted playsinline id="bg-video">
+    <video autoplay muted loop playsinline id="bg-video">
         <source src="<?= $base_url; ?>/background/main_bg.mp4" type="video/mp4">
         Browser Anda tidak mendukung tag video.
     </video>
@@ -228,8 +228,6 @@ if ($role === 'siswa') {
                     </div>
                     <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
                     <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
-		    <button type="button" id="themeToggleBtn" class="icon-btn" title="Switch Theme">
-  			  <i class="fa-solid fa-moon" id="themeIcon"></i>
 			</button>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>

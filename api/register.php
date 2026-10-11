@@ -65,7 +65,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-
+<div class="video">
+    <video autoplay muted playsinline id="bg-video">
+        <source src="<?= $base_url; ?>/background/auth.mp4" type="video/mp4">
+        Browser Anda tidak mendukung tag video.
+    </video>
     <div class="auth-wrapper">
         <!-- SISI KIRI: FORM REGISTER -->
         <div class="auth-form-side">

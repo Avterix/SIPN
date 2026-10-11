@@ -5,8 +5,8 @@ session_start();
 
 require_once __DIR__ . "/config_github.php";
 
-$redirect_profile = "../profile.php";
-$redirect_login   = "../login.php";
+$redirect_profile = "profile.php";
+$redirect_login   = "login.php";
 
 // Validasi state OAuth
 if (empty($_GET['code']) || empty($_GET['state']) || ($_GET['state'] !== ($_SESSION['oauth2state'] ?? ''))) {
@@ -132,7 +132,7 @@ if (isset($github_user['id'])) {
             $_SESSION['role']     = strtolower($u['role']);
             $_SESSION['foto']     = $u['foto'];
 
-            header("Location: ../dashboard.php");
+            header("Location: dashboard.php");
             exit;
         } else {
             // AKUN BELUM ADA -> SIMPAN DULU DI SESSION LALU SURUH ISI FORM COMPLETE SISWA
@@ -144,7 +144,7 @@ if (isset($github_user['id'])) {
                 'email'           => $gh_email
             ];
 
-            header("Location: ../complete-github-reg.php");
+            header("Location: complete-github-reg.php");
             exit;
         }
     }

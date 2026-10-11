@@ -1,6 +1,18 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// 1. RECOVER SESSION ID DARI PARAMETER STATE (Memaksa session terhubung kembali)
+$state_param = $_GET['state'] ?? '';
+if (strpos($state_param, '---') !== false) {
+    $parts = explode('---', $state_param);
+    $orig_sess_id = $parts[1] ?? '';
+    if (!empty($orig_sess_id)) {
+        session_id($orig_sess_id);
+    }
+}
+
+ini_set('session.cookie_path', '/');
 session_start();
 
 require_once __DIR__ . "/config_google.php";
@@ -8,13 +20,14 @@ require_once __DIR__ . "/config_google.php";
 if (empty($_GET['code']) || empty($_GET['state']) || ($_GET['state'] !== ($_SESSION['google_oauth_state'] ?? ''))) {
     $_SESSION['msg_type'] = "error";
     $_SESSION['msg_text'] = "Gagal memverifikasi request Login Google.";
+    session_write_close();
     header("Location: login.php");
     exit;
 }
 
 $code = $_GET['code'];
 
-// 1. Tukar Kode Auth dengan Access Token
+// 2. Tukar Kode Auth dengan Access Token
 $ch = curl_init('https://oauth2.googleapis.com/token');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -35,11 +48,12 @@ $access_token = $response['access_token'] ?? null;
 if (!$access_token) {
     $_SESSION['msg_type'] = "error";
     $_SESSION['msg_text'] = "Gagal mendapatkan Access Token Google.";
+    session_write_close();
     header("Location: login.php");
     exit;
 }
 
-// 2. Ambil Profil User dari API Google
+// 3. Ambil Profil User dari API Google
 $ch = curl_init('https://www.googleapis.com/oauth2/v2/userinfo');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $access_token]);
@@ -62,15 +76,18 @@ if (!empty($google_user['id'])) {
         
         mysqli_query($koneksi, "UPDATE users SET google_id = '$g_id', google_email = '$g_email' WHERE id = '{$user['id']}'");
 
-        $_SESSION['user_id']  = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role']     = strtolower($user['role']);
-        $_SESSION['foto']     = !empty($user['foto']) ? $user['foto'] : $g_avatar;
+        $_SESSION['user_id']   = $user['id'];
+        $_SESSION['username']  = $user['username'];
+        $_SESSION['role']      = strtolower($user['role']);
+        $_SESSION['foto']      = !empty($user['foto']) ? $user['foto'] : $g_avatar;
+        $_SESSION['login']     = true;
+        $_SESSION['logged_in'] = true;
 
+        session_write_close();
         header("Location: dashboard.php");
         exit;
     } else {
-        // AKUN BELUM ADA -> SIMPAN DI SESSION TEMPORARY & PILIH ROLE
+        // AKUN BELUM ADA -> SIMPAN DI SESSION TEMPORARY
         $base_username  = strtolower(explode('@', $g_email)[0]);
         $clean_username = preg_replace('/[^a-z0-9_]/', '', $base_username);
 
@@ -82,12 +99,14 @@ if (!empty($google_user['id'])) {
             'avatar'       => $g_avatar
         ];
 
+        session_write_close();
         header("Location: complete-google-reg.php");
         exit;
     }
 } else {
     $_SESSION['msg_type'] = "error";
     $_SESSION['msg_text'] = "Gagal mengambil data profil dari Google.";
+    session_write_close();
     header("Location: login.php");
     exit;
 }

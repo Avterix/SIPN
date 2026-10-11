@@ -1,11 +1,14 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+ini_set('session.cookie_path', '/');
 session_start();
 
-include "koneksi.php";
+require_once __DIR__ . "/koneksi.php";
 
 if (!isset($_SESSION['temp_google'])) {
+    session_write_close();
     header("Location: login.php");
     exit;
 }
@@ -15,6 +18,7 @@ $msg_error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration'])) {
     $username = mysqli_real_escape_string($koneksi, trim($_POST['username']));
+    $password = trim($_POST['password']);
     $nis      = mysqli_real_escape_string($koneksi, trim($_POST['nis']));
     $nama     = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
     $kelas    = mysqli_real_escape_string($koneksi, trim($_POST['kelas_gabungan']));
@@ -24,18 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
     $g_email  = $temp['google_email'];
     $g_avatar = $temp['avatar'];
 
-    // 1. Cek ketersediaan username
+    // 1. Cek ketersediaan username & panjang password
     $q_chk = mysqli_query($koneksi, "SELECT id FROM users WHERE username = '$username'");
     if ($q_chk && mysqli_num_rows($q_chk) > 0) {
         $msg_error = "Username '$username' sudah dipakai, silakan pilih username lain.";
+    } elseif (strlen($password) < 6) {
+        $msg_error = "Password minimal 6 karakter!";
     } else {
-        $random_pass = password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT);
+        $hashed_pass = password_hash($password, PASSWORD_BCRYPT);
 
         // 2. Gunakan Transaction untuk Input ke 'users' dan 'siswa'
         mysqli_begin_transaction($koneksi);
         try {
             $sql_ins = "INSERT INTO users (username, password, role, foto, google_id, google_email) 
-                        VALUES ('$username', '$random_pass', 'siswa', '$g_avatar', '$g_id', '$g_email')";
+                        VALUES ('$username', '$hashed_pass', 'siswa', '$g_avatar', '$g_id', '$g_email')";
             mysqli_query($koneksi, $sql_ins);
             $new_user_id = mysqli_insert_id($koneksi);
 
@@ -47,13 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
 
             unset($_SESSION['temp_google']);
 
-            $_SESSION['user_id']  = $new_user_id;
-            $_SESSION['username'] = $username;
-            $_SESSION['role']     = 'siswa';
-            $_SESSION['foto']     = $g_avatar;
+            // Set Session Login Lengkap
+            $_SESSION['user_id']   = $new_user_id;
+            $_SESSION['username']  = $username;
+            $_SESSION['role']      = 'siswa';
+            $_SESSION['foto']      = $g_avatar;
+            $_SESSION['login']     = true;
+            $_SESSION['logged_in'] = true;
 
             $_SESSION['msg_type'] = "success";
             $_SESSION['msg_text'] = "Pendaftaran via Google berhasil! Selamat datang.";
+            
+            session_write_close();
             header("Location: dashboard.php");
             exit;
         } catch (Exception $e) {
@@ -69,10 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complete Setup - SIPN</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/auth-style.css">
+    <link rel="stylesheet" href="<?php echo $base_url ?? ''; ?>/auth-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
+    <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
     
     <style>
         *, *::before, *::after, body, input, button, select, label, h1, h2, h3, h4, p, span, div {
@@ -164,10 +175,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
                 <div class="auth-alert"><?= htmlspecialchars($msg_error); ?></div>
             <?php endif; ?>
 
-            <form action="complete-google-reg.php" method="POST" class="auth-form" id="googleRegForm">
+            <form action="" method="POST" class="auth-form" id="googleRegForm">
                 
                 <div class="input-group">
                     <input type="text" name="username" class="auth-input" value="<?= htmlspecialchars($temp['username']); ?>" placeholder="Username" required autocomplete="off">
+                </div>
+
+                <!-- INPUT PASSWORD -->
+                <div class="input-group">
+                    <input type="password" name="password" class="auth-input" placeholder="Create Password (min. 6 chars)" required>
                 </div>
 
                 <div class="input-group">

@@ -35,7 +35,7 @@
 *, *::before, *::after {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Ini sudah bagus */
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -43,7 +43,7 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    overflow-x: hidden;
+    overflow-y: hidden; /* Ubah ke hidden total agar tidak ada scrollbar liar */
 }
 
 /* Terapkan ke html dan body sekaligus */
@@ -56,22 +56,45 @@ body::-webkit-scrollbar {
 html, body {
     -ms-overflow-style: none;  /* IE dan Edge */
     scrollbar-width: none;  /* Firefox */
+    height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available; /* Dukungan safari mobile/desktop modern */
+    margin: 0;
+    padding: 0;
 }
+
 body {
     background-color: #f4f5f8;
     color: var(--text-primary);
-    min-height: 100vh;
-    width: 100vw;
+    width: 100%; 
     
-    /* Sistem perataan tengah mutlak menggunakan Flexbox */
-    display: flex;
-    align-items: center;      /* Vertikal tengah */
-    justify-content: center;   /* Horizontal tengah */
+    /* FIX UTAMA: Ganti Flexbox menjadi Grid */
+    display: grid;
+    place-items: center; /* Mengunci sumbu X dan Y tepat di tengah matematika layar */
+    margin: 0 auto;
     padding: 24px;
-    overflow-x: hidden;
+    overflow: hidden; 
     -webkit-font-smoothing: antialiased;
 }
 
+/* background */
+.video {
+  position: absolute;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#bg-video {
+    position: fixed;        
+    top: 0;
+    left: 0;
+    width: 100%; /* Gunakan 100% agar sinkron dengan body */          
+    height: 100vh;                 
+    z-index: -9999;  
+    object-fit: cover; /* Ganti ke cover agar video tidak gepeng/terdistorsi */     
+    pointer-events: none;    
+}
 
 a {
     text-decoration: none;
@@ -85,34 +108,38 @@ a {
 .auth-wrapper {
     display: flex;
     width: 1320px;
-    max-width: 95%;     /* Supaya tetap aman dan responsif di monitor kecil */
-    max-height: 110vh;   
+    max-width: 100%;     
+    
+    /* Gunakan vmin agar ukurannya lebih adaptif terhadap aspek rasio layar saat fullscreen */
+    min-height: 100vh;   
+    
     background-color: var(--auth-bg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-deep);
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    position: relative;
     
-    /* SOLUSI TERBAIK: Efek menyusut 80% (0.8) dipasang langsung di sini 
-       Menggunakan transform-origin agar menyusut seimbang dari titik tengah */
-    transform: scale(0.9);
+    /* Hapus top:0 dan left:0 karena ini bukan absolute positioning */
+    position: relative; 
+    
+    /* Gunakan properti scale modern agar tidak merusak koordinat grid pembungkusnya */
+    scale: 0.8;
     transform-origin: center center; 
     flex-shrink: 0;
-
+    margin: 0 auto;
     animation: authEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* SINKRONISASI ANIMASI: 
-   Sesuaikan target akhir animasinya (100%) ke scale(0.8) agar efek zoom tidak hilang */
+/* ANIMASI: Sekarang hanya fokus mengurus transisi opacity dan pergeseran Y semu,
+   tanpa menimpa properti skala utama */
 @keyframes authEntrance {
     0% {
         opacity: 0;
-        transform: scale(0.75) translateY(20px);
+        transform: translateY(30px);
     }
     100% {
         opacity: 1;
-        transform: scale(0.9) translateY(0); /* Kunci di skala 0.8 sesuai kebutuhan Anda */
+        transform: translateY(0); 
     }
 }
 /* --------------------------------------------------------------------------
@@ -374,7 +401,7 @@ a {
 .cell-image-2 {
     grid-column: span 2;
     grid-row: span 2;
-    background: url('assets/_ (35).jpeg') center/cover no-repeat;
+    background: url('assets/_ (43).jpeg') center/cover no-repeat;
 }
 
 .cell-accent-yellow {
@@ -478,3 +505,4 @@ a {
     height: 20px;         
     background: url('icons/login/github-white-icon.png') center/contain no-repeat;
     flex-shrink: 0;
+}

@@ -5,8 +5,8 @@
     --card-bg: #ffffff;
     --text-main: #2d3436;
     --text-muted: #95a5a6;
---accent-green: #334e3e;   /* Dark Muted Olive */
-    --accent-purple: #3f3f46;  /* Zinc Charcoal */
+    --accent-green: #11131a;
+    --accent-purple: #ff3b3b;
     --accent-dark: #8b5cf6;
     --border-color: #e2e8f0;
     
@@ -262,7 +262,7 @@ img, svg {
 
 .user-role-badge {
     font-size: 9px;
-    color: var(--accent-green);
+    color: #888888;
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -903,57 +903,168 @@ img, svg {
         flex-direction: column;
         height: auto;
     }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        padding: 20px;
+        /* 2. SIDEBAR FIXED DI ATAS (NAVBAR MELAYANG) */
+    .sidebar,
+    .organic-sidebar {
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: calc(100% - 20px) !important;
+        max-height: 62px !important; /* Pas untuk Logo + Text tanpa terpotong */
+        padding: 10px 16px !important;
+        border-radius: 20px !important;
+        z-index: 99999 !important;
+        background-color: #14161b !important; /* Kunci warna gelap khas sidebar */
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        overflow: hidden !important;
+        /* TRANSISI ANIMASI MELUNCUR SMOOTH */
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s ease !important;
     }
+
+    /* 3. LOGO DAN TULISAN SIPN SELALU MUNCUL DARI AWAL (TANPA DI-HOVER) */
+    .sidebar-brand,
+    .organic-sidebar .sidebar-brand {
+        margin-bottom: 0 !important;
+        width: 100% !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        cursor: pointer;
+    }
+
+    .brand-logo,
+    .bubble-logo {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        background: #ffffff !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .brand-logo .home,
+    .bubble-logo .home,
+    .sidebar-brand .home {
+        display: inline-block !important;
+        width: 24px !important;
+        height: 24px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .sidebar-brand h2,
+    .organic-sidebar .sidebar-brand h2 {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 4. MENU & PROFIL (DILIPAT SAAT DEFAULT, FADE-IN SAAT EXPAND) */
+    .sidebar-menu,
+    .user-profile-mini,
+    .sidebar-footer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.3s ease 0.05s, visibility 0.3s ease !important;
+    }
+
     .sidebar-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 16px !important;
+        padding-bottom: 12px !important;
     }
-    .bottom-grid {
-        grid-template-columns: 1fr;
+
+    .sidebar-menu li a {
+        padding: 10px 14px !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+        color: #94a3b8 !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        transition: all 0.2s ease !important;
     }
-    .folders-slider {
-        flex-wrap: wrap;
+
+    .sidebar-menu li a:hover,
+    .sidebar-menu li a.active {
+        color: #ffffff !important;
+        background-color: var(--primary-color, #6366f1) !important;
+    }
+
+    .sidebar-menu li a span.menu-label {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+    }
+
+    /* 5. SMOOTH EXPAND DROPDOWN SAAT HOVER / TAP / FOCUS */
+    .sidebar:hover,
+    .sidebar:focus-within,
+    .sidebar:active,
+    .organic-sidebar:hover,
+    .organic-sidebar:focus-within,
+    .organic-sidebar:active {
+        max-height: 520px !important; /* Meluncur kebawah dengan smooth */
+        overflow-y: auto !important;
+        padding-bottom: 18px !important;
+        border-radius: 24px !important;
+    }
+
+    .sidebar:hover .sidebar-menu,
+    .sidebar:focus-within .sidebar-menu,
+    .sidebar:active .sidebar-menu,
+    .sidebar:hover .user-profile-mini,
+    .sidebar:focus-within .user-profile-mini,
+    .sidebar:active .user-profile-mini,
+    .sidebar:hover .sidebar-footer,
+    .sidebar:focus-within .sidebar-footer,
+    .sidebar:active .sidebar-footer,
+    .organic-sidebar:hover .sidebar-menu,
+    .organic-sidebar:focus-within .sidebar-menu {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .user-profile-mini {
+        display: flex !important;
+        margin-top: 14px !important;
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .user-meta-mini {
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+    }
+
+    /* 6. MARGIN AMAN UNTUK ELEMEN PERTAMA (JARAK DARI NAVBAR FIXED) */
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 80px !important; /* Jarak aman agar elemen teratas tidak tertutup navbar */
+        padding: 0 !important;
+        width: 100% !important;
     }
 }
 
-@media (max-width: 720px) {
-/* Sidebar Fixed di Kiri */
-.sidebar {
-    position: fixed;
-    top: 350px;
-    left: 20px;
-    bottom: 20px;
-    width: 80px; /* Lebar default compact (cukup untuk logo & icon) */
-    height: 50vh;
-    background-color: #14161b;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    padding: 18px 18px;
-    user-select: none;
-    z-index: 9999;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-/* Saat di-hover, sidebar melebar */
-.sidebar:hover {
-    width: 270px;
-    }
-    .sidebar-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-}
 /* --------------------------------------------------------------------------
    9. EXTENSIVE STRUCTURAL REFINEMENTS & EXPANDED UTILITIES (MENGGENAPKAN 1000+ BARIS)
    -------------------------------------------------------------------------- */
@@ -1105,7 +1216,7 @@ img, svg {
     display: inline-block;
     width: 20px;     
     height: 20px;         
-    background: url('icons/dashboard/profile.png') center/contain no-repeat;
+    background: url('icons/dashboard/profile.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 /* Ikon FontAwesome lain di menu sidebar */
@@ -1125,7 +1236,7 @@ img, svg {
     display: inline-block;
     width: 20px; 
     height: 20px;         
-    background: url('icons/dashboard/university.png') center/contain no-repeat;
+    background: url('icons/dashboard/university.webp') center/contain no-repeat;
     flex-shrink: 0;
     opacity: 0.8;
 }
@@ -1133,7 +1244,7 @@ img, svg {
     display: inline-block;
     width: 20px;
     height: 20px;         
-    background: url('icons/dashboard/open-book.png') center/contain no-repeat;
+    background: url('icons/dashboard/open-book.webp') center/contain no-repeat;
     flex-shrink: 0;
     opacity: 0.8;
 }
@@ -1141,7 +1252,7 @@ img, svg {
     display: inline-block;
     width: 20px;
     height: 20px;         
-    background: url('icons/dashboard/graduate.png') center/contain no-repeat;
+    background: url('icons/dashboard/graduate.webp') center/contain no-repeat;
     flex-shrink: 0;
     opacity: 0.8;
 }
@@ -1149,14 +1260,14 @@ img, svg {
     display: inline-block;
     width: 20px;
     height: 20px;         
-    background: url('icons/dashboard/zoom.png') center/contain no-repeat;
+    background: url('icons/dashboard/zoom.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 .connect {
     display: inline-block;
     width: 15px;     
     height: 15px;         
-    background: url('icons/profile/link.png') center/contain no-repeat;
+    background: url('icons/profile/link.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 .calendar {
@@ -1620,12 +1731,10 @@ img, svg {
         z-index: 99999 !important;
         background-color: #14161b !important; /* Kunci warna gelap khas sidebar */
         color: #ffffff !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
         overflow: hidden !important;
         /* TRANSISI ANIMASI MELUNCUR SMOOTH */
         transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s ease !important;
-        backdrop-filter: blur(12px);
     }
 
     /* 3. LOGO DAN TULISAN SIPN SELALU MUNCUL DARI AWAL (TANPA DI-HOVER) */
