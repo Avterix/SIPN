@@ -7,7 +7,6 @@ session_start();
 
 require_once __DIR__ . "/koneksi.php";
 
-// Validasi apakah user datang dari alur callback GitHub yang sah
 if (!isset($_SESSION['temp_github'])) {
     session_write_close();
     header("Location: login.php");
@@ -27,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
 
     $gh_id       = $temp['github_id'];
     $gh_username = $temp['github_username'];
-    $gh_email    = $temp['email'];
     $gh_avatar   = $temp['github_avatar'];
+    $gh_email    = $temp['email'] ?? '';
 
     // 1. Cek ketersediaan username & panjang password
     $q_chk = mysqli_query($koneksi, "SELECT id FROM users WHERE username = '$username'");
@@ -39,12 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
     } else {
         $hashed_pass = password_hash($password, PASSWORD_BCRYPT);
 
-        // 2. Gunakan Transaction untuk konsistensi data 'users' dan 'siswa'
+        // 2. Gunakan Transaction untuk Input ke 'users' dan 'siswa'
         mysqli_begin_transaction($koneksi);
         try {
-            // Memasukkan data ke tabel users menggunakan kolom bernuansa GitHub
-            $sql_ins = "INSERT INTO users (username, password, role, foto, github_id, github_username, github_connected) 
-                        VALUES ('$username', '$hashed_pass', 'siswa', '$gh_avatar', '$gh_id', '$gh_username', 1)";
+            $sql_ins = "INSERT INTO users (username, password, role, foto, github_id, github_username, github_avatar, github_connected, email) 
+                        VALUES ('$username', '$hashed_pass', 'siswa', '$gh_avatar', '$gh_id', '$gh_username', '$gh_avatar', 1, '$gh_email')";
             mysqli_query($koneksi, $sql_ins);
             $new_user_id = mysqli_insert_id($koneksi);
 
@@ -54,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
 
             mysqli_commit($koneksi);
 
-            // Bersihkan data temporary
             unset($_SESSION['temp_github']);
 
             // Set Session Login Lengkap
@@ -79,14 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Setup GitHub - SIPN</title>
+    <title>Complete Setup - GitHub SIPN</title>
     <link rel="stylesheet" href="<?php echo $base_url ?? ''; ?>/auth-style.css">
-    <link href="https://googleapis.com" rel="stylesheet">
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
     
     <style>
@@ -166,12 +163,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
                     <img src="<?= htmlspecialchars($temp['github_avatar']); ?>" class="github-avatar" alt="GitHub Avatar" referrerpolicy="no-referrer">
                 <?php else: ?>
                     <div class="github-avatar-fallback">
-                        <?= strtoupper(substr($temp['github_username'], 0, 1)); ?>
+                        <?= strtoupper(substr($temp['nama_lengkap'] ?? $temp['github_username'], 0, 1)); ?>
                     </div>
                 <?php endif; ?>
                 <div class="github-user-info">
                     <h4><?= htmlspecialchars($temp['nama_lengkap']); ?> (@<?= htmlspecialchars($temp['github_username']); ?>)</h4>
-                    <p><?= !empty($temp['email']) ? htmlspecialchars($temp['email']) : 'No public email provided'; ?></p>
+                    <p><?= htmlspecialchars(!empty($temp['email']) ? $temp['email'] : 'Public email not visible'); ?></p>
                 </div>
             </div>
 
@@ -227,3 +224,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
                     <select name="jenis_kelamin" class="auth-input select-custom" required>
                         <option value="" disabled selected>Select Gender</option>
                         <option value="L" style="background:#18181b; color:#fff;">Male (Laki-laki)</option>
+                        <option value="P" style="background:#18181b; color:#fff;">Female (Perempuan)</option>
+                    </select>
+                </div>
+
+                <button type="submit" name="submit_registration" class="submit-btn" onclick="return validasiKelas()">
+                    <span>Complete Pendaftaran</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer-link">
+                Wrong account? <a href="login.php">Back to Sign In</a>
+            </div>
+        </div>
+
+        <!-- SISI KANAN: BENTO GRID VISUAL -->
+        <div class="auth-visual-side">
+            <div class="bento-grid">
+                <div class="bento-cell cell-image-1"></div>
+                <div class="bento-cell cell-image-2"></div>
+                <div class="bento-cell cell-accent-yellow">
+                    <h3>Maximum Customization</h3>
+                    <p>Tailor every aspect of your 3D object to your specifications.</p>
+                    <div class="bento-icon-corner"><i class="fa-solid fa-cube"></i></div>
+                </div>
+                <div class="bento-cell cell-accent-green"></div>
+                <div class="bento-cell cell-text-dark">
+                    <h4>Fast Generation</h4>
+                    <p>Create unique 3D objects in seconds.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIKA KELAS & JURUSAN -->
+    <script>
+        function tampilkanJurusan() {
+            var tingkat = document.getElementById("tingkat_kelas").value;
+            var jurusanContainer = document.getElementById("jurusan_container");
+            var jurusan = document.getElementById("jurusan");
+            
+            if (tingkat !== "") {
+                jurusanContainer.style.display = "block";
+                jurusan.required = true;
+            } else {
+                jurusanContainer.style.display = "none";
+                jurusan.required = false;
+            }
+            
+            jurusan.value = "";
+            document.getElementById("kelas_gabungan").value = "";
+        }
+
+        function gabungKelas() {
+            var tingkat = document.getElementById("tingkat_kelas").value;
+            var jurusan = document.getElementById("jurusan").value;
+            
+            if (tingkat !== "" && jurusan !== "") {
+                document.getElementById("kelas_gabungan").value = tingkat + " " + jurusan;
+            }
+        }
+
+        function validasiKelas() {
+            var kelasGabungan = document.getElementById("kelas_gabungan").value;
+            if (kelasGabungan === "") {
+                alert("Harap pilih Tingkat Kelas dan Jurusan secara lengkap!");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

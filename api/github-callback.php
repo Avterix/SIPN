@@ -1,6 +1,9 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// SET COOKIE PATH DI PALING ATAS SEBELUM SESSION_START (PENTING!)
+ini_set('session.cookie_path', '/');
 session_start();
 
 require_once __DIR__ . "/koneksi.php"; 
@@ -121,26 +124,29 @@ if (isset($github_user['id'])) {
         header("Location: " . $redirect_profile);
         exit;
 
-        } else {
+    } else {
         // --- CABANG B: USER BELUM LOGIN (LOGIN / REGISTER VIA GITHUB) ---
-        $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE github_id = '$gh_id'");
+        // Cek berdasarkan github_id ATAU email (jika ada)
+        $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE github_id = '$gh_id' OR (email = '$gh_email' AND '$gh_email' != '')");
 
         if ($q_user && mysqli_num_rows($q_user) > 0) {
-            // AKUN SUDAH ADA DI DATABASE -> LANGSUNG LOGIN
+            // AKUN SUDAH ADA DI DATABASE -> UPDATE JIKA BELUM TERHUBUNG & LANGSUNG LOGIN
             $u = mysqli_fetch_assoc($q_user);
-            $_SESSION['user_id']  = $u['id'];
-            $_SESSION['username'] = $u['username'];
-            $_SESSION['role']     = strtolower($u['role']);
-            $_SESSION['foto']     = $u['foto'];
-            
-            // --- FIX MASALAH 1: Tambahkan flag login agar diizinkan masuk dashboard ---
+
+            if (empty($u['github_id'])) {
+                mysqli_query($koneksi, "UPDATE users SET github_id = '$gh_id', github_username = '$gh_username', github_avatar = '$gh_avatar', github_connected = 1 WHERE id = '{$u['id']}'");
+            }
+
+            $_SESSION['user_id']   = $u['id'];
+            $_SESSION['username']  = $u['username'];
+            $_SESSION['role']      = strtolower($u['role']);
+            $_SESSION['foto']      = $u['foto'];
             $_SESSION['login']     = true;
             $_SESSION['logged_in'] = true;
 
             $_SESSION['msg_type'] = "success";
             $_SESSION['msg_text'] = "Selamat datang kembali, @" . $u['username'] . "!";
 
-            // --- FIX MASALAH 2: Pastikan session tertulis sempurna di cloud/Vercel ---
             session_write_close();
             header("Location: dashboard.php");
             exit;
@@ -159,7 +165,6 @@ if (isset($github_user['id'])) {
             exit;
         }
     }
-
 
 } else {
     $_SESSION['msg_type'] = "error";
