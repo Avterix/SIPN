@@ -121,22 +121,31 @@ if (isset($github_user['id'])) {
         header("Location: " . $redirect_profile);
         exit;
 
-    } else {
+        } else {
         // --- CABANG B: USER BELUM LOGIN (LOGIN / REGISTER VIA GITHUB) ---
         $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE github_id = '$gh_id'");
 
         if ($q_user && mysqli_num_rows($q_user) > 0) {
-            // AKUN SUDAH ADA DIBATABASE -> LANGSUNG LOGIN
+            // AKUN SUDAH ADA DI DATABASE -> LANGSUNG LOGIN
             $u = mysqli_fetch_assoc($q_user);
             $_SESSION['user_id']  = $u['id'];
             $_SESSION['username'] = $u['username'];
             $_SESSION['role']     = strtolower($u['role']);
             $_SESSION['foto']     = $u['foto'];
+            
+            // --- FIX MASALAH 1: Tambahkan flag login agar diizinkan masuk dashboard ---
+            $_SESSION['login']     = true;
+            $_SESSION['logged_in'] = true;
 
+            $_SESSION['msg_type'] = "success";
+            $_SESSION['msg_text'] = "Selamat datang kembali, @" . $u['username'] . "!";
+
+            // --- FIX MASALAH 2: Pastikan session tertulis sempurna di cloud/Vercel ---
+            session_write_close();
             header("Location: dashboard.php");
             exit;
         } else {
-            // AKUN BELUM ADA -> SIMPAN DULU DI SESSION LALU SURUH ISI FORM COMPLETE SISWA
+            // AKUN BELUM ADA -> SIMPAN DI SESSION UNTUK MELENGKAPI PROFIL SISWA
             $_SESSION['temp_github'] = [
                 'github_id'       => $gh_id,
                 'github_username' => $gh_username,
@@ -145,10 +154,12 @@ if (isset($github_user['id'])) {
                 'email'           => $gh_email
             ];
 
+            session_write_close();
             header("Location: complete-github-reg.php");
             exit;
         }
     }
+
 
 } else {
     $_SESSION['msg_type'] = "error";
