@@ -603,9 +603,14 @@ img, svg {
     overflow: hidden;
     animation: slideInCard 0.5s ease 0.1s both;
 }
+.folder-card2:hover {
+    transform: translateY(-80px) scale(1.02);
+}
 
 .dashed-circle:hover {
     transform: translateY(-8px) scale(1.02);
+    transform: scale(2); 
+    transition: var(--transition-normal);
 }
 .folder-card:nth-child(1) { animation: slideInCard 0.5s ease 0.1s both; }
 .folder-card:nth-child(2) { animation: slideInCard 0.5s ease 0.2s both; }
@@ -623,25 +628,26 @@ img, svg {
     justify-content: center;
     align-items: center;
     box-shadow: none;
+    transform: scale(1); 
+    transition: var(--transition-normal);
 }
 
 .dashed-circle {
     width: 40px;
     height: 40px;
-    border: 2px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-muted);
+    transform: scale(1); 
     transition: var(--transition-normal);
 }
-
 .create-new-card:hover .dashed-circle {
     border-color: #f4f5f8;
     color: #f4f5f8;
     -webkit-text-stroke: 0.5px var(--text-muted);
-    transform: scale(1.7);
+    transform: scale(2);
 }
 
 .folder-card.bg-green {

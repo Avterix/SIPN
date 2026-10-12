@@ -56,8 +56,8 @@ body::-webkit-scrollbar {
 html, body {
     -ms-overflow-style: none;  /* IE dan Edge */
     scrollbar-width: none;  /* Firefox */
-    height: 100%;
-    min-height: 100vh;
+    height: 5%;
+    max-height: 100vh;
     min-height: -webkit-fill-available; /* Dukungan safari mobile/desktop modern */
     margin: 0;
     padding: 0;
@@ -111,7 +111,7 @@ a {
     max-width: 100%;     
     
     /* Gunakan vmin agar ukurannya lebih adaptif terhadap aspek rasio layar saat fullscreen */
-    min-height: 100vh;   
+    max-height: 100vh;   
     
     background-color: var(--auth-bg);
     border-radius: var(--radius-lg);
