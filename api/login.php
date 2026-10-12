@@ -1,31 +1,26 @@
 <?php
+// 1. Samakan cookie path session ke root biar gak lepas saat ke dashboard
+ini_set('session.cookie_path', '/');
 session_start();
+
 include "koneksi.php";
 
-require_once __DIR__ . "/config_github.php";
-
-$url_auth = "https://github.com/login/oauth/authorize?" . http_build_query([
-    'client_id'    => GITHUB_CLIENT_ID,
-    'redirect_uri' => GITHUB_REDIRECT_URI,
-    'scope'        => 'read:user user:email',
-    'state'        => $_SESSION['oauth2state'],
-    'prompt'       => 'select_account'
-]);
-
+// Jika session user sudah ada, langsung arahkan ke dashboard
 if (isset($_SESSION['user_id'])) {
+    session_write_close();
     header("Location: dashboard.php");
     exit;
 }
 
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 1. Clean input & buang spasi di awal/akhir
+    // Clean input & buang spasi di awal/akhir
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
     $username_clean = mysqli_real_escape_string($koneksi, $username);
 
-    // 2. Query kebal spasi & kebal kapital/kecil (LOWER & TRIM)
+    // Query kebal spasi & kebal kapital/kecil (LOWER & TRIM)
     $query  = "SELECT * FROM users WHERE LOWER(TRIM(username)) = LOWER('$username_clean')";
     $result = mysqli_query($koneksi, $query);
 
@@ -34,10 +29,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // Cek password (hash atau plain)
         if (password_verify($password, $row['password']) || $password === $row['password']) {
-            $_SESSION['user_id']  = $row['id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['role']     = strtolower($row['role']);
+            $_SESSION['user_id']   = $row['id'];
+            $_SESSION['username']  = $row['username'];
+            $_SESSION['role']      = strtolower($row['role']);
+            $_SESSION['foto']      = $row['foto'] ?? '';
             
+            // Set flag login & simpan session sebelum redirect
+            $_SESSION['login']     = true;
+            $_SESSION['logged_in'] = true;
+
+            session_write_close();
             header("Location: dashboard.php");
             exit;
         } else {
@@ -54,15 +55,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - SIPN</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/auth-style.css?v=1.1">
+    <link rel="stylesheet" href="<?php echo $base_url ?? ''; ?>/auth-style.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
+    <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
 </head>
 <body>
 <div class="video">
     <video autoplay muted playsinline id="bg-video">
-        <source src="<?= $base_url; ?>/background/auth.mp4" type="video/mp4">
+        <source src="<?= $base_url ?? ''; ?>/background/auth.mp4" type="video/mp4">
         Browser Anda tidak mendukung tag video.
     </video>
     <div class="auth-wrapper">
@@ -78,17 +79,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <p>Enter your credentials to access your dashboard</p>
             </div>
 
+            <!-- Tombol Social Login Rapi Tanpa Tag Button Muter -->
             <div class="social-auth-grid">
-                <button type="button" class="social-btn">
- 		 <a href="google-login.php" class="btn-google">
-   		 <i class="google"></i>
- 		 </a>
-		</button>
-                <button type="button" class="social-btn">
- 		 <a href="github-login.php" class="btn-github">
-   		 <i class="github"></i>
- 		 </a>
-		</button>
+                <a href="google-login.php" class="social-btn btn-google">
+                    <i class="google"></i>
+                </a>
+                <a href="github-login.php" class="social-btn btn-github">
+                    <i class="github"></i>
+                </a>
             </div>
 
             <div class="auth-divider"><span>or</span></div>
