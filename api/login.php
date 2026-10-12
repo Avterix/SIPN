@@ -3,7 +3,7 @@ session_start();
 include "koneksi.php";
 
 // Pastikan file config sudah di-require di bagian atas login.php
-require_once __DIR__ . "/api/config_github.php";
+require_once __DIR__ . "/config_github.php";
 
 // Saat membuat URL authorize GitHub, pastikan parameternya memanggil GITHUB_REDIRECT_URI
 $url_auth = "https://github.com/login/oauth/authorize?" . http_build_query([
