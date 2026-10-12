@@ -243,13 +243,13 @@ while ($row = mysqli_fetch_assoc($q_all)) {
                                         <td style="text-align: center;">
                                             <!-- Edit Image Button -->
                                             <button onclick="editUser(<?= $u['id']; ?>, '<?= htmlspecialchars($u['username']); ?>', '<?= $u['role']; ?>')" class="btn-action-img" title="Edit">
-                                                <img src="icons/admin/admin_manage/edit.png" alt="Edit">
+                                                <img src="icons/admin/admin_manage/edit.webp" alt="Edit">
                                             </button>
                                             
                                             <!-- Delete Image Button -->
                                             <?php if ($u['id'] !== $user_id): ?>
                                                 <a href="daftar_user.php?hapus=<?= $u['id']; ?>" onclick="return confirm('Hapus user ini?');" class="btn-action-img" title="Hapus">
-                                                    <img src="icons/admin/admin_manage/trash-bin.png" alt="Hapus">
+                                                    <img src="icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
                                                 </a>
                                             <?php endif; ?>
                                         </td>

@@ -1,6 +1,12 @@
 <?php
+// Set cookie params HANYA jika session belum berjalan
 if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.cookie_path', '/');
+    session_set_cookie_params([
+        'lifetime' => 86400, // 24 jam
+        'path'     => '/',   // Berlaku untuk semua folder (/api/, /elements/, dll)
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 $host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : getenv('DB_HOST');
