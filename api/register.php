@@ -1,8 +1,10 @@
 <?php
+ini_set('session.cookie_path', '/');
 session_start();
 include "koneksi.php";
 
 if (isset($_SESSION['user_id'])) {
+    session_write_close();
     header("Location: dashboard.php");
     exit;
 }
@@ -15,10 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $nis = mysqli_real_escape_string($koneksi, $_POST['nis']);
     $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    
-    // MENERIMA DATA KELAS GABUNGAN DARI JAVASCRIPT
     $kelas = mysqli_real_escape_string($koneksi, $_POST['kelas_gabungan']); 
-    
     $jk = mysqli_real_escape_string($koneksi, $_POST['jenis_kelamin']);
 
     $cek_user = mysqli_query($koneksi, "SELECT id FROM users WHERE username='$username'");

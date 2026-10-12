@@ -1,4 +1,5 @@
 <?php
+ini_set('session.cookie_path', '/');
 session_start();
 date_default_timezone_set('Asia/Jakarta');
 include "koneksi.php";

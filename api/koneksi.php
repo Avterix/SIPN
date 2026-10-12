@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_path', '/');
+    session_start();
+}
 $host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : getenv('DB_HOST');
 $user = isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : getenv('DB_USER');
 $pass = isset($_ENV['DB_PASS']) ? $_ENV['DB_PASS'] : getenv('DB_PASS');
