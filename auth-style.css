@@ -111,7 +111,7 @@ a {
     max-width: 100%;     
     
     /* Gunakan vmin agar ukurannya lebih adaptif terhadap aspek rasio layar saat fullscreen */
-    max-height: 100vh;   
+    min-height: 100vh;   
     
     background-color: var(--auth-bg);
     border-radius: var(--radius-lg);
