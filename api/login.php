@@ -2,6 +2,18 @@
 session_start();
 include "koneksi.php";
 
+// Pastikan file config sudah di-require di bagian atas login.php
+require_once __DIR__ . "/api/config_github.php";
+
+// Saat membuat URL authorize GitHub, pastikan parameternya memanggil GITHUB_REDIRECT_URI
+$url_auth = "https://github.com/login/oauth/authorize?" . http_build_query([
+    'client_id'    => GITHUB_CLIENT_ID,
+    'redirect_uri' => GITHUB_REDIRECT_URI, // <-- PASTIKAN MEMAKAI KONSTANTA INI
+    'scope'        => 'read:user user:email',
+    'state'        => $_SESSION['oauth2state'],
+    'prompt'       => 'select_account'
+]);
+
 if (isset($_SESSION['user_id'])) {
     header("Location: dashboard.php");
     exit;
