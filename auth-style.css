@@ -110,7 +110,7 @@ a {
     width: 1320px;
     max-width: 100%;     
     
-    min-height: 100vh;   
+    max-height: 100vh;   
     
     background-color: var(--auth-bg);
     border-radius: var(--radius-lg);
