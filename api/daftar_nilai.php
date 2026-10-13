@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
@@ -156,14 +157,13 @@ if (!empty($filter_kelas)) {
     </style>
 </head>
 <body>
-<body>
-<?php $loader_page = 'nilai'; include "loader.php"; ?>
+<?php require __DIR__ . "/loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-logo"><i class="home"></i></div>
-                <h2>SIPN Core</h2>
+                <h2>SIPN - SMK SAKUCI</h2>
             </div>
 
             <div class="user-profile-mini">
@@ -345,12 +345,11 @@ if (!empty($filter_kelas)) {
                                 <?php endif; ?>
                             </tbody>
                         </table>
-                    </div>
+                    </div> 
                 </div>
 
             </div>
         </main>
     </div>
-
 </body>
 </html>

@@ -153,7 +153,7 @@ if ($role === 'siswa') {
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
 </head>
 <body>
-<?php $loader_page = 'dashboard'; include "loader.php"; ?>
+<?php include "loader.php"; ?>
 <div class="video">
     <video autoplay muted loop playsinline id="bg-video">
         <source src="<?= $base_url; ?>/background/main_bg.mp4" type="video/mp4">
