@@ -156,7 +156,8 @@ if (!empty($filter_kelas)) {
     </style>
 </head>
 <body>
-
+<body>
+<?php $loader_page = 'nilai'; include "loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">

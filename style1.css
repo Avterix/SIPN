@@ -34,7 +34,7 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    zoom: 0.8;
+    zoom: 0.7;
     overflow-x: hidden;
 }
 
@@ -56,7 +56,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 142.68vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -433,6 +433,7 @@ img, svg {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .topbar-title {
@@ -445,6 +446,7 @@ img, svg {
     font-size: 24px;
     font-weight: 700;
     color: var(--text-main);
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .storage-badge {
@@ -536,16 +538,26 @@ img, svg {
 /* section hero sama cards */
 .hero-section {
     margin-bottom: 30px;
-    animation: fadeInUp 0.6s ease-out forwards;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 @keyframes fadeInUp {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% { 
+        opacity: 0.3; 
+        filter: brightness(0.4);
+        background-color: #14161b !important;
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0); 
+        filter: brightness(1);
+        background-color: #14161b !important;
+    }
 }
 
 .hero-text {
     margin-bottom: 20px;
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .hero-text h2 {
@@ -554,12 +566,14 @@ img, svg {
     color: var(--text-main);
     margin-top: 20px;
     margin-right: 50px;
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .hero-text p {
     margin-top: 20px;
     font-size: 13px;
     color: var(--text-muted);
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .folders-slider {
@@ -584,7 +598,6 @@ img, svg {
 }
 
 .folder-card:hover {
-    transform: translateY(-8px) scale(1.02);
     box-shadow: var(--shadow-card);
 }
 .folder-card2 {
@@ -601,10 +614,10 @@ img, svg {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    animation: slideInCard 0.5s ease 0.1s both;
+animation: fadeInUp 0.5s ease-out forwards;
 }
 .folder-card2:hover {
-    transform: translateY(-80px) scale(1.02);
+    transform: scale(1.02);
 }
 
 .dashed-circle:hover {
@@ -612,10 +625,6 @@ img, svg {
     transform: scale(2); 
     transition: var(--transition-normal);
 }
-.folder-card:nth-child(1) { animation: slideInCard 0.5s ease 0.1s both; }
-.folder-card:nth-child(2) { animation: slideInCard 0.5s ease 0.2s both; }
-.folder-card:nth-child(3) { animation: slideInCard 0.5s ease 0.3s both; }
-.folder-card:nth-child(4) { animation: slideInCard 0.5s ease 0.4s both; }
 
 @keyframes slideInCard {
     0% { opacity: 0; transform: translateX(-20px); }
@@ -630,6 +639,7 @@ img, svg {
     box-shadow: none;
     transform: scale(1); 
     transition: var(--transition-normal);
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .dashed-circle {
@@ -642,12 +652,14 @@ img, svg {
     color: var(--text-muted);
     transform: scale(1); 
     transition: var(--transition-normal);
+animation: fadeInUp 0.5s ease-out forwards;
 }
 .create-new-card:hover .dashed-circle {
     border-color: #f4f5f8;
     color: #f4f5f8;
     -webkit-text-stroke: 0.5px var(--text-muted);
     transform: scale(2);
+animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .folder-card.bg-green {
@@ -663,7 +675,6 @@ img, svg {
 .folder-card.bg-dark {
     background: url('assets/swiss design notebook.jpeg') center/cover no-repeat;
     color: #ffffff;
-    animation: slideInCard 0.5s ease 0.4s both;
 }
 
 .card-top {
@@ -710,7 +721,7 @@ img, svg {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 20px;
-    animation: fadeInUp 0.8s ease-out forwards;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .card {
@@ -1399,7 +1410,7 @@ img, svg {
 
 /* Schedule Card */
 .schedule-list {
-    width: 
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1617,7 +1628,7 @@ img, svg {
 .video {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  min-height: 142.68vh;
   overflow: hidden;
 }
 
@@ -1625,8 +1636,8 @@ img, svg {
     position: fixed;        
     top: 0;
     left: 0;
-    width: 125vw;           
-    height: 125vh;             
+    width: 142.68vw;           
+    height: 142.68vh;             
     object-fit: cover;      
     z-index: -9999;        
     pointer-events: none;    
@@ -1665,42 +1676,6 @@ img, svg {
   z-index: 1; 
   filter: brightness(1);
   opacity: 0.5; 
-}
-
-/* loaders */
-/* Overlay full screen buat nutupin layar pas halaman loading */
-#page-loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 125vw;
-    height: 125vh;
-    background-color: #f4f5f8; /* Menyesuaikan background dark web lu */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999999;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-/* Animasi loader bawaan lu */
-.loader {
-    width: 50px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    border: 8px solid;
-    border-color: #08090d #0000; /* Warna border disesuaiin sama warna aksen (#ccff00) */
-    animation: l1 1s infinite linear;
-}
-
-@keyframes l1 {
-    to { transform: rotate(.5turn); }
-}
-
-/* Class buat ngilangin loader pas udah selesai load */
-#page-loader.loader-hidden {
-    opacity: 0;
-    visibility: hidden;
 }
 
 /* =========================================================
@@ -1890,6 +1865,8 @@ img, svg {
         align-items: flex-start !important;
         gap: 12px !important;
         margin-bottom: 20px !important;
+	animation: fadeInUp 0.5s ease-out forwards;
+        
     }
 
     .topbar-actions {
@@ -1897,6 +1874,7 @@ img, svg {
         justify-content: space-between !important;
         flex-wrap: wrap !important;
         gap: 8px !important;
+	animation: fadeInUp 0.5s ease-out forwards;
     }
 
     .search-box {

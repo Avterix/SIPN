@@ -153,7 +153,7 @@ if ($role === 'siswa') {
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
 </head>
 <body>
-<?php include "loader.php"; ?>
+<?php $loader_page = 'dashboard'; include "loader.php"; ?>
 <div class="video">
     <video autoplay muted loop playsinline id="bg-video">
         <source src="<?= $base_url; ?>/background/main_bg.mp4" type="video/mp4">
@@ -279,7 +279,6 @@ if ($role === 'siswa') {
             <section class="bottom-grid">
                 <div class="card storage-card">
                     <?php if ($role === 'siswa'): ?>
-<img class="elements" src="<?= $base_url; ?>/elements/element1.png"/>
                         <div class="card-header">
                             <h3>Academic Grade Chart</h3>
                             <i class="chart"></i>

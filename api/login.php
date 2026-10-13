@@ -61,6 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
 </head>
 <body>
+<?php include "loader.php"; ?>
 <div class="video">
     <video autoplay muted playsinline id="bg-video">
         <source src="<?= $base_url ?? ''; ?>/background/auth.mp4" type="video/mp4">
@@ -134,7 +135,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <!-- Script Intip Password -->
     <script>
         const togglePass = document.getElementById('togglePass');
         const passInput = document.getElementById('passInput');

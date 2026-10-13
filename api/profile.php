@@ -141,7 +141,6 @@ if ($gh_connected) $progress += 15;
     </style>
 </head>
 <body>
-<?php include "loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">

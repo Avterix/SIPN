@@ -90,7 +90,7 @@ body {
     top: 0;
     left: 0;
     width: 100%; /* Gunakan 100% agar sinkron dengan body */          
-    height: 100vh;                 
+    height: 100%;                 
     z-index: -9999;  
     object-fit: cover; /* Ganti ke cover agar video tidak gepeng/terdistorsi */     
     pointer-events: none;    
@@ -110,7 +110,6 @@ a {
     width: 1320px;
     max-width: 100%;     
     
-    /* Gunakan vmin agar ukurannya lebih adaptif terhadap aspek rasio layar saat fullscreen */
     min-height: 100vh;   
     
     background-color: var(--auth-bg);
@@ -123,7 +122,7 @@ a {
     position: relative; 
     
     /* Gunakan properti scale modern agar tidak merusak koordinat grid pembungkusnya */
-    scale: 0.8;
+    scale: 1;
     transform-origin: center center; 
     flex-shrink: 0;
     margin: 0 auto;
