@@ -103,7 +103,7 @@ if ($gh_connected) $progress += 15;
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
     <style>
         .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; animation: fadeInUp 0.5s ease-out forwards; }
-        .profile-card-left { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .profile-card-left { height: 737px; background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; text-align: center; }
         .avatar-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 14px; }
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
         .avatar-placeholder { width: 100%; height: 100%; border-radius: 50%; background: #231c32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; }
@@ -138,9 +138,11 @@ if ($gh_connected) $progress += 15;
         .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
         .save-btn { background-color: #231c32; color: #ffffff; border: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr; } .form-grid-2 { grid-template-columns: 1fr; } }
+
     </style>
 </head>
 <body>
+<?php include "loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">

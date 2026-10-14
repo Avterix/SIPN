@@ -17,8 +17,12 @@
       "dest": "/$1"
     },
     {
+      "src": "/maintenance.html",
+      "dest": "/maintenance.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/maintenance.html"
     }
   ]
 }

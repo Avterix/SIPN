@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance - SIPN SAKUCI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #1e2229;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #f4f5f8;
+            width: 900px;
+            max-width: 95%;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+	    zoom: 0.9;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-logo svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .content {
+            padding: 20px 40px 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #333333;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        p {
+            font-size: 14px;
+            color: #666666;
+            margin: 5px 0;
+        }
+
+        .illustration {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 0;
+        }
+
+        .footer {
+            border-top: 1px solid #EEEEEE;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 13px;
+            color: #888888;
+        }
+
+        .footer-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 8px;
+            margin-left: 10px;
+        }
+
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid #DDDDDD;
+            border-radius: 50%;
+            color: #AAAAAA;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .social-icons a:hover {
+            border-color: #666666;
+            color: #666666;
+        }
+
+        .social-icons svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+        
+        /* SVG Animation */
+        .float-left { animation: floatLeft 3s ease-in-out infinite; }
+        .float-right { animation: floatRight 3s ease-in-out infinite; }
+        .pulse { animation: pulseAnim 2s infinite; }
+        
+        @keyframes floatLeft {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-50px); }
+        }
+        
+        @keyframes floatRight {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(50px); }
+        }
+        
+        @keyframes pulseAnim {
+            0%, 100% { opacity: 0.6; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; }
+            .footer { flex-direction: column; text-align: center; }
+            .footer-info { flex-direction: column; gap: 8px; }
+            .social-icons { margin-left: 0; }
+        }
+.icons{
+  position: relative;
+  width: 40px;
+  height: 40px;
+  z-index: 1; 
+  filter: brightness(1);
+  right: 10px;
+  opacity: 1; 
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-logo">
+            <img class="icons" src="icons/dashboard/images__1_-removebg-preview.png"></img>
+            sipnsakuci.my.id
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>The site is currently<br>down for maintenance</h1>
+        <p>We apologize for any inconveniences caused.</p>
+        <p>We've almost done.</p>
+    </div>
+
+    <!-- Illustration -->
+    <div class="illustration">
+        <svg width="600" height="120" viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Blue Wire & Plug -->
+            <g class="float-left">
+                <path d="M0 60 L120 60 L130 80 L180 80" stroke="#B3E5FC" stroke-width="8" stroke-linejoin="round" fill="none" />
+                <rect x="180" y="60" width="30" height="40" rx="4" fill="#0277BD" />
+                <rect x="195" y="60" width="15" height="40" fill="#03A9F4" />
+                <rect x="210" y="65" width="15" height="30" fill="#0277BD" />
+                <rect x="217" y="65" width="8" height="30" fill="#03A9F4" />
+                <rect x="225" y="70" width="15" height="6" fill="#0277BD" />
+                <rect x="225" y="84" width="15" height="6" fill="#0277BD" />
+            </g>
+            
+
+            <!-- Green Socket & Wire -->
+            <g class="float-right">
+                <rect x="300" y="55" width="20" height="50" rx="2" fill="#00E676" />
+                <rect x="310" y="55" width="10" height="50" fill="#00C853" />
+                <rect x="320" y="65" width="15" height="30" fill="#00C853" />
+                <rect x="327" y="65" width="8" height="30" fill="#008000" />
+                <path d="M335 80 L350 80 L360 60 L600 60" stroke="#00E676" stroke-width="8" stroke-linejoin="round" fill="none" />
+            </g>
+        </svg>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-info">
+            <span>You can contact us:</span>
+            <span>Phone: +62 838 6328 7077</span>
+            <span>Email: shanofakbar1209@gmail.com</span>
+        </div>
+        
+        <div class="social-icons">
+            <a href="#" aria-label="Facebook">
+                <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            </a>
+            <a href="#" aria-label="Odnoklassniki">
+                <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm-2.5 4.5c-3.15 0-6.19 1.15-8.5 3.19l1.5 2C4.37 18.06 6.94 17 9.5 17c2.56 0 5.13 1.06 7 2.69l1.5-2c-2.31-2.04-5.35-3.19-8.5-3.19z"/></svg>
+            </a>
+            <a href="#" aria-label="VK">
+                <svg viewBox="0 0 24 24"><path d="M19.78 4H4.22C4.1 4 4 4.1 4 4.22v15.56c0 .12.1.22.22.22h15.56c.12 0 .22-.1.22-.22V4.22c0-.12-.1-.22-.22-.22zM15 15.5c-1 0-1.5-.5-2.5-1.5-.5-.5-.5-1-1.5-1s-1 .5-1.5 1c-1 1-1.5 1.5-2.5 1.5H5.5c0-4 1.5-7.5 5.5-7.5h1v-2h2v2c1 0 1.5.5 2.5 1.5.5.5 1 1 1 2 0 1-.5 1-1 1-.5 0-1-.5-1.5-1-.5-.5-1-.5-1.5-.5H9.5c-2 0-3 1.5-3 3.5 0 2 1 3.5 3 3.5h1.5c1 0 1.5-.5 2-1 1-1 2-1 3 0 .5.5 1 1 2 1h1.5z"/></svg>
+            </a>
+            <a href="#" aria-label="Twitter">
+                <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+            </a>
+            <a href="#" aria-label="Telegram">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.33-.26-1.98-.48-.8-.27-1.43-.42-1.37-.89.03-.25.38-.51 1.03-.78 4.04-1.76 6.74-2.92 8.09-3.48 3.85-1.6 4.64-1.88 5.17-1.89.11 0 .37.03.51.14.11.08.14.2.15.28-.01.05-.01.17-.03.25z"/></svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -4,8 +4,10 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 $is_dashboard = ($current_page === 'dashboard.php');
 $is_nilai     = ($current_page === 'daftar_nilai.php' || $current_page === 'lihat_nilai.php');
+$is_profile   = ($current_page === 'profile.php');
 
-if (!$is_dashboard && !$is_nilai) {
+// Default ke dashboard kalau nggak ada yang cocok
+if (!$is_dashboard && !$is_nilai && !$is_profile) {
     $is_dashboard = true; 
 }
 ?>
@@ -61,6 +63,12 @@ html { zoom: 0.7; }
 #page-loader .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; width: 100%; }
 #page-loader .folders-slider { display: flex; gap: 20px; width: 100%; }
 #page-loader .bottom-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; width: 100%; }
+
+/* Penahan Grid Profil Baru */
+#page-loader .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; width: 100%; }
+#page-loader .profile-card-left { display: flex; flex-direction: column; align-items: center; background-color: #ffffff; border-radius: 16px; padding: 24px; }
+#page-loader .right-content-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+#page-loader .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 </style>
 
 <div id="page-loader">
@@ -72,6 +80,7 @@ html { zoom: 0.7; }
                 <div class="sidebar-brand"><div class="brand-logo sk-pulse"></div></div>
                 <div class="user-profile-mini"><div class="user-avatar-initial sk-pulse" style="border: none;"></div></div>
                 <ul class="sidebar-menu">
+                    <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
@@ -108,9 +117,9 @@ html { zoom: 0.7; }
                                 <div class="sk-pulse" style="width: 130px; height: 8px; border-radius: 4px; margin-bottom: 18px;"></div>
                             </div>
                             <div class="folder-card2 sk-pulse"></div>
-                            <div class="folder-card sk-pulse"></div>
-                            <div class="folder-card sk-pulse"></div>
-                            <div class="folder-card sk-pulse"></div>
+                            <div class="folder-card sk-pulse" style="width: 130px; height: 170px; margin-right: -5px;"></div>
+                            <div class="folder-card sk-pulse" style="width: 130px; height: 170px; margin-right: -5px;"></div>
+                            <div class="folder-card sk-pulse" style="width: 130px; height: 170px; margin-right: -5px;"></div>
                         </div>
                     </section>
 
@@ -135,6 +144,8 @@ html { zoom: 0.7; }
                             <div class="sk-pulse" style="width: 90px; height: 24px; border-radius: 20px; margin-bottom: 2px"></div>
                         </div>
                         <div class="topbar-actions">
+			    <div class="sk-pulse" style="width: 200px; height: 40px; border-radius: 20px;"></div>
+                            <div class="sk-pulse" style="width: 40px; height: 40px; border-radius: 50%;"></div>
                             <div class="sk-pulse" style="width: 40px; height: 40px; border-radius: 50%;"></div>
                             <div class="sk-pulse" style="width: 90px; height: 40px; border-radius: 7px;"></div>
                         </div>
@@ -150,7 +161,52 @@ html { zoom: 0.7; }
                             <div class="stat-card sk-pulse" style="height: 90px; border-radius: 12px;"></div>
                         </section> 
                         
-                        <div class="card-box sk-pulse" style="height: 320px;"></div>
+                        <div class="card-box sk-pulse" style="height: 267px;"></div>
+                    </div>
+                </div>
+
+                <!-- 3. SKELETON KHUSUS PROFILE BARU -->
+                <div id="skel-profile" style="display: <?= $is_profile ? 'block' : 'none' ?>; width: 100%;">
+                    <!-- TOPBAR PROFILE (Meniru struktur asli profile) -->
+                    <header class="topbar">
+                        <div class="topbar-title">
+                            <div class="sk-pulse" style="width: 140px; height: 32px; border-radius: 8px; margin-bottom: 12px"></div>
+                            <div class="sk-pulse" style="width: 120px; height: 24px; border-radius: 20px; margin-bottom: 12px"></div>
+                        </div>
+                        <div class="topbar-actions">
+                            <div class="sk-pulse" style="width: 200px; height: 40px; border-radius: 20px;"></div>
+                            <div class="sk-pulse" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                            <div class="sk-pulse" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                            <div class="sk-pulse" style="width: 90px; height: 40px; border-radius: 7px;"></div>
+                        </div>
+                    </header>
+
+                    <div class="profile-grid" style="margin-top: 15px;">
+                        <!-- Kiri: Kartu Identitas Profil -->
+                        <div class="profile-card-left sk-pulse" style="height: 737px; width: 320px; display: flex; align-items: center; padding-top: 30px;">
+                            <!-- Lingkaran Avatar -->
+                            <div class="sk-pulse" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 20px; background-color: #94a3b8 !important;"></div>
+                            <!-- Baris Teks -->
+                            <div class="sk-pulse" style="width: 160px; height: 18px; border-radius: 6px; margin-bottom: 12px; background-color: #94a3b8 !important;"></div>
+                            <div class="sk-pulse" style="width: 120px; height: 12px; border-radius: 6px; margin-bottom: 30px; background-color: #94a3b8 !important;"></div>
+                            
+                            <!-- Progress Bar Mock -->
+                            <div class="sk-pulse" style="width: 80%; height: 8px; border-radius: 6px; margin-bottom: 40px; background-color: #94a3b8 !important;"></div>
+                            
+                            <!-- Detail Meta Data -->
+                            <div class="sk-pulse" style="width: 90%; height: 14px; border-radius: 4px; margin-bottom: 16px; background-color: #94a3b8 !important;"></div>
+                            <div class="sk-pulse" style="width: 90%; height: 14px; border-radius: 4px; margin-bottom: 16px; background-color: #94a3b8 !important;"></div>
+                            <div class="sk-pulse" style="width: 90%; height: 14px; border-radius: 4px; margin-bottom: 16px; background-color: #94a3b8 !important;"></div>
+                        </div>
+
+                        <!-- Kanan: Form Data Profil & Github -->
+                        <div class="right-content-wrapper">
+                            <!-- Kartu Github Integration -->
+                            <div class="card-box sk-pulse" style="height: 210px; border-radius: 16px;"></div>
+                            
+                            <!-- Kartu Form Input (Bawah) -->
+                            <div class="card-box sk-pulse" style="height: 502px; border-radius: 16px; margin-top: -18px;"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -198,9 +254,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isTargetValid && !isSpecialLink && !hasConfirm) {
             e.preventDefault(); 
 
+            // Cek rute tujuan
             const isToDashboard = href.includes("dashboard.php");
+            const isToProfile = href.includes("profile.php");
+            
+            // Atur Visibilitas Skeleton
             document.getElementById("skel-dash").style.display = isToDashboard ? "block" : "none";
-            document.getElementById("skel-nilai").style.display = isToDashboard ? "none" : "block";
+            document.getElementById("skel-profile").style.display = isToProfile ? "block" : "none";
+            document.getElementById("skel-nilai").style.display = (!isToDashboard && !isToProfile) ? "block" : "none";
 
             loader.classList.remove("loader-hidden");
             loader.classList.add("page-transitioning");
