@@ -55,32 +55,42 @@ html { zoom: 0.7; }
 #page-loader .sidebar { pointer-events: none !important; }
 
 /* =========================================================
-   FIX TATA LETAK: Mengunci bentuk Grid/Flex agar tidak hancur 
-   saat dipanggil dari file PHP yang berbeda CSS-nya
+   FIX TATA LETAK: Menggunakan Flex/Grid otomatis (Auto-Stretch)
    ========================================================= */
-#page-loader .page-container { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-#page-loader .card-box { width: 100%; border-radius: 16px; }
+#page-loader .page-container { display: flex; flex-direction: column; gap: 20px; width: 100%; flex: 1; }
+#page-loader .card-box { width: 100%; border-radius: 16px; min-height: 150px; } /* Pakai min-height, biar flex yg nentuin max nya */
 #page-loader .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; width: 100%; }
 #page-loader .folders-slider { display: flex; gap: 20px; width: 100%; }
-#page-loader .bottom-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; width: 100%; }
+#page-loader .bottom-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; width: 100%; flex: 1;} /* stretch bottom grid */
 
-/* Penahan Grid Profil Baru */
-#page-loader .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; width: 100%; }
-#page-loader .profile-card-left { display: flex; flex-direction: column; align-items: center; background-color: #ffffff; border-radius: 16px; padding: 24px; }
-#page-loader .right-content-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+/* Grid Profil Baru (Auto Stretch) */
+#page-loader .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; width: 100%; align-items: stretch; flex: 1; } /* align-items: stretch kunci utamanya */
+#page-loader .profile-card-left { display: flex; flex-direction: column; align-items: center; background-color: #ffffff; border-radius: 16px; padding: 24px; min-height: 400px; height: 100%; } /* height: 100% agar ngikut konten terpanjang di kanan */
+#page-loader .right-content-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; height: 100%; }
 #page-loader .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* Tambahan agar main-content stretch full height */
+#page-loader .main-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+}
+#skel-dash, #skel-nilai, #skel-profile {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 </style>
 
 <div id="page-loader">
     <div class="video" style="min-height: 100%; background: transparent; width: 100%;">
-        <div class="dashboard-container">
+        <div class="dashboard-container" style="height: 100%;">
             
             <!-- REPLIKA SIDEBAR (GLOBAL) -->
             <aside class="sidebar">
                 <div class="sidebar-brand"><div class="brand-logo sk-pulse"></div></div>
                 <div class="user-profile-mini"><div class="user-avatar-initial sk-pulse" style="border: none;"></div></div>
                 <ul class="sidebar-menu">
-                    <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
                     <li><div class="sk-pulse" style="width: 44px; height: 44px; border-radius: 12px;"></div></li>
@@ -94,7 +104,7 @@ html { zoom: 0.7; }
             <main class="main-content">
                 
                 <!-- 1. SKELETON KHUSUS DASHBOARD -->
-                <div id="skel-dash" style="display: <?= $is_dashboard ? 'block' : 'none' ?>; width: 100%;">
+                <div id="skel-dash" style="display: <?= $is_dashboard ? 'flex' : 'none' ?>; width: 100%;">
                     <header class="topbar">
                         <div class="topbar-title">
                             <div class="sk-pulse" style="width: 140px; height: 32px; border-radius: 8px; margin-bottom: 12px"></div>
@@ -124,20 +134,20 @@ html { zoom: 0.7; }
                     </section>
 
                     <section class="bottom-grid" style="margin-top: -15px;">
-                        <div class="card sk-pulse" style="height: 280px; width: 100%; border-radius: 20px;"></div>
-                        <div class="card sk-pulse" style="height: 280px; width: 100%; border-radius: 20px;"></div>
+                        <div class="card sk-pulse" style="height: 100%; width: 100%; border-radius: 20px;"></div>
+                        <div class="card sk-pulse" style="height: 100%; width: 100%; border-radius: 20px;"></div>
                     </section>
 
                     <?php if (isset($role) && $role === 'siswa'): ?>
-                    <section class="bottom-grid" style="margin-top: 20px;">
-                        <div class="card-badge sk-pulse" style="height: 300px; box-sizing: border-box; border-radius: 20px;"></div>
-                        <div class="card-att sk-pulse" style="height: 300px; box-sizing: border-box; border-radius: 20px;"></div>
+                    <section class="bottom-grid" style="margin-top: 20px; flex:1;">
+                        <div class="card-badge sk-pulse" style="height: 100%; box-sizing: border-box; border-radius: 20px;"></div>
+                        <div class="card-att sk-pulse" style="height: 100%; box-sizing: border-box; border-radius: 20px;"></div>
                     </section>
                     <?php endif; ?>
                 </div>
 
                 <!-- 2. SKELETON KHUSUS DAFTAR NILAI -->
-                <div id="skel-nilai" style="display: <?= $is_nilai ? 'block' : 'none' ?>; width: 100%;">
+                <div id="skel-nilai" style="display: <?= $is_nilai ? 'flex' : 'none' ?>; width: 100%;">
                     <header class="topbar">
                         <div class="topbar-title">
                             <div class="sk-pulse" style="width: 230px; height: 32px; border-radius: 8px; margin-bottom: 2px"></div>
@@ -152,7 +162,7 @@ html { zoom: 0.7; }
                     </header>
 
                     <div class="page-container" style="margin-top: 5px;">
-                        <div class="card-box sk-pulse" style="height: 120px; margin-bottom: 0px;"></div>
+                        <div class="card-box sk-pulse" style="height: 120px; margin-bottom: 0px; flex: none;"></div>
                         
                         <section class="stats-grid">
                             <div class="stat-card sk-pulse" style="height: 90px; border-radius: 12px;"></div>
@@ -161,12 +171,12 @@ html { zoom: 0.7; }
                             <div class="stat-card sk-pulse" style="height: 90px; border-radius: 12px;"></div>
                         </section> 
                         
-                        <div class="card-box sk-pulse" style="height: 267px;"></div>
+                        <div class="card-box sk-pulse" style="flex: 1;"></div> <!-- Ini yang bikin otomatis manjang sisa ruang -->
                     </div>
                 </div>
 
                 <!-- 3. SKELETON KHUSUS PROFILE BARU -->
-                <div id="skel-profile" style="display: <?= $is_profile ? 'block' : 'none' ?>; width: 100%;">
+                <div id="skel-profile" style="display: <?= $is_profile ? 'flex' : 'none' ?>; width: 100%;">
                     <!-- TOPBAR PROFILE (Meniru struktur asli profile) -->
                     <header class="topbar">
                         <div class="topbar-title">
@@ -183,7 +193,7 @@ html { zoom: 0.7; }
 
                     <div class="profile-grid" style="margin-top: 15px;">
                         <!-- Kiri: Kartu Identitas Profil -->
-                        <div class="profile-card-left sk-pulse" style="height: 737px; width: 320px; display: flex; align-items: center; padding-top: 30px;">
+                        <div class="profile-card-left sk-pulse" style="display: flex; align-items: center; padding-top: 30px;">
                             <!-- Lingkaran Avatar -->
                             <div class="sk-pulse" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 20px; background-color: #94a3b8 !important;"></div>
                             <!-- Baris Teks -->
@@ -202,10 +212,10 @@ html { zoom: 0.7; }
                         <!-- Kanan: Form Data Profil & Github -->
                         <div class="right-content-wrapper">
                             <!-- Kartu Github Integration -->
-                            <div class="card-box sk-pulse" style="height: 210px; border-radius: 16px;"></div>
+                            <div class="card-box sk-pulse" style="height: 180px; flex: none;"></div>
                             
-                            <!-- Kartu Form Input (Bawah) -->
-                            <div class="card-box sk-pulse" style="height: 502px; border-radius: 16px; margin-top: -18px;"></div>
+                            <!-- Kartu Form Input (Bawah) otomatis manjang -->
+                            <div class="card-box sk-pulse" style="flex: 1; border-radius: 16px; margin-top: -18px;"></div>
                         </div>
                     </div>
                 </div>
@@ -259,9 +269,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const isToProfile = href.includes("profile.php");
             
             // Atur Visibilitas Skeleton
-            document.getElementById("skel-dash").style.display = isToDashboard ? "block" : "none";
-            document.getElementById("skel-profile").style.display = isToProfile ? "block" : "none";
-            document.getElementById("skel-nilai").style.display = (!isToDashboard && !isToProfile) ? "block" : "none";
+            document.getElementById("skel-dash").style.display = isToDashboard ? "flex" : "none";
+            document.getElementById("skel-profile").style.display = isToProfile ? "flex" : "none";
+            document.getElementById("skel-nilai").style.display = (!isToDashboard && !isToProfile) ? "flex" : "none";
 
             loader.classList.remove("loader-hidden");
             loader.classList.add("page-transitioning");
