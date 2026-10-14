@@ -615,16 +615,17 @@ animation: fadeInUp 0.5s ease-out forwards;
     transition: var(--transition-normal);
     cursor: pointer;
     position: relative;
+transform: scale(1)
     overflow: hidden;
-animation: fadeInUp 0.5s ease-out forwards;
+	animation: fadeInUp 0.5s ease-out forwards;
 }
 .folder-card2:hover {
-    transform: scale(1.02);
+    transform: scale(1.5);
 }
 
 .dashed-circle:hover {
     transform: translateY(-8px) scale(1.02);
-    transform: scale(2); 
+    transform: scale(1); 
     transition: var(--transition-normal);
 }
 
@@ -654,13 +655,13 @@ animation: fadeInUp 0.5s ease-out forwards;
     color: var(--text-muted);
     transform: scale(1); 
     transition: var(--transition-normal);
-animation: fadeInUp 0.5s ease-out forwards;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 .create-new-card:hover .dashed-circle {
     border-color: #f4f5f8;
     color: #f4f5f8;
     -webkit-text-stroke: 0.5px var(--text-muted);
-    transform: scale(2);
+    scale: 2;
 animation: fadeInUp 0.5s ease-out forwards;
 }
 
