@@ -26,14 +26,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result && mysqli_num_rows($result) === 1) {
         $row = mysqli_fetch_assoc($result);
-        
+
         // Cek password (hash atau plain)
         if (password_verify($password, $row['password']) || $password === $row['password']) {
             $_SESSION['user_id']   = $row['id'];
             $_SESSION['username']  = $row['username'];
             $_SESSION['role']      = strtolower($row['role']);
             $_SESSION['foto']      = $row['foto'] ?? '';
-            
+
             // Set flag login & simpan session sebelum redirect
             $_SESSION['login']     = true;
             $_SESSION['logged_in'] = true;
@@ -55,97 +55,86 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - SIPN</title>
-    <link rel="stylesheet" href="<?php echo $base_url ?? ''; ?>/auth-style2.css?v=1.2">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= $base_url ?? ''; ?>/auth-style3.css?v=1.1">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
 </head>
 <body>
-<div class="video">
+<div class="bg-split">
     <video autoplay muted playsinline id="bg-video">
         <source src="<?= $base_url ?? ''; ?>/background/auth.mp4" type="video/mp4">
-        Browser Anda tidak mendukung tag video.
     </video>
-    <div class="auth-wrapper">
-        <!-- SISI KIRI: FORM LOGIN -->
-        <div class="auth-form-side">
-            <div class="auth-top-logo">
-                <i class="fa-solid fa-shapes"></i>
-            </div>
+</div>
 
-            <div class="auth-header-text">
-                <span class="auth-pill">Welcome back</span>
-                <h1>Sign in to account</h1>
-                <p>Enter your credentials to access your dashboard</p>
-            </div>
+<div class="auth-card">
+    <!-- KIRI: SHOWCASE CAROUSEL -->
+    <div class="showcase">
+        <div class="slide s1" data-title="Maximum Customization" data-sub="Tailor every aspect of your system to your needs."></div>
+        <div class="slide s2" data-title="Fast Generation" data-sub="Process academic reports and data in seconds."></div>
+        <div class="slide s3" data-title="Everything in One Place" data-sub="Students, classes and records, neatly organized."></div>
+        <div class="slide s4" data-title="Clear Reports" data-sub="Track results with simple, readable summaries."></div>
 
-            <!-- Tombol Social Login Rapi Tanpa Tag Button Muter -->
-            <div class="social-auth-grid">
-                <a href="google-login.php" class="social-btn btn-google">
-                    <i class="google"></i>
-                </a>
-                <a href="github-login.php" class="social-btn btn-github">
-                    <i class="github"></i>
-                </a>
-            </div>
-
-            <div class="auth-divider"><span>or</span></div>
-
-            <?php if (!empty($error)): ?>
-                <div class="auth-alert"><?= htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-
-            <form action="" method="POST" class="auth-form">
-                <div class="input-group">
-                    <input type="text" name="username" class="auth-input" placeholder="Username" required autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <input type="password" name="password" id="passInput" class="auth-input" placeholder="Enter your password" required>
-                    <i class="fa-regular fa-eye-slash toggle-password" id="togglePass" style="cursor:pointer;"></i>
-                </div>
-
-                <button type="submit" class="submit-btn">
-                    <span>Sign In</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </form>
-
-            <div class="auth-footer-link">
-                Don't have an account? <a href="register.php">Sign up</a>
-            </div>
+        <div class="show-top">
+            <b>Selected Works</b>
+            <a href="register.php" class="pill-btn">Sign Up</a>
         </div>
-
-        <!-- SISI KANAN: GRID VISUAL -->
-        <div class="auth-visual-side">
-            <div class="bento-grid">
-                <div class="bento-cell cell-image-1"></div>
-                <div class="bento-cell cell-image-2"></div>
-                <div class="bento-cell cell-accent-yellow">
-                    <h3>Maximum Customization</h3>
-                    <p>Tailor every aspect of your system design to your absolute specifications.</p>
-                    <div class="bento-icon-corner"><i class="fa-solid fa-cube"></i></div>
-                </div>
-                <div class="bento-cell cell-accent-green"></div>
-                <div class="bento-cell cell-text-dark">
-                    <h4>Fast Generation</h4>
-                    <p>Process academic reports and data entities in seconds.</p>
-                </div>
+        <div class="dots" id="dots"></div>
+        <div class="show-bottom">
+            <div class="cap" id="cap">
+                <div class="avatar"><i class="status"></i></div>
+                <div><strong id="capTitle"></strong><span id="capSub"></span></div>
+            </div>
+            <div class="arrows">
+                <button type="button" class="arrow" id="prev" aria-label="Previous"><</button>
+                <button type="button" class="arrow" id="next" aria-label="Next">></button>
             </div>
         </div>
     </div>
 
-    <script>
-        const togglePass = document.getElementById('togglePass');
-        const passInput = document.getElementById('passInput');
+    <!-- KANAN: FORM LOGIN -->
+    <div class="panel">
+        <div class="panel-top">
+            <span class="brand">SIPN</span>
+            <span class="pill">EN</span>
+        </div>
+        <div class="panel-body">
+            <div class="panel-inner">
+                <h1 class="reveal">Hi Student</h1>
+                <p class="sub reveal">Welcome back to SIPN</p>
 
-        if (togglePass && passInput) {
-            togglePass.addEventListener('click', function () {
-                const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
-            });
-        }
-    </script>
+                <?php if (!empty($error)): ?>
+                    <div class="auth-alert"><?= htmlspecialchars($error); ?></div>
+                <?php endif; ?>
+
+                <form action="" method="POST" class="auth-form">
+                    <div class="input-group reveal">
+                        <input type="text" name="username" class="auth-input" placeholder="Username" required autocomplete="off">
+                    </div>
+                    <div class="input-group reveal">
+                        <input type="password" name="password" id="passInput" class="auth-input" placeholder="Password" required>
+                        <i class="fa-regular fa-eye-slash toggle-password"></i>
+                    </div>
+                    <button type="submit" class="submit-btn reveal">
+                        <span>Sign In</span>
+                        <i class="sign"></i>
+                    </button>
+                </form>
+
+                <div class="auth-divider reveal"><span>or</span></div>
+
+                <div class="social-auth-grid reveal">
+                    <a href="google-login.php" class="social-btn btn-google"><i class="google"></i> Google</a>
+                    <a href="github-login.php" class="social-btn btn-github"><i class="github"></i> GitHub</a>
+                </div>
+
+                <div class="auth-footer-link reveal">
+                    Don't have an account? <a href="register.php">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="<?= $base_url ?? ''; ?>/auth.js?v=1.0"></script>
 </body>
 </html>

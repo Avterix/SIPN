@@ -495,13 +495,13 @@ a {
     display: inline-block;
     width: 20px;     
     height: 20px;         
-    background: url('icons/login/google.png') center/contain no-repeat;
+    background: url('icons/login/google.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 .github {
     display: inline-block;
     width: 20px;     
     height: 20px;         
-    background: url('icons/login/github-white-icon.png') center/contain no-repeat;
+    background: url('icons/login/github-white-icon.webp') center/contain no-repeat;
     flex-shrink: 0;
 }

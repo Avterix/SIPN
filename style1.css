@@ -5,11 +5,12 @@
     --card-bg: #ffffff;
     --text-main: #2d3436;
     --text-muted: #95a5a6;
-    --accent-green: #11131a;
-    --accent-purple: #ff3b3b;
+    --accent-asphalt: #302f2c;
+    --accent-purple: #3C5827;
+    --accent-white: #efede3;
+    --accent-carbon: #1c1c1c;
     --accent-dark: #8b5cf6;
     --border-color: #e2e8f0;
-    
     --primary-color: #6366f1;
     --primary-hover: #4f46e5;
     
@@ -58,6 +59,7 @@ body {
     align-items: center;
     min-height: 142.68vh;
     overflow-x: hidden;
+    overflow-y: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding: 20px;
@@ -145,7 +147,7 @@ img, svg {
     left: 20px;
     bottom: 20px;
     width: 80px; /* Lebar default compact (cukup untuk logo & icon) */
-    background-color: #14161b;
+    background-color: var(--accent-carbon);
     color: #ffffff;
     display: flex;
     flex-direction: column;
@@ -329,7 +331,7 @@ img, svg {
 /* Submenu */
 .submenu {
     list-style: none;
-    padding-left: 20px;
+    padding-left: 8px;
     margin-top: 4px;
     display: none;
     flex-direction: column;
@@ -351,11 +353,11 @@ img, svg {
     border-radius: 50%;
     flex-shrink: 0;
 }
-.dot.user { background-color: #3b82f6; }
-.dot.siswa { background-color: var(--accent-green); }
-.dot.guru { background-color: var(--accent-purple); }
-.dot.mapel { background-color: #f1c40f; }
-.dot.mengajar { background-color: #e74c3c; }
+.dot.user { background-color: var(--accent-white); }
+.dot.siswa { background-color: var(--accent-white); }
+.dot.guru { background-color: var(--accent-white); }
+.dot.mapel { background-color: var(--accent-white); }
+.dot.mengajar { background-color: var(--accent-white); }
 
 /* Sidebar Footer (Logout Box) */
 .sidebar-footer {
@@ -377,8 +379,8 @@ img, svg {
 }
 
 .add-files-box:hover {
-    border-color: #ef4444;
-    background-color: rgba(239, 68, 68, 0.08);
+    border-color: var(--accent-white);
+    background-color: rgb(22, 51, 111, 0.2);
 }
 
 .icon-plus {
@@ -416,6 +418,7 @@ img, svg {
 
 .add-text span {
     font-size: 10px;
+    color: var(--accent-white);
 }
 
 /* Konten Utama di Kanan Menyesuaikan Sidebar Fixed */
@@ -452,7 +455,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .storage-badge {
-    background-color: var(--accent-green);
+    background-color: var(--accent-asphalt);
     color: #f4f5f8;
     font-size: 11px;
     font-weight: 700;
@@ -493,8 +496,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 
 .search-box input:focus {
     width: 250px;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    border-color: var(--green-accent);
 }
 
 .icon-btn {
@@ -520,7 +522,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .upgrade-btn {
-    background-color: var(--accent-green);
+    background-color: var(--accent-asphalt);
     color: #ffffff;
     border: none;
     padding: 10px 20px;
@@ -666,7 +668,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .folder-card.bg-green {
-    background: var(--accent-green);
+    background: var(--accent-asphalt);
     color: #ffffff;
 }
 
@@ -773,7 +775,7 @@ animation: fadeInUp 0.5s ease-out forwards;
     height: 100px;
     border-radius: 50%;
     background: conic-gradient(
-        var(--accent-green) 0deg 90deg, 
+        var(--accent-asphalt) 0deg 90deg, 
         var(--accent-purple) 90deg 180deg, 
         #fdcb6e 180deg 270deg, 
         #dfe6e9 270deg 360deg
@@ -823,7 +825,7 @@ animation: fadeInUp 0.5s ease-out forwards;
     height: 8px;
     border-radius: 50%;
 }
-.bullet.doc { background-color: var(--accent-green); }
+.bullet.doc { background-color: var(--accent-asphalt); }
 .bullet.img { background-color: var(--accent-purple); }
 .bullet.vid { background-color: #fdcb6e; }
 .bullet.free { background-color: #dfe6e9; }
@@ -1194,16 +1196,55 @@ animation: fadeInUp 0.5s ease-out forwards;
     width: 30px;          
     height: 30px;         
     background: url('dashboard/user.png') center/contain no-repeat;
+    filter: invert(1);
     margin-bottom: -5px;  
 }
 .teacher {
     display: inline-block;
     width: 30px;          
     height: 30px;         
-    background: url('dashboard/teacher.png') center/contain no-repeat;
+    background: url('dashboard/teaching.png') center/contain no-repeat;
     margin-bottom: -5px;  
 }
-
+.subject {
+    display: inline-block;
+    width: 30px;          
+    height: 30px;         
+    background: url('dashboard/stack.png') center/contain no-repeat;
+    margin-bottom: -5px;  
+}
+.class {
+    display: inline-block;
+    width: 30px;          
+    height: 30px;         
+    background: url('dashboard/virtual-event.png') center/contain no-repeat;
+    margin-bottom: -5px;  
+}
+.clock {
+    display: inline-block;
+    width: 20px;          
+    height: 20px;         
+    background: url('dashboard/wave.png') center/contain no-repeat;
+    margin-bottom: -5px;  
+}
+.next {
+    display: inline-block;
+    width: 20px;          
+    height: 20px;         
+    background: url('dashboard/next.png') center/contain no-repeat;
+}
+.previous {
+    display: inline-block;
+    width: 20px;          
+    height: 20px;         
+    background: url('dashboard/previous.png') center/contain no-repeat;
+}
+.image {
+    display: inline-block;
+    width: 20px;          
+    height: 20px;         
+    background: url('dashboard/image.png') center/contain no-repeat;
+}
 /* logo bagian navbar */
 /* Pastikan semua ikon di menu sidebar KUNCI UKURANNYA (tidak ikut mengecil/penyet) */
 .sidebar-menu li a i,
@@ -1236,6 +1277,29 @@ animation: fadeInUp 0.5s ease-out forwards;
     width: 20px;     
     height: 20px;         
     background: url('icons/dashboard/profile.webp') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.master {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/dashboard/pulse.png') center/contain no-repeat;
+    flex-shrink: 0;
+        filter: invert(1);
+}
+.masterright {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/dashboard/arrow.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+.logout {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/dashboard/logout.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 /* Ikon FontAwesome lain di menu sidebar */
@@ -1291,16 +1355,46 @@ animation: fadeInUp 0.5s ease-out forwards;
 }
 .calendar {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 26px;     
+    height: 26px;         
     background: url('gif/system-outline-45-clock-hover-pinch.gif') center/contain no-repeat;
     flex-shrink: 0;
 }
 .presence {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 26px;     
+    height: 26px;         
     background: url('gif/system-outline-56-file-text-hover-pinch.gif') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+/* Report Icons */
+.average {
+    display: inline-block;
+    width: 30px;     
+    height: 30px;         
+    background: url('icons/report/average.webp') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.total {
+    display: inline-block;
+    width: 30px;     
+    height: 30px;         
+    background: url('icons/report/summation.webp') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.high-max {
+    display: inline-block;
+    width: 30px;     
+    height: 30px;         
+    background: url('icons/report/grade.webp') center/contain no-repeat;
+    flex-shrink: 0;
+}
+.done {
+    display: inline-block;
+    width: 30px;     
+    height: 30px;         
+    background: url('icons/report/verify.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
 /* Bar Chart Diagram Nilai (Khusus Siswa) */
@@ -1494,7 +1588,7 @@ animation: fadeInUp 0.5s ease-out forwards;
     box-shadow: var(--shadow-card);
 }
 .att-percentage {
-    background-color: var(--accent-green);
+    background-color: var(--accent-asphalt);
     color: #f4f5f8;
     font-size: 12px;
     font-weight: 600;
@@ -1524,7 +1618,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .att-progress-info strong {
-    color: var(--accent-green);
+    color: var(--accent-asphalt);
 }
 
 .att-progress-bar {
@@ -1537,7 +1631,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 
 .att-progress-fill {
     height: 100%;
-    background: var(--accent-green);
+    background: var(--accent-asphalt);
     border-radius: 10px;
 }
 
@@ -1568,10 +1662,10 @@ animation: fadeInUp 0.5s ease-out forwards;
     margin-top: 2px;
 }
 
-.att-box.hadir { background: var(--accent-green); color: #f4f5f8; }
+.att-box.hadir { background: var(--accent-asphalt); color: #f4f5f8; }
 .att-box.sakit { background: var(--accent-purple); color: #f4f5f8; }
-.att-box.izin  { background: #ee6059; color: #f4f5f8; }
-.att-box.alpha { background: #14161b; color: #f4f5f8; }
+.att-box.izin  { background: #2E62B3; color: #f4f5f8; }
+.att-box.alpha { background: #A0A2A4; color: #f4f5f8; }
 
 /* ACTION BUTTON IMAGE STYLE */
 .btn-action-img {

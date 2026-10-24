@@ -109,7 +109,7 @@ if ($count_mapel == 0) $min_nilai = 0;
     <style>
         .rapor-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.5s ease-out forwards; }
         .card-box { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .student-banner { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #231c32 0%, #3b2d54 100%); color: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 8px 20px rgba(35, 28, 50, 0.15); }
+        .student-banner { display: flex; align-items: center; justify-content: space-between; background: var(--accent-carbon); color: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 8px 20px rgba(35, 28, 50, 0.15); }
         .student-info-left { display: flex; align-items: center; gap: 20px; }
         .student-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.3); background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #231c32; }
         .student-details h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
@@ -184,13 +184,13 @@ if ($count_mapel == 0) $min_nilai = 0;
                 <li><a href="profile.php"><i class="profile"></i> Manage Profile</a></li>
             </ul>
 
-            <div class="sidebar-footer">
-                <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
-                    <div class="icon-plus" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
-                    <div class="add-text">
-                        <strong>System Session</strong>
-                        <span style="color: #ef4444;">Logout Account</span>
-                    </div>
+                <div class="sidebar-footer">
+        <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
+            <div class="icon-plus"><i class="logout"></i></div>
+            <div class="add-text">
+                <strong>System Session</strong>
+                <span>Logout Account</span>
+            </div>
                 </a>
             </div>
         </aside>
@@ -207,8 +207,8 @@ if ($count_mapel == 0) $min_nilai = 0;
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" placeholder="Search report card...">
                     </div>
-                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.webp"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.webp"/></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
@@ -239,7 +239,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Rata-Rata Nilai</h4>
                             <div class="number"><?= $rata_rata; ?></div>
                         </div>
-                        <div class="stat-icon icon-purple"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="stat-icon"><i class="average"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -247,7 +247,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Total Mata Pelajaran</h4>
                             <div class="number"><?= $count_mapel; ?></div>
                         </div>
-                        <div class="stat-icon icon-blue"><i class="fa-solid fa-book-bookmark"></i></div>
+                        <div class="stat-icon"><i class="total"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -255,7 +255,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Nilai Tertinggi</h4>
                             <div class="number"><?= $max_nilai; ?></div>
                         </div>
-                        <div class="stat-icon icon-green"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="stat-icon"><i class="high-max"></i></div>
                     </div>
 
                     <div class="stat-card">
@@ -263,7 +263,7 @@ if ($count_mapel == 0) $min_nilai = 0;
                             <h4>Mata Pelajaran Tuntas</h4>
                             <div class="number"><?= $tuntas_count; ?> / <?= $count_mapel; ?></div>
                         </div>
-                        <div class="stat-icon icon-orange"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-icon"><i class="done"></i></div>
                     </div>
                 </div>
 

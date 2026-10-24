@@ -204,13 +204,13 @@ if (!empty($filter_kelas)) {
                 <li><a href="profile.php"><i class="fa-solid fa-gear"></i> Manage Profile</a></li>
             </ul>
 
-            <div class="sidebar-footer">
-                <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
-                    <div class="icon-plus" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
-                    <div class="add-text">
-                        <strong>System Session</strong>
-                        <span style="color: #ef4444;">Logout Account</span>
-                    </div>
+                <div class="sidebar-footer">
+        <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
+            <div class="icon-plus"><i class="logout"></i></div>
+            <div class="add-text">
+                <strong>System Session</strong>
+                <span>Logout Account</span>
+            </div>
                 </a>
             </div>
         </aside>

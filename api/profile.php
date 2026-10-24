@@ -167,7 +167,7 @@ if ($gh_connected) $progress += 15;
                 <li><a href="dashboard.php"><i class="dashboard"></i> Dashboard</a></li>
                 <?php if ($role === 'admin'): ?>
                 <li class="has-submenu">
-                    <a href="#"><i class="fa-solid fa-folder-tree"></i> Master Data <i class="fa-solid fa-chevron-down arrow"></i></a>
+                    <a href="#"><i class="master" style="width:20px; text-align:center;"></i> <span class="menu-label">Master Data</span></a>
                     <ul class="submenu">
                         <li><a href="daftar_user.php"><span class="dot user"></span> Kelola User</a></li>
                         <li><a href="daftar_siswa.php"><span class="dot siswa"></span> Kelola Siswa</a></li>
@@ -185,13 +185,13 @@ if ($gh_connected) $progress += 15;
                 <li><a href="profile.php" class="active"><i class="profile"></i> Manage Profile</a></li>
             </ul>
 
-            <div class="sidebar-footer">
-                <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
-                    <div class="icon-plus" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
-                    <div class="add-text">
-                        <strong>System Session</strong>
-                        <span style="color: #ef4444;">Logout Account</span>
-                    </div>
+                <div class="sidebar-footer">
+        <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
+            <div class="icon-plus"><i class="logout"></i></div>
+            <div class="add-text">
+                <strong>System Session</strong>
+                <span>Logout Account</span>
+            </div>
                 </a>
             </div>
         </aside>
@@ -208,8 +208,8 @@ if ($gh_connected) $progress += 15;
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" placeholder="Search settings...">
                     </div>
-                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/"></i></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.webp"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.webp"/></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>

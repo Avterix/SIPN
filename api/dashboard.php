@@ -140,6 +140,94 @@ if ($role === 'siswa') {
         'persentase' => 92
     ];
 }
+
+// ===== TAMBAHAN UNTUK DASHBOARD BENTO (logic lama tidak diubah) =====
+if ($hari_ini === '') {
+    $map_hari = ['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
+    $hari_ini = $map_hari[date('l')];
+}
+
+// Total kelas
+$tot_kelas = 0;
+$q_kelas = mysqli_query($koneksi, "SELECT COUNT(DISTINCT kelas) AS total FROM siswa");
+if ($q_kelas && $row = mysqli_fetch_assoc($q_kelas)) {
+    $tot_kelas = $row['total'] ?? 0;
+}
+
+// 5 siswa terbaru + foto profil dari tabel users (aturan sama kayak avatar sidebar)
+$siswa_terbaru = [];
+$q_baru = mysqli_query($koneksi, "
+    SELECT s.*, u.foto AS u_foto, u.github_connected AS u_gh, u.github_avatar AS u_gh_avatar
+    FROM siswa s
+    LEFT JOIN users u ON s.user_id = u.id
+    ORDER BY s.id DESC LIMIT 5
+");
+if ($q_baru) {
+    while ($row = mysqli_fetch_assoc($q_baru)) {
+        $foto = $row['u_foto'] ?? '';
+        $av = '';
+        if (!empty($foto)) {
+            if (strpos($foto, 'data:image') === 0 || strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0) {
+                $av = $foto;
+            } elseif (file_exists('uploads/avatars/' . $foto)) {
+                $av = 'uploads/avatars/' . $foto;
+            }
+        }
+        if (empty($av) && !empty($row['u_gh']) && $row['u_gh'] == 1 && !empty($row['u_gh_avatar'])) {
+            $av = $row['u_gh_avatar'];
+        }
+        $siswa_terbaru[] = [
+            'nama'   => $row['nama'] ?? ($row['nama_siswa'] ?? 'Siswa'),
+            'avatar' => $av
+        ];
+    }
+}
+
+// Jadwal: siswa pakai jadwal kelasnya, role lain lihat semua jadwal hari ini
+$jadwal_tampil = $jadwal_hari_ini;
+if ($role !== 'siswa') {
+    $q_jadwal_all = mysqli_query($koneksi, "
+        SELECT j.jam_mulai, j.jam_selesai, j.kelas,
+               COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel,
+               COALESCE(g.nama, 'Belum Ditentukan') AS nama_guru
+        FROM jadwal j
+        LEFT JOIN mapel m ON j.mapel_id = m.id
+        LEFT JOIN guru g ON m.guru_id = g.id
+        WHERE j.hari = '$hari_ini'
+        ORDER BY j.jam_mulai ASC LIMIT 8
+    ");
+    if ($q_jadwal_all) {
+        while ($row = mysqli_fetch_assoc($q_jadwal_all)) {
+            $jadwal_tampil[] = [
+                'jam'   => date('H:i', strtotime($row['jam_mulai'])) . ' - ' . date('H:i', strtotime($row['jam_selesai'])),
+                'mapel' => $row['nama_mapel'],
+                'guru'  => $row['nama_guru'],
+                'ruang' => 'Kelas ' . $row['kelas'],
+                'tag'   => 'Wajib'
+            ];
+        }
+    }
+}
+
+// Quick link chips & tombol utama sesuai role
+if ($role === 'admin') {
+    $quick_links = [['Kelola User','daftar_user.php'],['Kelola Siswa','daftar_siswa.php'],['Kelola Guru','daftar_guru.php'],['Mata Pelajaran','daftar_mapel.php'],['Profile','profile.php']];
+    $cta = ['Kelola Siswa','daftar_siswa.php'];
+} elseif ($role === 'guru') {
+    $quick_links = [['Kelola Nilai','daftar_nilai.php'],['Profile','profile.php']];
+    $cta = ['Kelola Nilai','daftar_nilai.php'];
+} else {
+    $quick_links = [['Report Grades','lihat_nilai.php'],['Profile','profile.php']];
+    $cta = ['Lihat Nilai','lihat_nilai.php'];
+}
+
+// Rasio siswa (untuk role non-siswa)
+$rasio_pct = ($tot_siswa + $tot_guru) > 0 ? round($tot_siswa / ($tot_siswa + $tot_guru) * 100) : 0;
+
+// Gambar galeri: taruh file di folder assets/ dengan nama banner1.jpg, banner2.png, dst
+$banner_images = [
+    $base_url . '/assets/banner/banner1.jpeg', $base_url . '/assets/banner/banner2.jpeg', $base_url . '/assets/banner/banner3.jpeg', $base_url . '/assets/banner/banner4.jpeg', $base_url . '/assets/banner/banner5.jpeg', $base_url . '/assets/banner/banner6.jpeg'
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -147,7 +235,8 @@ if ($role === 'siswa') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SIPN</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.2">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.3">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/dashboard-bento.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
@@ -183,7 +272,7 @@ if ($role === 'siswa') {
         
         <?php if ($role === 'admin'): ?>
         <li class="has-submenu">
-            <a href="#"><i class="fa-solid fa-folder-tree" style="width:20px; text-align:center;"></i> <span class="menu-label">Master Data <i class="fa-solid fa-chevron-down arrow"></i></span></a>
+            <a href="#"><i class="master" style="width:20px; text-align:center;"></i> <span class="menu-label">Master Data</span></a>
             <ul class="submenu">
                 <li><a href="daftar_user.php"><span class="dot user"></span> <span class="menu-label">Kelola User</span></a></li>
                 <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
@@ -206,10 +295,10 @@ if ($role === 'siswa') {
 
     <div class="sidebar-footer">
         <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
-            <div class="icon-plus" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+            <div class="icon-plus"><i class="logout"></i></div>
             <div class="add-text">
                 <strong>System Session</strong>
-                <span style="color: #ef4444;">Logout Account</span>
+                <span>Logout Account</span>
             </div>
         </a>
     </div>
@@ -227,66 +316,145 @@ if ($role === 'siswa') {
                         <i class="zoom"></i>
                         <input type="text" placeholder="Search records...">
                     </div>
-                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.png"/></button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.png"/></a>
+                    <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.webp"/></button>
+                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.webp"/></a>
 			</button>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
 
-            <!-- HERO BANNER SECTION -->
-            <section class="hero-section">
-                <div class="folders-slider">
-                <div class="hero-text">
-                    <h2>Manage your academic <br> system</h2>
-                    <p>Access database modules quickly to sort student scores <br> and school properties</p>
+            <!-- BENTO GRID -->
+            <section class="bx-grid">
+
+                <!-- GALERI / TEMPAT GAMBAR -->
+                <div class="bx-card bx-gallery">
+                    <div class="bx-head">
+                        <h3>School Gallery</h3>
+                        <span class="bx-pill">2026/2027</span>
+                    </div>
+                    <div class="bx-img-frame" id="bxFrame">
+                        <?php if (count($banner_images) > 0): ?>
+                            <?php foreach ($banner_images as $i => $img): ?>
+                                <img src="<?= htmlspecialchars($img); ?>" class="bx-slide <?= $i === 0 ? 'active' : ''; ?>" alt="Galeri <?= $i + 1; ?>">
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="bx-img-empty">
+                                <i class="image"></i>
+                                <span>Taruh gambar di <b>assets/banner1.jpg</b></span>
+                            </div>
+                        <?php endif; ?>
+                        <span class="bx-img-badge"><i class="image"></i></span>
+                    </div>
+                    <div class="bx-slider-bar">
+                        <button type="button" class="bx-circle-btn" id="bxPrev"><i class="previous"></i></button>
+                        <span class="bx-caption" id="bxCaption">SMK Sangkuriang 1 Cimahi</span>
+                        <button type="button" class="bx-circle-btn" id="bxNext"><i class="next"></i></button>
+                    </div>
                 </div>
-                    <div class="folder-card2 create-new-card" onclick="location.href='profile.php'">
-                        <div class="dashed-circle"><i class="fa-solid fa-plus"></i></div>
+
+                <!-- WELCOME + STATISTIK -->
+                <div class="bx-card bx-welcome">
+                    <div class="bx-hero-text">
+                        <h2>Manage your academic <br> system</h2>
+                        <p>Access database modules quickly to sort student scores and school properties</p>
                     </div>
-                    <div class="folder-card bg-green">
-                        <div class="card-top">
-                            <span class="num">01</span>
-                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                    <div class="bx-stat-row">
+                        <div class="bx-stat"><div class="students"></div><strong><?= $tot_siswa; ?></strong><small>Students</small></div>
+                        <div class="bx-stat"><div class="teacher"></div><strong><?= $tot_guru; ?></strong><small>Teachers</small></div>
+                        <div class="bx-stat"><i class="subject"></i><strong><?= $tot_mapel; ?></strong><small>Subjects</small></div>
+                        <div class="bx-stat"><i class="class"></i><strong><?= $tot_kelas; ?></strong><small>Classes</small></div>
+                    </div>
+                    <a href="profile.php" class="bx-btn-pill"><i class="fa-solid fa-plus"></i> Edit Profile</a>
+                </div>
+
+                <!-- STUDENTS -->
+                <div class="bx-card bx-students">
+                    <div class="bx-head">
+                        <span class="bx-pill">Students</span>
+                        <span class="bx-dot-btn"><i class="students"></i></span>
+                    </div>
+                    <h3 class="bx-big"><?= $tot_siswa; ?></h3>
+                    <small class="bx-muted">Registered students</small>
+                    <div class="bx-avatars">
+                        <?php foreach ($siswa_terbaru as $sw): ?>
+                            <?php if (!empty($sw['avatar'])): ?>
+                                <img src="<?= htmlspecialchars($sw['avatar']); ?>" class="bx-av bx-av-img" title="<?= htmlspecialchars($sw['nama']); ?>" alt="<?= htmlspecialchars($sw['nama']); ?>" referrerpolicy="no-referrer">
+                            <?php else: ?>
+                                <span class="bx-av" title="<?= htmlspecialchars($sw['nama']); ?>"><?= strtoupper(substr($sw['nama'], 0, 1)); ?></span>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                        <?php if (count($siswa_terbaru) === 0): ?><small class="bx-muted">Belum ada data siswa</small><?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- JADWAL + PROFIL -->
+                <div class="bx-mid-bottom">
+                    <div class="bx-card bx-schedule">
+                        <div class="bx-head">
+                            <span class="bx-pill"><i class="calendar"></i> Jadwal <?= $hari_ini; ?></span>
+                            <span class="bx-muted"><?= count($jadwal_tampil); ?> sesi</span>
                         </div>
-                        <div class="card-body">
-                            <div class="folder-icon"><i class="students"></i></div>
-                            <h3>Students</h3>
-                            <span><?= $tot_siswa; ?> Registered</span>
+                        <div class="bx-sch-list">
+                            <?php if (count($jadwal_tampil) > 0): ?>
+                                <?php foreach ($jadwal_tampil as $j): ?>
+                                <div class="bx-sch-item">
+                                    <span class="bx-sch-time"><i class="clock"></i> <?= $j['jam']; ?></span>
+                                    <div class="bx-sch-info">
+                                        <h4><?= htmlspecialchars($j['mapel']); ?></h4>
+                                        <p><i class="fa-solid fa-chalkboard-user"></i> <?= htmlspecialchars($j['guru']); ?> &middot; <?= htmlspecialchars($j['ruang']); ?></p>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p class="bx-muted bx-center">Tidak ada jadwal hari <?= $hari_ini; ?><?= $role === 'siswa' ? ' untuk kelas kamu' : ''; ?>.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="folder-card bg-purple">
-                        <div class="card-top">
-                            <span class="num">02</span>
-                            <i class="fa-solid fa-ellipsis-vertical"></i>
-                        </div>
-                        <div class="card-body">
-                            <div class="folder-icon"><i class="teacher"></i></div>
-                            <h3>Teachers</h3>
-                            <span><?= $tot_guru; ?> Instructors</span>
-                        </div>
+                    <div class="bx-card bx-profile">
+                        <?php if (!empty($avatar_src)): ?>
+                            <img src="<?= htmlspecialchars($avatar_src); ?>" class="bx-profile-img" referrerpolicy="no-referrer" alt="avatar">
+                        <?php else: ?>
+                            <div class="bx-profile-img bx-profile-empty"><?= strtoupper(substr($username, 0, 1)); ?></div>
+                        <?php endif; ?>
+                        <strong><?= htmlspecialchars($username); ?></strong>
+                        <small class="bx-muted"><?= strtoupper($role); ?></small>
+                        <span class="bx-toggle"><span class="bx-toggle-dot"></span> Online</span>
                     </div>
-                    <div class="folder-card bg-dark">
-                        <div class="card-body-gallery">
-                            <h3>Subjects</h3>
-                            <span><?= $tot_mapel; ?> Active Units</span>
-                        </div>
+                </div>
+
+                <!-- KEHADIRAN / RASIO -->
+                <div class="bx-card bx-progress">
+                    <div class="bx-head">
+                        <span class="bx-pill"><?= $role === 'siswa' ? 'Kehadiran' : 'Rasio Siswa'; ?></span>
+                        <span class="bx-dot-btn"><i class="presence"></i></span>
                     </div>
+                    <?php $pct = ($role === 'siswa') ? $kehadiran['persentase'] : $rasio_pct; ?>
+                    <h3 class="bx-big"><?= $pct; ?>%</h3>
+                    <div class="bx-bar"><div class="bx-bar-fill" style="width: <?= $pct; ?>%;"></div></div>
+                    <a href="<?= $cta[1]; ?>" class="bx-btn-bar"><?= $cta[0]; ?></a>
+                </div>
+
+                <!-- TEACHERS & SUBJECTS -->
+                <div class="bx-card bx-teachers">
+                    <div class="bx-head">
+                        <span class="bx-pill">Teachers</span>
+                        <span class="bx-dot-btn"><i class="teacher"></i></span>
+                    </div>
+                    <h3 class="bx-big"><?= $tot_guru; ?></h3>
+                    <small class="bx-muted"><?= $tot_mapel; ?> Active Subjects</small>
+                    <div class="bx-stack"><span></span><span></span><span></span></div>
                 </div>
             </section>
 
-            <!-- BOTTOM GRID SECTION -->
-            <section class="bottom-grid">
-                <div class="card storage-card">
+            <!-- BARIS BAWAH -->
+            <section class="bx-row2">
+                <div class="bx-card">
                     <?php if ($role === 'siswa'): ?>
-                        <div class="card-header">
-                            <h3>Academic Grade Chart</h3>
-                            <i class="chart"></i>
-                        </div>
+                        <div class="bx-head"><h3>Academic Grade Chart</h3><i class="chart"></i></div>
                         <div class="grade-chart-container">
-                            <?php foreach ($grades_data as $g): 
+                            <?php foreach ($grades_data as $g):
                                 $has_value = ($g['nilai'] !== null && $g['nilai'] > 0);
-                                $bar_height = $has_value ? min(100, max(15, $g['nilai'])) : 15; 
+                                $bar_height = $has_value ? min(100, max(15, $g['nilai'])) : 15;
                                 $bar_class  = $has_value ? 'bar-active' : 'bar-empty';
                                 $display_val = $has_value ? $g['nilai'] : '-';
                             ?>
@@ -295,9 +463,7 @@ if ($role === 'siswa') {
                                     <div class="grade-bar-track">
                                         <div class="grade-bar-fill <?= $bar_class; ?>" style="height: <?= $bar_height; ?>%;"></div>
                                     </div>
-                                    <span class="grade-bar-label" title="<?= htmlspecialchars($g['nama']); ?>">
-                                        <?= htmlspecialchars($g['nama']); ?>
-                                    </span>
+                                    <span class="grade-bar-label" title="<?= htmlspecialchars($g['nama']); ?>"><?= htmlspecialchars($g['nama']); ?></span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -306,14 +472,9 @@ if ($role === 'siswa') {
                             <span style="display:inline-block; width:8px; height:8px; background:#cbd5e1; border-radius:50%; margin-left:12px; margin-right:4px;"></span> Belum Ada Nilai
                         </div>
                     <?php else: ?>
-                        <div class="card-header">
-                            <h3>Database Ratio</h3>
-                            <i class="chart"></i>
-                        </div>
+                        <div class="bx-head"><h3>Database Ratio</h3><i class="chart"></i></div>
                         <div class="storage-content">
-                            <div class="chart-container">
-                                <div class="donut-hole"><strong>100%</strong></div>
-                            </div>
+                            <div class="chart-container"><div class="donut-hole"><strong>100%</strong></div></div>
                             <div class="storage-legend">
                                 <div class="legend-item"><span class="bullet doc"></span> <div><strong>Students</strong><small><?= $tot_siswa; ?> Data</small></div></div>
                                 <div class="legend-item"><span class="bullet img"></span> <div><strong>Teachers</strong><small><?= $tot_guru; ?> Data</small></div></div>
@@ -324,109 +485,64 @@ if ($role === 'siswa') {
                     <?php endif; ?>
                 </div>
 
-                <div class="card files-card">
-                    <div class="card-header">
-                        <h3>System Information</h3>
-                        <i class="system"></i>
-                    </div>
+                <div class="bx-card">
+                    <div class="bx-head"><h3>System Information</h3><i class="system"></i></div>
                     <div class="file-list">
                         <div class="file-item">
-                            <div class="file-info">
-                                <div class="file-ico psd"><i class="school"></i></div>
-                                <span>SMK Sangkuriang 1 Cimahi</span>
-                            </div>
+                            <div class="file-info"><div class="file-ico psd"><i class="school"></i></div><span>SMK Sangkuriang 1 Cimahi</span></div>
                             <span class="file-date">2026/2027</span>
                         </div>
                         <div class="file-item">
-                            <div class="file-info">
-                                <div class="file-ico jpg"><i class="curriculum"></i></div>
-                                <span>Rekayasa Perangkat Lunak</span>
-                            </div>
+                            <div class="file-info"><div class="file-ico jpg"><i class="curriculum"></i></div><span>Rekayasa Perangkat Lunak</span></div>
                             <span class="file-date">Curriculum</span>
                         </div>
                         <div class="file-item">
-                            <div class="file-info">
-                                <div class="file-ico pdf"><i class="status"></i></div>
-                                <span>Logged as: <?= htmlspecialchars($username); ?></span>
-                            </div>
+                            <div class="file-info"><div class="file-ico pdf"><i class="status"></i></div><span>Logged as: <?= htmlspecialchars($username); ?></span></div>
                             <span class="file-date">Secure Session</span>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <?php if ($role === 'siswa'): ?>
-            <section class="bottom-grid" style="margin-top: 24px;">
-                <div class="card-badge schedule-card">
-                    <div class="card-day">
-                        <h3><i class="calendar" style="margin-right: 8px;"></i> Jadwal Pelajaran (<?= $hari_ini; ?>)</h3>
-                        <span class="tag-badge-day"><?= $hari_ini; ?></span>
-                    </div>
-                    <div class="schedule-list">
-                        <?php if (count($jadwal_hari_ini) > 0): ?>
-                            <?php foreach ($jadwal_hari_ini as $j): ?>
-                            <div class="schedule-item">
-                                <div class="schedule-time">
-                                    <i class="fa-regular fa-clock"></i>
-                                    <span><?= $j['jam']; ?></span>
-                                </div>
-                                <div class="schedule-details">
-                                    <h4><?= htmlspecialchars($j['mapel']); ?></h4>
-                                    <p><i class="fa-solid fa-chalkboard-user"></i> <?= htmlspecialchars($j['guru']); ?></p>
-                                </div>
-                                <div class="schedule-meta">
-                                    <span class="room-pill"><i class="fa-solid fa-door-open"></i> <?= htmlspecialchars($j['ruang']); ?></span>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="schedule-item">
-                                <p style="text-align:center; width:100%; color: #94a3b8;">Tidak ada jadwal hari <?= $hari_ini; ?> untuk kelas kamu.</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <div class="card-att attendance-card">
-                    <div class="card-header">
-                        <h3><i class="presence" style="color: #10b981; margin-right: 8px;"></i> Keaktifan & Presensi</h3>
+                <?php if ($role === 'siswa'): ?>
+                <div class="bx-card">
+                    <div class="bx-head">
+                        <h3><i class="presence" style="color:#10b981; margin-right:8px;"></i> Participation & Attendance</h3>
                         <span class="att-percentage"><?= $kehadiran['persentase']; ?>% High</span>
                     </div>
                     <div class="attendance-body">
                         <div class="att-progress-wrapper">
-                            <div class="att-progress-info">
-                                <span>Persentase Kehadiran</span>
-                                <strong><?= $kehadiran['persentase']; ?>%</strong>
-                            </div>
-                            <div class="att-progress-bar">
-                                <div class="att-progress-fill" style="width: <?= $kehadiran['persentase']; ?>%;"></div>
-                            </div>
+                            <div class="att-progress-info"><span>attendance percentage</span><strong><?= $kehadiran['persentase']; ?>%</strong></div>
+                            <div class="att-progress-bar"><div class="att-progress-fill" style="width: <?= $kehadiran['persentase']; ?>%;"></div></div>
                         </div>
-
                         <div class="att-stats-grid">
-                            <div class="att-box hadir">
-                                <span class="att-num"><?= $kehadiran['hadir']; ?></span>
-                                <span class="att-label">Hadir</span>
-                            </div>
-                            <div class="att-box sakit">
-                                <span class="att-num"><?= $kehadiran['sakit']; ?></span>
-                                <span class="att-label">Sakit</span>
-                            </div>
-                            <div class="att-box izin">
-                                <span class="att-num"><?= $kehadiran['izin']; ?></span>
-                                <span class="att-label">Izin</span>
-                            </div>
-                            <div class="att-box alpha">
-                                <span class="att-num"><?= $kehadiran['alpha']; ?></span>
-                                <span class="att-label">Alpha</span>
-                            </div>
+                            <div class="att-box hadir"><span class="att-num"><?= $kehadiran['hadir']; ?></span><span class="att-label">Hadir</span></div>
+                            <div class="att-box sakit"><span class="att-num"><?= $kehadiran['sakit']; ?></span><span class="att-label">Sakit</span></div>
+                            <div class="att-box izin"><span class="att-num"><?= $kehadiran['izin']; ?></span><span class="att-label">Izin</span></div>
+                            <div class="att-box alpha"><span class="att-num"><?= $kehadiran['alpha']; ?></span><span class="att-label">Alpha</span></div>
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             </section>
-            <?php endif; ?>
         </main>
     </div>
 </div>
+
+<script>
+(function () {
+    var slides = document.querySelectorAll('#bxFrame .bx-slide');
+    if (!slides.length) return;
+    var i = 0, cap = document.getElementById('bxCaption');
+    function show(n) {
+        slides[i].classList.remove('active');
+        i = (n + slides.length) % slides.length;
+        slides[i].classList.add('active');
+        cap.textContent = 'Galeri ' + (i + 1) + ' / ' + slides.length;
+    }
+    document.getElementById('bxPrev').onclick = function () { show(i - 1); };
+    document.getElementById('bxNext').onclick = function () { show(i + 1); };
+    setInterval(function () { show(i + 1); }, 6000);
+})();
+</script>
 </body>
 </html>

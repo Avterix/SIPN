@@ -152,7 +152,7 @@ while ($row = mysqli_fetch_assoc($q_all)) {
             <ul class="sidebar-menu">
                 <li><a href="dashboard.php"><i class="dashboard"></i> Dashboard</a></li>
                 <li class="has-submenu active">
-                    <a href="#"><i class="fa-solid fa-folder-tree"></i> Master Data <i class="fa-solid fa-chevron-down arrow"></i></a>
+                    <a href="#"><i class="master" style="width:20px; text-align:center;"></i> <span class="menu-label">Master Data</span></a>
                     <ul class="submenu" style="display: flex;">
                         <li><a href="daftar_user.php" style="font-weight: 700; color: #fff;"><span class="dot user"></span> Kelola User</a></li>
                         <li><a href="daftar_siswa.php"><span class="dot siswa"></span> Kelola Siswa</a></li>
@@ -160,14 +160,15 @@ while ($row = mysqli_fetch_assoc($q_all)) {
                         <li><a href="daftar_mapel.php"><span class="dot mapel"></span> Mata Pelajaran</a></li>
                     </ul>
                 </li>
-                <li><a href="profile.php"><i class="fa-solid fa-gear"></i> Manage Profile</a></li>
+                <li><a href="profile.php"><i class="profile" style="width:20px; text-align:center;"></i> <span class="menu-label">Profile Settings</span></a></li>
             </ul>
 
             <div class="sidebar-footer">
-                <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
-                    <div class="icon-plus" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
-                    <div class="add-text"><strong>System Session</strong><span style="color: #ef4444;">Logout Account</span></div>
-                </a>
+        <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
+            <div class="icon-plus"><i class="logout"></i></div>
+            <div class="add-text">
+                <strong>System Session</strong>
+                <span>Logout Account</span>
             </div>
         </aside>
 
@@ -243,13 +244,13 @@ while ($row = mysqli_fetch_assoc($q_all)) {
                                         <td style="text-align: center;">
                                             <!-- Edit Image Button -->
                                             <button onclick="editUser(<?= $u['id']; ?>, '<?= htmlspecialchars($u['username']); ?>', '<?= $u['role']; ?>')" class="btn-action-img" title="Edit">
-                                                <img src="icons/admin/admin_manage/edit.webp" alt="Edit">
+                                                <img src="<?= $base_url; ?>/icons/admin/admin_manage/edit.webp" alt="Edit">
                                             </button>
                                             
                                             <!-- Delete Image Button -->
                                             <?php if ($u['id'] !== $user_id): ?>
                                                 <a href="daftar_user.php?hapus=<?= $u['id']; ?>" onclick="return confirm('Hapus user ini?');" class="btn-action-img" title="Hapus">
-                                                    <img src="icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
+                                                    <img src="<?= $base_url; ?>/icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
                                                 </a>
                                             <?php endif; ?>
                                         </td>
