@@ -1,148 +1,141 @@
-# SIPN (Sistem Informasi Penilaian Sekolah)
+# SIPN — Sistem Informasi Penilaian Sekolah
 
-Dokumentasi Resmi Proyek & Panduan Penggunaan Modular
+Dokumentasi resmi proyek & panduan penggunaan modular.
 
-> **RINGKASAN EKSEKUTIF PROYEK SIPN**
-> - **Nama Proyek:** SIPN (Sistem Informasi Penilaian Sekolah)
-> - **Lingkungan Pengembangan:** PHP 7.4 / 8.x, MySQL (Aiven & Local Apache/LAMPP), HTML5, CSS3, JS
-> - **Integrasi OAuth:** Dual Provider (GitHub OAuth API & Google OAuth 2.0 API)
-> - **Tampilan Antarmuka:** Responsive Bento Grid Layout, Custom Glassmorphism Auth UI, Async Page Loaders
-> - **Lisensi:** Apache License 2.0
+![PHP](https://img.shields.io/badge/PHP-7.4%20%7C%208.x-777BB4?logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-Aiven%20%7C%20Local-4479A1?logo=mysql&logoColor=white)
+![OAuth](https://img.shields.io/badge/OAuth-GitHub%20%7C%20Google-black)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
----
+## Ringkasan Proyek
 
-## 1. Tentang Proyek & Pembaruan Utama
+| Item | Keterangan |
+| :-- | :-- |
+| Nama Proyek | SIPN (Sistem Informasi Penilaian Sekolah) |
+| Lingkungan | PHP 7.4 / 8.x, MySQL (Aiven & Local Apache/LAMPP), HTML5, CSS3, JS |
+| Integrasi OAuth | GitHub OAuth API & Google OAuth 2.0 API |
+| Antarmuka | Responsive Bento Grid, Glassmorphism Auth UI, Async Page Loaders |
+| Lisensi | Apache License 2.0 |
 
-SIPN (Sistem Informasi Penilaian Sekolah) adalah aplikasi berbasis web modular yang dikembangkan untuk mengelola data akademik sekolah secara terpusat, terstruktur, aman, dan efisien. Sistem ini menangani seluruh siklus pengelolaan akademik mulai dari otorisasi pengguna, administrasi direktori siswa dan pengajar, manajemen kurikulum mata pelajaran, hingga pencatatan dan evaluasi transkrip nilai per semester.
+## 1. Tentang Proyek
 
-Pada versi SIPN ini, dilakukan beberapa peningkatan infrastruktur dan visual yang signifikan guna meningkatkan keamanan, kemudahan aksesibilitas, serta kenyamanan pengalaman pengguna (UI/UX). Beberapa pembaruan utama meliputi:
+SIPN adalah aplikasi web modular untuk mengelola data akademik sekolah secara terpusat, terstruktur, aman, dan efisien. Cakupannya meliputi otorisasi pengguna, direktori siswa dan guru, manajemen kurikulum mata pelajaran, hingga pencatatan dan evaluasi nilai per semester.
 
-- **Integrasi Dual OAuth:** Penambahan Google OAuth 2.0 API sebagai pilihan otorisasi pihak ketiga di samping GitHub OAuth API, memungkinkan login sekali klik yang cepat dan aman tanpa mengetik kredensial lokal.
-- **Pendaftaran OAuth Terpandu:** Halaman pendaftaran mandiri khusus bagi pengguna yang pertama kali masuk melalui OAuth (`complete-github-reg.php` dan `complete-google-reg.php`) untuk melengkapi data identitas peran (Siswa/Guru).
-- **Antarmuka Bento Grid Modern:** Redesain dashboard utama menggunakan konsep Bento Grid Layout modern (`dashboard-bento.css`) yang mengelompokkan informasi secara simetris, intuitif, dan responsif.
-- **Sistem Async Loading State:** Penerapan indikator pemuatan halaman interaktif (`loader.php` dan `loader_nilai.php`) untuk memberikan umpan balik visual saat memproses kalkulasi nilai akademik atau data server yang tebal.
-- **Visual Auth UI Refresh:** Penyempurnaan tampilan halaman autentikasi (`auth-style3.css`) dengan gaya visual modern dan proteksi sesi yang lebih ketat.
+### Pembaruan Utama
 
----
+- **Dual OAuth:** Google OAuth 2.0 ditambahkan di samping GitHub OAuth untuk login sekali klik.
+- **Pendaftaran OAuth Terpandu:** `complete-github-reg.php` dan `complete-google-reg.php` untuk melengkapi data peran (Siswa/Guru) saat login pertama.
+- **Bento Grid Dashboard:** Redesain dashboard dengan `dashboard-bento.css` yang simetris dan responsif.
+- **Async Loading State:** `loader.php` dan `loader_nilai.php` sebagai indikator pemuatan saat kalkulasi nilai atau data berat.
+- **Auth UI Refresh:** Tampilan autentikasi baru (`auth-style3.css`) dengan proteksi sesi lebih ketat.
 
-## 2. Fitur Utama Sistem
+## 2. Fitur Utama
 
-### 2.1. Autentikasi & Otorisasi Pengguna
+### 2.1 Autentikasi & Otorisasi
 
-- **Manajemen Akun Lokal:** Mendukung pembuatan akun baru (`register.php`) dan proses masuk berbasis kredensial lokal (`login.php`) yang terenkripsi aman di basis data.
-- **Integrasi GitHub OAuth:** Otorisasi praktis bagi pengembang atau staf menggunakan OAuth GitHub (`github-login.php`, `github-callback.php`, `github-disconnect.php`) dan registrasi otomatis.
-- **Integrasi Google OAuth 2.0:** Integrasi identitas resmi akun Google (`google-login.php`, `google-callback.php`, `config_google.php`, `complete-google-reg.php`) untuk siswa dan pengajar.
-- **Pengelolaan Profil Mandiri:** Pengguna dapat memperbarui data pribadi, foto profil, serta mengelola penautan/pemutusan akun OAuth secara mandiri (`profile.php`).
+- **Akun lokal:** Registrasi (`register.php`) dan login (`login.php`) dengan kredensial terenkripsi.
+- **GitHub OAuth:** `github-login.php`, `github-callback.php`, `github-disconnect.php`.
+- **Google OAuth 2.0:** `google-login.php`, `google-callback.php`, `config_google.php`, `complete-google-reg.php`.
+- **Profil mandiri:** Ubah data pribadi, foto profil, dan kelola tautan akun OAuth (`profile.php`).
 
-### 2.2. Manajemen Pengguna (User, Siswa, & Guru)
+### 2.2 Manajemen Pengguna
 
-- **Pengelolaan Pengguna Sistem:** Operasi CRUD (Create, Read, Update, Delete) lengkap untuk mengelola akun pengguna sistem (`daftar_user.php`, `form_user.php`, `edit_user.php`, `aksi_tambah_user.php`, `aksi_edit_user.php`).
-- **Direktori Siswa Akademik:** Penayangan terorganisir untuk direktori siswa aktif (`daftar_siswa.php`) lengkap dengan informasi NISN, kelas, dan status keaktifan.
-- **Direktori Pengajar / Guru:** Penayangan direktori tenaga pengajar/guru (`daftar_guru.php`) yang mencantumkan NIP, mata pelajaran yang diampu, dan profil kontak.
+- **CRUD pengguna:** `daftar_user.php`, `form_user.php`, `edit_user.php`, `aksi_tambah_user.php`, `aksi_edit_user.php`.
+- **Direktori siswa:** `daftar_siswa.php` (NISN, kelas, status keaktifan).
+- **Direktori guru:** `daftar_guru.php` (NIP, mapel yang diampu, kontak).
 
-### 2.3. Manajemen Mata Pelajaran (Mapel)
+### 2.3 Manajemen Mata Pelajaran
 
-- **Pengolahan Kurikulum Mapel:** Alur kerja komprehensif untuk menambah, mengubah, meninjau, dan menghapus daftar mata pelajaran dalam kurikulum sekolah (`daftar_mapel.php`, `form_mapel.php`, `edit_mapel.php`, `aksi_tambah_mapel.php`, `aksi_edit_mapel.php`, `aksi_hapus_mapel.php`).
+- Tambah, ubah, tinjau, dan hapus mapel: `daftar_mapel.php`, `form_mapel.php`, `edit_mapel.php`, `aksi_tambah_mapel.php`, `aksi_edit_mapel.php`, `aksi_hapus_mapel.php`.
 
-### 2.4. Manajemen & Rekapitulasi Nilai Akademik
+### 2.4 Nilai Akademik
 
-- **Pencatatan Nilai Terstruktur:** Pencatatan nilai tugas, UTS, UAS, dan nilai akhir siswa per semester secara sistematis (`daftar_nilai.php`).
-- **Evaluasi Transkrip & Rekap:** Peninjauan rekapitulasi transkrip nilai akademik siswa beserta kalkulasi rata-rata kumulatif dan verifikasi kelulusan (`lihat_nilai.php`).
-- **Visual Progress Evaluation:** Tampilan penemu nilai berkecepatan tinggi dengan loader visual untuk pemrosesan nilai skala besar (`loader_nilai.php`).
+- **Pencatatan nilai:** Tugas, UTS, UAS, dan nilai akhir per semester (`daftar_nilai.php`).
+- **Transkrip & rekap:** Rata-rata kumulatif dan verifikasi kelulusan (`lihat_nilai.php`).
+- **Loader visual:** Progres pemrosesan nilai skala besar (`loader_nilai.php`).
 
-### 2.5. Antarmuka & Dashboard Bento Grid
+### 2.5 Dashboard & UI
 
-- **Layout Bento Grid:** Dashboard utama interaktif berbasis bento grid (`dashboard.php` & `dashboard-bento.css`) dengan kartu statistik cepat untuk jumlah siswa, guru, mapel, dan nilai.
-- **Komponen Layout Modular:** Struktur UI terintegrasi menggunakan komponen modular header, navbar (`navbar.php`), footer, serta indikator status sistem.
-- **Set Aset Ikon Kustom:** Penyediaan perpustakaan ikon kustom lengkap (`icons/dashboard`, `icons/report`, `icons/profile`, `icons/admin`, `icons/login`) untuk navigasi visual yang ramah pengguna.
+- **Bento Grid:** `dashboard.php` + `dashboard-bento.css` dengan kartu statistik siswa, guru, mapel, dan nilai.
+- **Komponen modular:** Header, `navbar.php`, footer, dan indikator status.
+- **Ikon kustom:** `icons/dashboard`, `icons/report`, `icons/profile`, `icons/admin`, `icons/login`.
 
----
+## 3. Arsitektur & Teknologi
 
-## 3. Arsitektur & Spesifikasi Teknologi
+| Komponen | Teknologi | Peran |
+| :-- | :-- | :-- |
+| Frontend | HTML5, CSS3, JS, Vercel | Struktur UI, styling (Bento/Auth), interaktivitas |
+| Backend | PHP 7.4 / 8.x | Logika bisnis, autentikasi, handler API |
+| Database | MySQL / Beekeeper Studio | Data relasional (User, Mapel, Nilai) |
+| Web Server | Apache HTTP Server | Lokal/LAMPP (`/opt/lampp/htdocs/SIPN`) |
+| Cloud | Aiven Managed Database | MySQL terkelola di cloud |
+| OAuth | GitHub REST API & Google OAuth 2.0 | Verifikasi identitas pihak ketiga |
 
-Tabel berikut merinci arsitektur teknis dan komponen infrastruktur yang digunakan dalam proyek SIPN:
+## 4. Struktur Direktori
 
-| Komponen | Teknologi / Lingkungan | Deskripsi & Peran |
-| :--- | :--- | :--- |
-| **Frontend** | HTML5, CSS3, JS, Vercel | Struktur UI, styling kustom (Bento/Auth), & interaktivitas client-side. |
-| **Backend** | PHP 7.4 / 8.x | Bahasa pemrograman utama logika bisnis, autentikasi, & API handler. |
-| **Database Engine** | MySQL / Beekeeper Studio | Penyimpanan data relasional terstruktur (User, Mapel, Nilai). |
-| **Web Server** | Apache HTTP Server | Server HTTP lokal/LAMPP (Direktori Web Root: `/opt/lampp/htdocs/SIPN`). |
-| **Cloud Infrastructure** | Aiven Managed Database | Layanan basis data MySQL terkelola di cloud untuk skalabilitas. |
-| **OAuth Provider API** | GitHub REST API & Google OAuth 2.0 API | Penyedia otorisasi dan verifikasi identitas pihak ketiga. |
+| Path | Fungsi |
+| :-- | :-- |
+| `api/aksi_edit_mapel.php` | Proses pembaruan data mapel |
+| `api/aksi_edit_user.php` | Proses pembaruan data pengguna |
+| `api/aksi_hapus_mapel.php` | Proses penghapusan mapel |
+| `api/aksi_tambah_mapel.php` | Proses penambahan mapel |
+| `api/aksi_tambah_user.php` | Proses penambahan pengguna oleh admin |
+| `api/complete-github-reg.php` | Pelengkapan profil setelah login pertama via GitHub |
+| `api/complete-google-reg.php` | Pelengkapan profil setelah login pertama via Google |
+| `api/config_github.php` | Konfigurasi Client ID, Secret, Redirect URL GitHub |
+| `api/config_google.php` | Konfigurasi Client ID, Secret, Redirect URL Google |
+| `api/dashboard.php` | Dashboard Bento Grid |
+| `api/daftar_guru.php` | Direktori guru |
+| `api/daftar_mapel.php` | Daftar kurikulum mapel |
+| `api/daftar_nilai.php` | Input dan pengolahan nilai |
+| `api/daftar_siswa.php` | Direktori siswa aktif |
+| `api/daftar_user.php` | Manajemen pengguna dan hak akses |
+| `api/edit_mapel.php` | Form ubah mapel |
+| `api/form_mapel.php` | Form tambah mapel |
+| `api/form_user.php` | Form tambah pengguna |
+| `api/github-callback.php` | Callback token GitHub |
+| `api/github-disconnect.php` | Putus tautan akun GitHub |
+| `api/github-login.php` | Inisiasi login/registrasi GitHub |
+| `api/google-callback.php` | Callback token Google |
+| `api/google-login.php` | Inisiasi login/registrasi Google |
+| `api/index.php` | Landing page |
+| `api/koneksi.php` | Koneksi database MySQL / Aiven |
+| `api/lihat_nilai.php` | Detail dan rekap transkrip nilai |
+| `api/loader.php` | Loader halaman umum |
+| `api/loader_nilai.php` | Loader kalkulasi nilai |
+| `api/login.php` | Login akun lokal |
+| `api/logout.php` | Hancurkan sesi (logout) |
+| `api/navbar.php` | Navbar terintegrasi |
+| `api/profile.php` | Profil pribadi dan tautan OAuth |
+| `api/register.php` | Registrasi pengguna lokal |
+| `dashboard-bento.css` | Styling layout Bento Grid |
+| `auth-style3.css` | Styling halaman login & register |
 
----
+## 5. Memulai Proyek
 
-## 4. Struktur Direktori Proyek Lengkap
+### 5.1 Persyaratan Sistem
 
-Berikut adalah struktur hirarki berkas dan direktori lengkap proyek SIPN beserta fungsi utama dari masing-masing berkas:
+- **Web server:** Apache (XAMPP / LAMPP / WAMP)
+- **Database:** MySQL 5.7+ / MariaDB 10.4+ atau Aiven
+- **PHP:** 7.4 atau 8.x dengan ekstensi cURL dan PDO/mysqli aktif
+- **Browser:** Chrome, Firefox, Edge, atau Safari versi terbaru
 
-| Path / Nama Berkas | Fungsi & Deskripsi Berkas |
-| :--- | :--- |
-| `api/aksi_edit_mapel.php` | Handler pemrosesan pembaruan data mata pelajaran di database. |
-| `api/aksi_edit_user.php` | Handler pemrosesan pembaruan data pengguna sistem. |
-| `api/aksi_hapus_mapel.php` | Handler penghapusan data mata pelajaran dari kurikulum. |
-| `api/aksi_tambah_mapel.php` | Handler penambahan data mata pelajaran baru. |
-| `api/aksi_tambah_user.php` | Handler pendaftaran/penambahan pengguna baru oleh admin. |
-| `api/complete-github-reg.php` | Form pelengkapan data profil setelah login pertama via GitHub. |
-| `api/complete-google-reg.php` | Form pelengkapan data profil setelah login pertama via Google. |
-| `api/config_github.php` | Konfigurasi kredensial Client ID, Secret, & Redirect URL GitHub OAuth. |
-| `api/config_google.php` | Konfigurasi kredensial Client ID, Secret, & Redirect URL Google OAuth. |
-| `api/dashboard.php` | Tampilan utama dashboard interaktif berbento grid. |
-| `api/daftar_guru.php` | Halaman penayangan direktori daftar guru/pengajar. |
-| `api/daftar_mapel.php` | Halaman pengolahan kurikulum dan daftar mata pelajaran. |
-| `api/daftar_nilai.php` | Halaman input dan pengolahan data nilai siswa. |
-| `api/daftar_siswa.php` | Halaman penayangan direktori data siswa aktif. |
-| `api/daftar_user.php` | Halaman manajemen pengguna dan hak akses sistem. |
-| `api/edit_mapel.php` | Form antarmuka untuk mengubah data mata pelajaran. |
-| `api/form_mapel.php` | Form antarmuka untuk membuat mata pelajaran baru. |
-| `api/form_user.php` | Form antarmuka untuk menambah pengguna sistem baru. |
-| `api/github-callback.php` | Endpoint callback pengolahan token otorisasi dari GitHub. |
-| `api/github-disconnect.php` | Handler pemutusan tautan otorisasi akun GitHub dari profil. |
-| `api/github-login.php` | Handler inisiasi alur pendaftaran/login via GitHub OAuth. |
-| `api/google-callback.php` | Endpoint callback pengolahan token otorisasi dari Google. |
-| `api/google-login.php` | Handler inisiasi alur pendaftaran/login via Google OAuth 2.0. |
-| `api/index.php` | Halaman penunjuk awal / landing page sistem. |
-| `api/koneksi.php` | Konfigurasi koneksi utama ke database MySQL / Aiven. |
-| `api/lihat_nilai.php` | Halaman detail dan rekapitulasi transkrip nilai siswa. |
-| `api/loader.php` | Komponen animasi pemuatan (loader) halaman umum. |
-| `api/loader_nilai.php` | Komponen animasi pemuatan khusus kalkulasi data nilai. |
-| `api/login.php` | Halaman autentikasi/login berbasis akun lokal. |
-| `api/logout.php` | Handler penghancuran sesi pengguna (logout). |
-| `api/navbar.php` | Komponen navigasi atas (navbar) terintegrasi. |
-| `api/profile.php` | Halaman pengelolaan profil pribadi dan tautan akun OAuth. |
-| `api/register.php` | Halaman pendaftaran pengguna baru lokal. |
-| `dashboard-bento.css` | Berkas CSS kustom untuk tampilan layout Bento Grid pada dashboard. |
-| `auth-style3.css` | Berkas CSS kustom untuk penataan visual halaman login & register. |
+### 5.2 Instalasi
 
----
+**1. Tempatkan berkas proyek** di web root:
 
-## 5. Memulai Proyek (Getting Started)
+- Linux (LAMPP): `/opt/lampp/htdocs/SIPN/`
+- Windows (XAMPP): `C:/xampp/htdocs/SIPN/`
 
-### 5.1. Persyaratan Sistem
+**2. Jalankan server.** Start modul Apache dan MySQL dari Control Panel XAMPP/LAMPP.
 
-- **Web Server:** Apache Web Server (terintegrasi dalam XAMPP / LAMPP / WAMP)
-- **Database Engine:** MySQL v5.7+ / MariaDB v10.4+ atau Layanan Managed Cloud DB (Aiven)
-- **PHP Engine:** PHP Versi 7.4 atau 8.x (memiliki ekstensi cURL & PDO/mysqli aktif)
-- **Peramban Web:** Google Chrome, Mozilla Firefox, Microsoft Edge, atau Safari versi terbaru
+**3. Inisialisasi database.**
 
-### 5.2. Langkah Instalasi & Konfigurasi
+1. Buka `http://localhost/phpmyadmin`
+2. Buat database baru bernama `db_sipn`
+3. Impor skema tabel lewat tab **Import**
 
-#### Langkah 1: Penempatan Berkas Proyek
-Unduh atau salin seluruh direktori proyek SIPN ke dalam folder web root server:
-- **Linux (LAMPP):** `/opt/lampp/htdocs/SIPN/`
-- **Windows (XAMPP):** `C:/xampp/htdocs/SIPN/`
-
-#### Langkah 2: Jalankan Layanan Server
-Buka Control Panel XAMPP/LAMPP dan jalankan modul Apache serta MySQL.
-
-#### Langkah 3: Inisialisasi Basis Data
-- Akses phpMyAdmin di peramban web: `http://localhost/phpmyadmin`
-- Buat database baru dengan nama `db_sipn`.
-- Impor skema tabel basis data SIPN melalui tab **Import**.
-
-#### Langkah 4: Konfigurasi Koneksi Database
-Buka berkas `SIPN/api/koneksi.php` dan sesuaikan parameter koneksi berikut:
+**4. Konfigurasi koneksi database** di `api/koneksi.php`:
 
 ```php
 <?php
@@ -151,8 +144,43 @@ $user = "root";
 $pass = "";
 $db   = "db_sipn";
 
-$koneksi = mysqli_connect($host,$user, $pass,$db);
-if (!$koneksi) { 
-    die("Koneksi gagal: " . mysqli_connect_error()); 
+$koneksi = mysqli_connect($host, $user, $pass, $db);
+
+if (!$koneksi) {
+    die("Koneksi gagal: " . mysqli_connect_error());
 }
 ?>
+```
+
+**5. Konfigurasi OAuth.**
+
+GitHub (`api/config_github.php`), daftarkan aplikasi di GitHub Developer Settings:
+
+```php
+define("GITHUB_CLIENT_ID", "CLIENT_ID_GITHUB_ANDA");
+define("GITHUB_CLIENT_SECRET", "CLIENT_SECRET_GITHUB_ANDA");
+define("REDIRECT_URL", "http://localhost/SIPN/api/github-callback.php");
+```
+
+Google (`api/config_google.php`), daftarkan proyek di Google Cloud Console:
+
+```php
+define("GOOGLE_CLIENT_ID", "CLIENT_ID_GOOGLE_ANDA");
+define("GOOGLE_CLIENT_SECRET", "CLIENT_SECRET_GOOGLE_ANDA");
+define("GOOGLE_REDIRECT_URL", "http://localhost/SIPN/api/google-callback.php");
+```
+
+**6. Akses aplikasi.**
+
+- Portal login: <http://localhost/SIPN/api/login.php>
+- Landing page: <http://localhost/SIPN/api/index.php>
+
+## 6. Keamanan & Pemeliharaan
+
+- **Validasi sesi ketat:** Setiap halaman terproteksi wajib memeriksa `session_start()` dan peran pengguna sebelum merender konten sensitif.
+- **Rahasiakan API key:** Jangan commit Client Secret di `config_github.php` dan `config_google.php` ke repositori publik. Gunakan file `.env` di produksi.
+- **Backup rutin:** Cadangkan skema dan data MySQL minimal seminggu sekali.
+
+## 7. Lisensi
+
+Didistribusikan di bawah [Apache License 2.0](LICENSE). Anda boleh menggunakan, memodifikasi, dan mendistribusikan ulang kode sumber sesuai ketentuan lisensi.
