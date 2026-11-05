@@ -1,6 +1,8 @@
-# Abaikan file pengunci temporary
+.env
+.env.*
+!.env.example
+node_modules/
+uploads/
+.DS_Store
 .*.php#
 .~lock.*
-
-# Abaikan folder lokal XAMPP jika ada
-.DS_Store
