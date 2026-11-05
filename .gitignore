@@ -1,8 +1,13 @@
+# Rahasia - JANGAN di-push
 .env
 .env.*
 !.env.example
+
+# Dependensi & upload
 node_modules/
 uploads/
-.DS_Store
+
+# File sementara editor / OS
 .*.php#
 .~lock.*
+.DS_Store

@@ -1,46 +1,68 @@
 <?php
 ini_set('session.cookie_path', '/');
-session_start();
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
-if (isset($_SESSION['user_id'])) {
+if (!empty($_SESSION['user_id'])) {
     session_write_close();
-    header("Location: dashboard.php");
+    header('Location: dashboard.php');
     exit;
 }
 
-$error = "";
-$success = "";
+$error   = '';
+$success = '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
-    $password = $_POST['password'];
-    $nis = mysqli_real_escape_string($koneksi, $_POST['nis']);
-    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    $kelas = mysqli_real_escape_string($koneksi, $_POST['kelas_gabungan']);
-    $jk = mysqli_real_escape_string($koneksi, $_POST['jenis_kelamin']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $nis      = trim($_POST['nis'] ?? '');
+    $nama     = trim($_POST['nama'] ?? '');
+    $kelas    = trim($_POST['kelas_gabungan'] ?? '');
+    $jk       = trim($_POST['jenis_kelamin'] ?? '');
 
-    $cek_user = mysqli_query($koneksi, "SELECT id FROM users WHERE username='$username'");
-
-    if (mysqli_num_rows($cek_user) > 0) {
-        $error = "Username is already taken!";
+    if ($username === '' || $nis === '' || $nama === '' || $kelas === '' || !in_array($jk, ['L', 'P'], true)) {
+        $error = 'Semua data wajib diisi dengan benar.';
+    } elseif (strlen($username) < 3 || strlen($username) > 50) {
+        $error = 'Username harus 3 sampai 50 karakter.';
+    } elseif (strlen($password) < 6) {
+        $error = 'Password minimal 6 karakter!';
     } else {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $st = $koneksi->prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1');
+        $st->bind_param('s', $username);
+        $st->execute();
+        $st->store_result();
+        $taken = $st->num_rows > 0;
+        $st->close();
 
-        mysqli_begin_transaction($koneksi);
-        try {
-            $query_user = "INSERT INTO users (username, password, role) VALUES ('$username', '$hashed_password', 'siswa')";
-            mysqli_query($koneksi, $query_user);
-            $user_id = mysqli_insert_id($koneksi);
+        if ($taken) {
+            $error = 'Username is already taken!';
+        } else {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            mysqli_begin_transaction($koneksi);
+            try {
+                $role = 'siswa';
+                $st = $koneksi->prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)');
+                $st->bind_param('sss', $username, $hashed_password, $role);
+                if (!$st->execute()) {
+                    throw new RuntimeException($st->error);
+                }
+                $user_id = $koneksi->insert_id;
+                $st->close();
 
-            $query_siswa = "INSERT INTO siswa (nis, nama, kelas, jenis_kelamin, user_id) VALUES ('$nis', '$nama', '$kelas', '$jk', '$user_id')";
-            mysqli_query($koneksi, $query_siswa);
+                $st = $koneksi->prepare('INSERT INTO siswa (nis, nama, kelas, jenis_kelamin, user_id) VALUES (?, ?, ?, ?, ?)');
+                $st->bind_param('ssssi', $nis, $nama, $kelas, $jk, $user_id);
+                if (!$st->execute()) {
+                    throw new RuntimeException($st->error);
+                }
+                $st->close();
 
-            mysqli_commit($koneksi);
-            $success = "Registration successful! You can now login.";
-        } catch (Exception $e) {
-            mysqli_rollback($koneksi);
-            $error = "Registration failed: " . $e->getMessage();
+                mysqli_commit($koneksi);
+                $success = 'Registration successful! You can now login.';
+            } catch (Throwable $e) {
+                mysqli_rollback($koneksi);
+                error_log('SIPN register gagal: ' . $e->getMessage());
+                $error = 'Registration failed. Pastikan NIS belum pernah terdaftar.';
+            }
         }
     }
 }
@@ -107,6 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php endif; ?>
 
                 <form action="" method="POST" class="auth-form" id="registerForm">
+                    <?= csrf_field(); ?>
                     <div class="form-grid">
                         <div class="input-group reveal">
                             <input type="text" name="username" class="auth-input" placeholder="Username" required autocomplete="off">

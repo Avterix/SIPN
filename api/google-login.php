@@ -1,31 +1,25 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 ini_set('session.cookie_path', '/');
-session_start();
+require_once __DIR__ . '/config_google.php';
 
-require_once __DIR__ . "/config_google.php";
+// State acak untuk melindungi dari CSRF di alur OAuth.
+// Session ID TIDAK dikirim lewat URL. Di Vercel set SESSION_DRIVER=db supaya session konsisten.
+$state = bin2hex(random_bytes(16));
+$_SESSION['google_oauth_state'] = $state;
 
-// Sisipkan Session ID ke dalam state OAuth agar tidak drop saat redirect dari Google
-$random_token = bin2hex(random_bytes(8));
-$current_sess_id = session_id();
-$oauth_state = $random_token . '---' . $current_sess_id;
-
-$_SESSION['google_oauth_state'] = $oauth_state;
+session_write_close();
 
 $params = [
     'client_id'     => GOOGLE_CLIENT_ID,
     'redirect_uri'  => GOOGLE_REDIRECT_URI,
     'response_type' => 'code',
     'scope'         => 'openid email profile',
-    'state'         => $oauth_state,
-    'prompt'        => 'select_account'
+    'state'         => $state,
+    'prompt'        => 'select_account',
 ];
 
-$url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
-
-session_write_close();
-header("Location: " . $url);
+header('Location: https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params));
 exit;
-?>

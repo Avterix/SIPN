@@ -1,16 +1,15 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id']) || strtolower($_SESSION['role'] ?? '') !== 'admin') {
     header("Location: dashboard.php");
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $username = $_SESSION['username'] ?? 'Admin';
 $msg_type = "";
 $msg_text = "";
@@ -22,6 +21,7 @@ $avatar_src = (!empty($u_data['foto']) && file_exists('uploads/avatars/' . $u_da
 
 // 1. TAMBAH / UPDATE SISWA
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_siswa'])) {
+    csrf_require();
     $edit_id  = (int)($_POST['edit_id'] ?? 0);
     $nis      = mysqli_real_escape_string($koneksi, trim($_POST['nis']));
     $nama     = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_siswa'])) {
 }
 
 // 2. HAPUS SISWA
-if (isset($_GET['hapus'])) {
+if (isset($_GET['hapus']) && csrf_check($_GET['t'] ?? null)) {
     $hapus_id = (int)$_GET['hapus'];
     if (mysqli_query($koneksi, "DELETE FROM siswa WHERE id = '$hapus_id'")) {
         $msg_type = "success"; $msg_text = "Data siswa berhasil dihapus!";
@@ -157,6 +157,7 @@ while ($r = mysqli_fetch_assoc($q_us)) { $users_siswa[] = $r; }
                     </div>
 
                     <form method="POST" action="daftar_siswa.php" id="siswaForm">
+                        <?= csrf_field(); ?>
                         <input type="hidden" name="edit_id" id="edit_id" value="0">
                         <div class="form-grid-5">
                             <div class="form-group">
@@ -221,7 +222,7 @@ while ($r = mysqli_fetch_assoc($q_us)) { $users_siswa[] = $r; }
                                             <button onclick="editSiswa(<?= $s['id']; ?>, '<?= htmlspecialchars($s['nis']); ?>', '<?= htmlspecialchars($s['nama']); ?>', '<?= htmlspecialchars($s['kelas']); ?>', '<?= $s['jenis_kelamin']; ?>', '<?= $s['user_id']; ?>')" class="btn-action-img" title="Edit">
                                                 <img src="<?= $base_url; ?>/icons/admin/admin_manage/edit.webp" alt="Edit">
                                             </button>
-                                            <a href="daftar_siswa.php?hapus=<?= $s['id']; ?>" onclick="return confirm('Hapus data siswa ini?');" class="btn-action-img" title="Hapus">
+                                            <a href="daftar_siswa.php?hapus=<?= $s['id']; ?>&t=<?= csrf_token(); ?>" onclick="return confirm('Hapus data siswa ini?');" class="btn-action-img" title="Hapus">
                                                 <img src="<?= $base_url; ?>/icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
                                             </a>
                                         </td>

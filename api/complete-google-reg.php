@@ -1,79 +1,84 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 ini_set('session.cookie_path', '/');
-session_start();
-
-require_once __DIR__ . "/koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['temp_google'])) {
     session_write_close();
-    header("Location: login.php");
+    header('Location: login.php');
     exit;
 }
 
 $temp = $_SESSION['temp_google'];
-$msg_error = "";
+$msg_error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration'])) {
-    $username = mysqli_real_escape_string($koneksi, trim($_POST['username']));
-    $password = trim($_POST['password']);
-    $nis      = mysqli_real_escape_string($koneksi, trim($_POST['nis']));
-    $nama     = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
-    $kelas    = mysqli_real_escape_string($koneksi, trim($_POST['kelas_gabungan']));
-    $jk       = mysqli_real_escape_string($koneksi, trim($_POST['jenis_kelamin']));
+    csrf_require();
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $nis      = trim($_POST['nis'] ?? '');
+    $nama     = trim($_POST['nama'] ?? '');
+    $kelas    = trim($_POST['kelas_gabungan'] ?? '');
+    $jk       = trim($_POST['jenis_kelamin'] ?? '');
 
     $g_id     = $temp['google_id'];
     $g_email  = $temp['google_email'];
     $g_avatar = $temp['avatar'];
 
-    // 1. Cek ketersediaan username & panjang password
-    $q_chk = mysqli_query($koneksi, "SELECT id FROM users WHERE username = '$username'");
-    if ($q_chk && mysqli_num_rows($q_chk) > 0) {
-        $msg_error = "Username '$username' sudah dipakai, silakan pilih username lain.";
+    // 1. Validasi
+    $st = $koneksi->prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1');
+    $st->bind_param('s', $username);
+    $st->execute();
+    $st->store_result();
+    $username_dipakai = $st->num_rows > 0;
+    $st->close();
+
+    if ($username === '' || $nis === '' || $nama === '' || $kelas === '' || !in_array($jk, ['L', 'P'], true)) {
+        $msg_error = 'Semua data wajib diisi dengan benar.';
+    } elseif (strlen($username) < 3 || strlen($username) > 50) {
+        $msg_error = 'Username harus 3 sampai 50 karakter.';
+    } elseif ($username_dipakai) {
+        $msg_error = 'Username ini sudah dipakai, silakan pilih username lain.';
     } elseif (strlen($password) < 6) {
-        $msg_error = "Password minimal 6 karakter!";
+        $msg_error = 'Password minimal 6 karakter!';
     } else {
         $hashed_pass = password_hash($password, PASSWORD_BCRYPT);
+        $role = 'siswa';
 
-        // 2. Gunakan Transaction untuk Input ke 'users' dan 'siswa'
+        // 2. Transaksi: users + siswa
         mysqli_begin_transaction($koneksi);
         try {
-            $sql_ins = "INSERT INTO users (username, password, role, foto, google_id, google_email) 
-                        VALUES ('$username', '$hashed_pass', 'siswa', '$g_avatar', '$g_id', '$g_email')";
-            mysqli_query($koneksi, $sql_ins);
-            $new_user_id = mysqli_insert_id($koneksi);
+            $st = $koneksi->prepare('INSERT INTO users (username, password, role, foto, google_id, google_email) VALUES (?, ?, ?, ?, ?, ?)');
+            $st->bind_param('ssssss', $username, $hashed_pass, $role, $g_avatar, $g_id, $g_email);
+            if (!$st->execute()) {
+                throw new RuntimeException($st->error);
+            }
+            $new_user_id = $koneksi->insert_id;
+            $st->close();
 
-            $sql_siswa = "INSERT INTO siswa (nis, nama, kelas, jenis_kelamin, user_id) 
-                         VALUES ('$nis', '$nama', '$kelas', '$jk', '$new_user_id')";
-            mysqli_query($koneksi, $sql_siswa);
+            $st = $koneksi->prepare('INSERT INTO siswa (nis, nama, kelas, jenis_kelamin, user_id) VALUES (?, ?, ?, ?, ?)');
+            $st->bind_param('ssssi', $nis, $nama, $kelas, $jk, $new_user_id);
+            if (!$st->execute()) {
+                throw new RuntimeException($st->error);
+            }
+            $st->close();
 
             mysqli_commit($koneksi);
 
             unset($_SESSION['temp_google']);
-
-            // Set Session Login Lengkap
-            $_SESSION['user_id']   = $new_user_id;
-            $_SESSION['username']  = $username;
-            $_SESSION['role']      = 'siswa';
-            $_SESSION['foto']      = $g_avatar;
-            $_SESSION['login']     = true;
-            $_SESSION['logged_in'] = true;
-
-            $_SESSION['msg_type'] = "success";
-            $_SESSION['msg_text'] = "Pendaftaran via Google berhasil! Selamat datang.";
-            
-            session_write_close();
-            header("Location: dashboard.php");
-            exit;
-        } catch (Exception $e) {
+            login_user($new_user_id, $username, 'siswa', $g_avatar);
+            flash_redirect('dashboard.php', 'success', 'Pendaftaran via Google berhasil! Selamat datang.');
+        } catch (Throwable $e) {
             mysqli_rollback($koneksi);
-            $msg_error = "Gagal mendaftar: " . $e->getMessage();
+            error_log('SIPN complete-reg gagal: ' . $e->getMessage());
+            $msg_error = 'Gagal mendaftar. Pastikan NIS belum pernah terdaftar.';
         }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -176,6 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
             <?php endif; ?>
 
             <form action="" method="POST" class="auth-form" id="googleRegForm">
+                <?= csrf_field(); ?>
                 
                 <div class="input-group">
                     <input type="text" name="username" class="auth-input" value="<?= htmlspecialchars($temp['username']); ?>" placeholder="Username" required autocomplete="off">

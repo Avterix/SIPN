@@ -1,16 +1,15 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id']) || strtolower($_SESSION['role'] ?? '') !== 'admin') {
     header("Location: dashboard.php");
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $username = $_SESSION['username'] ?? 'Admin';
 $msg_type = "";
 $msg_text = "";
@@ -23,13 +22,22 @@ $avatar_src = (!empty($foto_db) && file_exists('uploads/avatars/' . $foto_db)) ?
 
 // 1. TAMBAH / UPDATE USER
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
     if (isset($_POST['simpan_user'])) {
         $edit_id   = (int)($_POST['edit_id'] ?? 0);
         $usr_name  = mysqli_real_escape_string($koneksi, trim($_POST['username']));
         $usr_role  = mysqli_real_escape_string($koneksi, $_POST['role']);
+        if (!in_array($usr_role, ['admin', 'guru', 'siswa'], true)) {
+            $usr_role = 'siswa';
+        }
         $usr_pass  = $_POST['password'] ?? '';
 
-        if ($edit_id > 0) {
+        $dup = mysqli_query($koneksi, "SELECT id FROM users WHERE LOWER(username) = LOWER('$usr_name') AND id <> '$edit_id'");
+        $username_dipakai = ($dup && mysqli_num_rows($dup) > 0);
+
+        if ($usr_name === '' || $username_dipakai) {
+            $msg_type = "error"; $msg_text = "Username kosong atau sudah dipakai!";
+        } elseif ($edit_id > 0) {
             $sql_pass = !empty($usr_pass) ? ", password = '" . password_hash($usr_pass, PASSWORD_BCRYPT) . "'" : "";
             $q = "UPDATE users SET username = '$usr_name', role = '$usr_role' $sql_pass WHERE id = '$edit_id'";
             if (mysqli_query($koneksi, $q)) {
@@ -54,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // 2. HAPUS USER
-if (isset($_GET['hapus'])) {
+if (isset($_GET['hapus']) && csrf_check($_GET['t'] ?? null)) {
     $hapus_id = (int)$_GET['hapus'];
     if ($hapus_id !== $user_id) {
         if (mysqli_query($koneksi, "DELETE FROM users WHERE id = '$hapus_id'")) {
@@ -193,6 +201,7 @@ while ($row = mysqli_fetch_assoc($q_all)) {
                 <div class="card-box">
                     <h3 style="font-size: 15px; margin-bottom: 16px;" id="formTitle">Tambah User Baru</h3>
                     <form method="POST" action="daftar_user.php">
+                        <?= csrf_field(); ?>
                         <input type="hidden" name="edit_id" id="edit_id" value="0">
                         <div class="form-grid-3">
                             <div class="form-group">
@@ -249,7 +258,7 @@ while ($row = mysqli_fetch_assoc($q_all)) {
                                             
                                             <!-- Delete Image Button -->
                                             <?php if ($u['id'] !== $user_id): ?>
-                                                <a href="daftar_user.php?hapus=<?= $u['id']; ?>" onclick="return confirm('Hapus user ini?');" class="btn-action-img" title="Hapus">
+                                                <a href="daftar_user.php?hapus=<?= $u['id']; ?>&t=<?= csrf_token(); ?>" onclick="return confirm('Hapus user ini?');" class="btn-action-img" title="Hapus">
                                                     <img src="<?= $base_url; ?>/icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
                                                 </a>
                                             <?php endif; ?>

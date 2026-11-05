@@ -1,10 +1,9 @@
 <?php
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 // 1. PROTEKSI HAK AKSES GURU & ADMIN
 if (!isset($_SESSION['user_id'])) {
@@ -12,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $role     = strtolower($_SESSION['role'] ?? '');
 $username = $_SESSION['username'] ?? 'User';
 
@@ -39,6 +38,7 @@ $avatar_src = (!empty($foto_db) && file_exists('uploads/avatars/' . $foto_db))
 
 // 2. PROSES INSERT / UPDATE NILAI RAPOR
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_nilai'])) {
+    csrf_require();
     $siswa_id           = (int)$_POST['siswa_id'];
     $mapel_id           = (int)$_POST['mapel_id'];
     $semester           = mysqli_real_escape_string($koneksi, $_POST['semester']);
@@ -46,6 +46,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_nilai'])) {
     $nilai_pengetahuan  = (int)$_POST['nilai_pengetahuan'];
     $nilai_keterampilan = (int)$_POST['nilai_keterampilan'];
     $keterangan         = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
+
+    // Batasi nilai 0-100
+    $nilai_kkm          = max(0, min(100, $nilai_kkm));
+    $nilai_pengetahuan  = max(0, min(100, $nilai_pengetahuan));
+    $nilai_keterampilan = max(0, min(100, $nilai_keterampilan));
+
+    // Guru hanya boleh mengisi nilai mapel yang dia ajar
+    if ($role === 'guru') {
+        $cek_milik = mysqli_query($koneksi,
+            "SELECT 1 FROM mapel WHERE id = '$mapel_id' AND guru_id = '$guru_id' " .
+            "UNION SELECT 1 FROM guru_mapel_kelas WHERE mapel_id = '$mapel_id' AND guru_id = '$guru_id' LIMIT 1");
+        if (!$cek_milik || mysqli_num_rows($cek_milik) === 0) {
+            http_response_code(403);
+            exit('Kamu tidak mengajar mapel ini.');
+        }
+    }
 
     // Cek apakah nilai siswa pada mapel & semester ini sudah ada
     $q_cek = mysqli_query($koneksi, "SELECT id FROM nilai_rapor WHERE siswa_id = '$siswa_id' AND mapel_id = '$mapel_id' AND semester = '$semester'");
@@ -306,6 +322,7 @@ if (!empty($filter_kelas)) {
                                     ?>
                                         <tr>
                                             <form method="POST" action="daftar_nilai.php?mapel_id=<?= $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= $filter_semester; ?>">
+                                                <?= csrf_field(); ?>
                                                 <input type="hidden" name="siswa_id" value="<?= $s['siswa_id']; ?>">
                                                 <input type="hidden" name="mapel_id" value="<?= $filter_mapel_id; ?>">
                                                 <input type="hidden" name="semester" value="<?= $filter_semester; ?>">

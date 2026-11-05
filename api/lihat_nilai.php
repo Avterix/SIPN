@@ -1,16 +1,15 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $role     = strtolower($_SESSION['role'] ?? '');
 
 // 1. AMBIL DATA USER & FOTO

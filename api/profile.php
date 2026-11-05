@@ -1,16 +1,15 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $role     = strtolower($_SESSION['role'] ?? '');
 
 $msg_type = $_SESSION['msg_type'] ?? '';
@@ -45,30 +44,62 @@ $jenis_kelamin = $detail_data['jenis_kelamin'] ?? 'L';
 
 // 3. PROSES UPDATE PROFILE
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $new_username = mysqli_real_escape_string($koneksi, trim($_POST['username']));
+    csrf_require();
+    $new_username = trim($_POST['username'] ?? '');
     $new_password = $_POST['new_password'] ?? '';
-    
-    if (!empty($_POST['avatar_base64'])) {
-        $foto_db = $_POST['avatar_base64'];
+    $foto_ditolak = false;
+
+    // Foto baru: hanya data URL gambar (png/jpeg/webp), maksimal sekitar 1 MB
+    $av = $_POST['avatar_base64'] ?? '';
+    if (strpos($av, 'data:') === 0 && $av !== $foto_db) {
+        if (preg_match('#^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$#', $av) && strlen($av) <= 1500000) {
+            $foto_db = $av;
+        } else {
+            $foto_ditolak = true;
+        }
     }
 
-    if (!empty($new_password)) {
-        $hashed_pass = password_hash($new_password, PASSWORD_BCRYPT);
-        $stmt_user   = $koneksi->prepare("UPDATE users SET username = ?, foto = ?, password = ? WHERE id = ?");
-        $stmt_user->bind_param("sssi", $new_username, $foto_db, $hashed_pass, $user_id);
-    } else {
-        $stmt_user   = $koneksi->prepare("UPDATE users SET username = ?, foto = ? WHERE id = ?");
-        $stmt_user->bind_param("ssi", $new_username, $foto_db, $user_id);
-    }
+    // Username tidak boleh dipakai user lain
+    $st_dup = $koneksi->prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id <> ? LIMIT 1');
+    $st_dup->bind_param('si', $new_username, $user_id);
+    $st_dup->execute();
+    $st_dup->store_result();
+    $username_dipakai = $st_dup->num_rows > 0;
+    $st_dup->close();
 
-    if ($stmt_user->execute()) {
-        $_SESSION['username'] = $new_username;
-        $_SESSION['foto']     = $foto_db;
-        $msg_type = "success";
-        $msg_text = "Profil berhasil diperbarui!";
-    } else {
+    if (strlen($new_username) < 3 || strlen($new_username) > 50) {
         $msg_type = "error";
-        $msg_text = "Gagal simpan ke DB: " . $stmt_user->error;
+        $msg_text = "Username harus 3 sampai 50 karakter.";
+    } elseif ($username_dipakai) {
+        $msg_type = "error";
+        $msg_text = "Username sudah dipakai user lain.";
+    } elseif (!empty($new_password) && strlen($new_password) < 6) {
+        $msg_type = "error";
+        $msg_text = "Password baru minimal 6 karakter.";
+    } else {
+        if (!empty($new_password)) {
+            $hashed_pass = password_hash($new_password, PASSWORD_BCRYPT);
+            $stmt_user   = $koneksi->prepare("UPDATE users SET username = ?, foto = ?, password = ? WHERE id = ?");
+            $stmt_user->bind_param("sssi", $new_username, $foto_db, $hashed_pass, $user_id);
+        } else {
+            $stmt_user   = $koneksi->prepare("UPDATE users SET username = ?, foto = ? WHERE id = ?");
+            $stmt_user->bind_param("ssi", $new_username, $foto_db, $user_id);
+        }
+
+        if ($stmt_user->execute()) {
+            $_SESSION['username'] = $new_username;
+            $_SESSION['foto']     = (strpos($foto_db, 'data:') === 0) ? '' : $foto_db;
+            $username  = $new_username;
+            $msg_type = "success";
+            $msg_text = "Profil berhasil diperbarui!";
+            if ($foto_ditolak) {
+                $msg_text .= " (Foto tidak diubah: gunakan PNG/JPG/WebP maksimal sekitar 1 MB.)";
+            }
+        } else {
+            error_log('SIPN profile update gagal: ' . $stmt_user->error);
+            $msg_type = "error";
+            $msg_text = "Gagal menyimpan profil. Coba lagi.";
+        }
     }
 }
 
@@ -309,7 +340,7 @@ if ($gh_connected) $progress += 15;
 
                             <div>
                                 <?php if ($gh_connected): ?>
-                                    <a href="github-disconnect.php" class="btn-gh-disconnect" onclick="return confirm('Apakah Anda yakin ingin melepas koneksi GitHub?');">
+                                    <a href="github-disconnect.php?t=<?= csrf_token(); ?>" class="btn-gh-disconnect" onclick="return confirm('Apakah Anda yakin ingin melepas koneksi GitHub?');">
                                         Disconnect
                                     </a>
                                 <?php else: ?>
@@ -328,6 +359,7 @@ if ($gh_connected) $progress += 15;
                         </div>
 
                         <form action="profile.php" method="POST">
+                            <?= csrf_field(); ?>
                             <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="convertBase64(event)">
                             <input type="hidden" name="avatar_base64" id="avatarBase64Input" value="<?= htmlspecialchars($foto_db); ?>">
 

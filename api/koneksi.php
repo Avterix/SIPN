@@ -1,42 +1,56 @@
 <?php
-// Set cookie params HANYA jika session belum berjalan
-if (session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params([
-        'lifetime' => 86400, // 24 jam
-        'path'     => '/',   // Berlaku untuk semua folder (/api/, /elements/, dll)
-        'httponly' => true,
-        'samesite' => 'Lax'
-    ]);
-    session_start();
-}
-$host = isset($_ENV['DB_HOST']) ? $_ENV['DB_HOST'] : getenv('DB_HOST');
-$user = isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : getenv('DB_USER');
-$pass = isset($_ENV['DB_PASS']) ? $_ENV['DB_PASS'] : getenv('DB_PASS');
-$db   = isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : getenv('DB_NAME');
-$port = isset($_ENV['DB_PORT']) ? $_ENV['DB_PORT'] : getenv('DB_PORT');
+// Koneksi database + session. Semua kredensial dibaca dari .env / Environment Variables.
+require_once __DIR__ . '/env.php';
 
-if (!$host) {
-    $host = "mysql-sipn-sipn.k.aivencloud.com";
-    $user = "avnadmin"; 
-    $pass = "AVNS_KAd4LB1vjSZmU_r8gYu"; 
-    $db   = "defaultdb"; 
-    $port = "19675";
-}
-$koneksi = mysqli_connect($host, $user, $pass, $db, $port);
+$host = env('DB_HOST');
+$user = env('DB_USER');
+$pass = env('DB_PASS', '');
+$db   = env('DB_NAME');
+$port = (int) env('DB_PORT', 3306);
 
+if (!$host || !$user || !$db) {
+    error_log('SIPN: variabel DB_HOST / DB_USER / DB_NAME belum diisi');
+    http_response_code(500);
+    exit('Konfigurasi server belum lengkap.');
+}
+
+$koneksi = false;
+try {
+    $koneksi = mysqli_connect($host, $user, $pass, $db, $port);
+} catch (Throwable $e) {
+    error_log('SIPN: koneksi DB gagal: ' . $e->getMessage());
+}
 if (!$koneksi) {
-    die("Koneksi database gagal: " . mysqli_connect_error());
+    http_response_code(500);
+    exit('Layanan sedang bermasalah. Coba lagi nanti.');
 }
+mysqli_set_charset($koneksi, 'utf8mb4');
 
-mysqli_select_db($koneksi, $db);
-
-// Deteksi Otomatis Base URL
+// Deteksi otomatis Base URL
 $http_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 if (strpos($http_host, 'localhost') !== false || strpos($http_host, '127.0.0.1') !== false) {
-    // Localhost XAMPP
-    $base_url = "http://" . $http_host . "/School_Project/assignment/SIPN";
+    $base_url = 'http://' . $http_host . env('LOCAL_BASE_PATH', '/School_Project/assignment/SIPN');
 } else {
-    // Vercel Production
-    $base_url = "";
+    $base_url = '';
 }
-?>
+
+// Session (dimulai di sini, jadi halaman lain TIDAK perlu session_start())
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+          || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
+    session_set_cookie_params([
+        'lifetime' => 86400,
+        'path'     => '/',
+        'secure'   => $https,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    if (env('SESSION_DRIVER', 'file') === 'db') {
+        require_once __DIR__ . '/session_handler.php';
+        session_set_save_handler(new DbSessionHandler($koneksi), true);
+    }
+
+    session_start();
+}

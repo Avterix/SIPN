@@ -1,25 +1,19 @@
 <?php
 require_once __DIR__ . '/koneksi.php';
 
-define('GOOGLE_CLIENT_ID', '925370081719-opeco2afn67hklmtoqqmata15i2plrm2.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', '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');
+define('GOOGLE_CLIENT_ID', env('GOOGLE_CLIENT_ID'));
+define('GOOGLE_CLIENT_SECRET', env('GOOGLE_CLIENT_SECRET'));
 
-$host = $_SERVER['HTTP_HOST'];
+$host = $_SERVER['HTTP_HOST'] ?? '';
 
 if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-    // --- MODE LOCALHOST ---
-    $redirect_url = "http://" . $host . "/School_Project/assignment/SIPN/api/google-callback.php";
+    // MODE LOCALHOST
+    $redirect_url = 'http://' . $host . env('LOCAL_BASE_PATH', '/School_Project/assignment/SIPN') . '/api/google-callback.php';
 } else {
-    // --- MODE VERCEL / PRODUCTION ---
-    // Cek HTTPS via proxy header Vercel
-    $is_https = (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') 
-             || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
-             
-    $protocol = $is_https ? "https" : "http";
-    
-    // Sesuaikan path jika file google-callback.php ada di dalam folder /api/
-    $redirect_url = $protocol . "://" . $host . "/api/google-callback.php"; 
+    // MODE VERCEL / PRODUKSI
+    $is_https = (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+             || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+    $redirect_url = ($is_https ? 'https' : 'http') . '://' . $host . '/api/google-callback.php';
 }
 
 define('GOOGLE_REDIRECT_URI', $redirect_url);
-?>

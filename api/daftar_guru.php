@@ -1,16 +1,15 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+ini_set('display_errors', 0);
 
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id']) || strtolower($_SESSION['role'] ?? '') !== 'admin') {
     header("Location: dashboard.php");
     exit;
 }
 
-$user_id  = $_SESSION['user_id'];
+$user_id  = (int) $_SESSION['user_id'];
 $username = $_SESSION['username'] ?? 'Admin';
 $msg_type = "";
 $msg_text = "";
@@ -22,6 +21,7 @@ $avatar_src = (!empty($u_data['foto']) && file_exists('uploads/avatars/' . $u_da
 
 // 1. TAMBAH / UPDATE GURU
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_guru'])) {
+    csrf_require();
     $edit_id  = (int)($_POST['edit_id'] ?? 0);
     $nip      = mysqli_real_escape_string($koneksi, trim($_POST['nip']));
     $nama     = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_guru'])) {
 }
 
 // 2. HAPUS GURU
-if (isset($_GET['hapus'])) {
+if (isset($_GET['hapus']) && csrf_check($_GET['t'] ?? null)) {
     $hapus_id = (int)$_GET['hapus'];
     if (mysqli_query($koneksi, "DELETE FROM guru WHERE id = '$hapus_id'")) {
         $msg_type = "success"; $msg_text = "Data guru berhasil dihapus!";
@@ -155,6 +155,7 @@ while ($r = mysqli_fetch_assoc($q_ug)) { $users_guru[] = $r; }
                     </div>
 
                     <form method="POST" action="daftar_guru.php" id="guruForm">
+                        <?= csrf_field(); ?>
                         <input type="hidden" name="edit_id" id="edit_id" value="0">
                         <div class="form-grid-4">
                             <div class="form-group">
@@ -213,7 +214,7 @@ while ($r = mysqli_fetch_assoc($q_ug)) { $users_guru[] = $r; }
                                             <button onclick="editGuru(<?= $g['id']; ?>, '<?= htmlspecialchars($g['nip']); ?>', '<?= htmlspecialchars($g['nama']); ?>', '<?= $g['jenis_kelamin']; ?>', '<?= $g['user_id']; ?>')" class="btn-action-img" title="Edit">
                                                 <img src="<?= $base_url; ?>/icons/admin/admin_manage/edit." alt="Edit">
                                             </button>
-                                            <a href="daftar_guru.php?hapus=<?= $g['id']; ?>" onclick="return confirm('Hapus data guru ini?');" class="btn-action-img" title="Hapus">
+                                            <a href="daftar_guru.php?hapus=<?= $g['id']; ?>&t=<?= csrf_token(); ?>" onclick="return confirm('Hapus data guru ini?');" class="btn-action-img" title="Hapus">
                                                 <img src="<?= $base_url; ?>/icons/admin/admin_manage/trash-bin.webp" alt="Hapus">
                                             </a>
                                         </td>

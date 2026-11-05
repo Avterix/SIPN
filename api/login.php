@@ -1,52 +1,34 @@
 <?php
-// 1. Samakan cookie path session ke root biar gak lepas saat ke dashboard
 ini_set('session.cookie_path', '/');
-session_start();
+require_once __DIR__ . '/auth.php';
 
-include "koneksi.php";
-
-// Jika session user sudah ada, langsung arahkan ke dashboard
-if (isset($_SESSION['user_id'])) {
+// Jika sudah login, langsung ke dashboard
+if (!empty($_SESSION['user_id'])) {
     session_write_close();
-    header("Location: dashboard.php");
+    header('Location: dashboard.php');
     exit;
 }
 
-$error = "";
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Clean input & buang spasi di awal/akhir
-    $username = trim($_POST['username']);
-    $password = $_POST['password'];
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_require();
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    $username_clean = mysqli_real_escape_string($koneksi, $username);
+    // Query berparameter, kebal spasi & huruf besar/kecil
+    $st = $koneksi->prepare('SELECT id, username, password, role, foto FROM users WHERE LOWER(TRIM(username)) = LOWER(?) LIMIT 1');
+    $st->bind_param('s', $username);
+    $st->execute();
+    $st->bind_result($uid, $uname, $hash, $urole, $ufoto);
 
-    // Query kebal spasi & kebal kapital/kecil (LOWER & TRIM)
-    $query  = "SELECT * FROM users WHERE LOWER(TRIM(username)) = LOWER('$username_clean')";
-    $result = mysqli_query($koneksi, $query);
-
-    if ($result && mysqli_num_rows($result) === 1) {
-        $row = mysqli_fetch_assoc($result);
-
-        // Cek password (hash atau plain)
-        if (password_verify($password, $row['password']) || $password === $row['password']) {
-            $_SESSION['user_id']   = $row['id'];
-            $_SESSION['username']  = $row['username'];
-            $_SESSION['role']      = strtolower($row['role']);
-            $_SESSION['foto']      = $row['foto'] ?? '';
-
-            // Set flag login & simpan session sebelum redirect
-            $_SESSION['login']     = true;
-            $_SESSION['logged_in'] = true;
-
-            session_write_close();
-            header("Location: dashboard.php");
-            exit;
-        } else {
-            $error = "Invalid password!";
-        }
-    } else {
-        $error = "Username not found! (Input: '$username')";
+    if ($st->fetch() && password_verify($password, (string) $hash)) {
+        $st->close();
+        login_user($uid, $uname, $urole, $ufoto ?? '');
+        session_write_close();
+        header('Location: dashboard.php');
+        exit;
     }
+    $error = 'Username atau password salah.';
 }
 ?>
 <!DOCTYPE html>
@@ -108,6 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php endif; ?>
 
                 <form action="" method="POST" class="auth-form">
+                    <?= csrf_field(); ?>
                     <div class="input-group reveal">
                         <input type="text" name="username" class="auth-input" placeholder="Username" required autocomplete="off">
                     </div>

@@ -1,33 +1,26 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 ini_set('session.cookie_path', '/');
-session_start();
+require_once __DIR__ . '/auth.php';
 
-require_once __DIR__ . "/config_github.php";
+$redirect_profile = 'profile.php';
 
-$redirect_profile = "profile.php";
-$redirect_login   = "login.php";
+require_login();
 
-if (!isset($_SESSION['user_id'])) {
-    session_write_close();
-    header("Location: " . $redirect_login);
-    exit;
+// Token CSRF wajib (link di profile.php membawa ?t=...)
+if (!csrf_check($_GET['t'] ?? null)) {
+    flash_redirect($redirect_profile, 'error', 'Permintaan tidak valid. Coba lagi dari halaman profil.');
 }
 
-$user_id = $_SESSION['user_id'];
-$sql = "UPDATE users SET github_id = NULL, github_username = NULL, github_avatar = NULL, github_connected = 0 WHERE id = '$user_id'";
+$user_id = (int) $_SESSION['user_id'];
+$st = $koneksi->prepare('UPDATE users SET github_id = NULL, github_username = NULL, github_avatar = NULL, github_connected = 0 WHERE id = ?');
+$st->bind_param('i', $user_id);
+$ok = $st->execute();
+$st->close();
 
-if (mysqli_query($koneksi, $sql)) {
-    $_SESSION['msg_type'] = "success";
-    $_SESSION['msg_text'] = "Koneksi GitHub berhasil dilepas.";
-} else {
-    $_SESSION['msg_type'] = "error";
-    $_SESSION['msg_text'] = "Gagal melepas koneksi GitHub.";
+if ($ok) {
+    flash_redirect($redirect_profile, 'success', 'Koneksi GitHub berhasil dilepas.');
 }
-
-session_write_close();
-header("Location: " . $redirect_profile);
-exit;
-?>
+flash_redirect($redirect_profile, 'error', 'Gagal melepas koneksi GitHub.');

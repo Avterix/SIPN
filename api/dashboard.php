@@ -1,15 +1,14 @@
 <?php
 ini_set('session.cookie_path', '/');
-session_start();
 date_default_timezone_set('Asia/Jakarta');
-include "koneksi.php";
+require_once __DIR__ . '/auth.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 $q_user  = mysqli_query($koneksi, "SELECT * FROM users WHERE id = '$user_id'");
 $user_data = mysqli_fetch_assoc($q_user);
 
