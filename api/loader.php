@@ -523,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const target = link.getAttribute("target");
         const onclickAttr = link.getAttribute("onclick");
 
-        const targetPages = ["dashboard.php", "daftar_nilai.php", "lihat_nilai.php", "profile.php", "daftar_siswa.php", "daftar_guru.php", "daftar_mapel.php", "daftar_user.php"];
+        const targetPages = ["dashboard.php", "daftar_nilai.php", "lihat_nilai.php", "profile.php", "daftar_siswa.php", "daftar_guru.php", "daftar_mapel.php", "daftar_user.php", "manajemen_kelas.php"];
         
         let isTargetValid = false;
         if (href) {

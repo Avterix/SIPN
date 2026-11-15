@@ -51,20 +51,57 @@ if ($q_mapel && $row = mysqli_fetch_assoc($q_mapel)) {
     $tot_mapel = $row['total'] ?? 0;
 }
 
-// 2. LOGIKA KHUSUS SISWA
-$grades_data = [];
+// 2. LOGIKA KHUSUS SISWA, GURU, & ADMIN
+$grades_data     = [];
 $jadwal_hari_ini = [];
-$kehadiran = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'persentase' => 100];
-$hari_ini = ''; 
+$kehadiran       = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'persentase' => 100];
+
+$translate_hari = [
+    'Monday'    => 'Senin',
+    'Tuesday'   => 'Selasa',
+    'Wednesday' => 'Rabu',
+    'Thursday'  => 'Kamis',
+    'Friday'    => 'Jumat',
+    'Saturday'  => 'Sabtu',
+    'Sunday'    => 'Minggu'
+];
+$hari_ini   = $translate_hari[date('l')];
+$hari_besok = $translate_hari[date('l', strtotime('+1 day'))];
+
+$bulan_indo          = [1=>'Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+$tanggal_label       = $hari_ini . ', ' . date('d') . ' ' . $bulan_indo[(int)date('n')] . ' ' . date('Y');
+$besok_ts            = strtotime('+1 day');
+$tanggal_besok_label = $hari_besok . ', ' . date('d', $besok_ts) . ' ' . $bulan_indo[(int)date('n', $besok_ts)];
+
+// Hitung jumlah siswa per kelas
+$siswa_per_kelas = [];
+$q_spk = mysqli_query($koneksi, "SELECT kelas, COUNT(*) AS jml FROM siswa WHERE kelas IS NOT NULL AND kelas <> '' GROUP BY kelas");
+if ($q_spk) {
+    while ($r = mysqli_fetch_assoc($q_spk)) {
+        $siswa_per_kelas[$r['kelas']] = (int)$r['jml'];
+    }
+}
+
+// Variabel khusus dashboard guru
+$guru_id              = 0;
+$guru_nama            = $username;
+$guru_nip             = '';
+$guru_jadwal_hari_ini = [];
+$guru_jadwal_besok    = [];
+$guru_kelas_ajar      = [];
+$guru_mapel_unik      = [];
+$tot_siswa_diampu     = 0;
+$tot_sesi_minggu      = 0;
+$guru_beban_harian    = ['Senin' => 0, 'Selasa' => 0, 'Rabu' => 0, 'Kamis' => 0, 'Jumat' => 0, 'Sabtu' => 0];
 
 if ($role === 'siswa') {
-    $siswa_id = 0;
+    $siswa_id    = 0;
     $siswa_kelas = '';
-    
+
     $q_siswa_info = mysqli_query($koneksi, "SELECT id, kelas FROM siswa WHERE user_id = '$user_id'");
     if ($q_siswa_info && mysqli_num_rows($q_siswa_info) > 0) {
-        $d_siswa = mysqli_fetch_assoc($q_siswa_info);
-        $siswa_id = $d_siswa['id'] ?? 0;
+        $d_siswa     = mysqli_fetch_assoc($q_siswa_info);
+        $siswa_id    = $d_siswa['id'] ?? 0;
         $siswa_kelas = $d_siswa['kelas'] ?? '';
     }
 
@@ -94,18 +131,6 @@ if ($role === 'siswa') {
         ];
     }
 
-    $hari_inggris = date('l');
-    $translate_hari = [
-        'Monday'    => 'Senin',
-        'Tuesday'   => 'Selasa',
-        'Wednesday' => 'Rabu',
-        'Thursday'  => 'Kamis',
-        'Friday'    => 'Jumat',
-        'Saturday'  => 'Sabtu',
-        'Sunday'    => 'Minggu'
-    ];
-    $hari_ini = $translate_hari[$hari_inggris];
-
     $q_jadwal = mysqli_query($koneksi, "
         SELECT j.jam_mulai, j.jam_selesai, j.kelas, 
                COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel, 
@@ -120,7 +145,6 @@ if ($role === 'siswa') {
     if ($q_jadwal && mysqli_num_rows($q_jadwal) > 0) {
         while ($row = mysqli_fetch_assoc($q_jadwal)) {
             $jam_format = date('H:i', strtotime($row['jam_mulai'])) . ' - ' . date('H:i', strtotime($row['jam_selesai']));
-            
             $jadwal_hari_ini[] = [
                 'jam'   => $jam_format,
                 'mapel' => $row['nama_mapel'],
@@ -138,8 +162,185 @@ if ($role === 'siswa') {
         'alpha' => 0,
         'persentase' => 92
     ];
+} elseif ($role === 'guru') {
+    $q_ginfo = mysqli_query($koneksi, "SELECT id, nip, nama FROM guru WHERE user_id = '$user_id' LIMIT 1");
+    if ($q_ginfo && mysqli_num_rows($q_ginfo) > 0) {
+        $g_row     = mysqli_fetch_assoc($q_ginfo);
+        $guru_id   = (int)$g_row['id'];
+        $guru_nama = !empty($g_row['nama']) ? $g_row['nama'] : $username;
+        $guru_nip  = $g_row['nip'] ?? '';
+    }
+
+    $chk_gmk = mysqli_query($koneksi, "SHOW TABLES LIKE 'guru_mapel_kelas'");
+    $has_gmk = ($chk_gmk && mysqli_num_rows($chk_gmk) > 0);
+
+    if ($guru_id > 0) {
+        $where_guru = $has_gmk
+            ? "(m.guru_id = '$guru_id' OR EXISTS (SELECT 1 FROM guru_mapel_kelas gmk WHERE gmk.guru_id = '$guru_id' AND gmk.mapel_id = j.mapel_id AND gmk.kelas = j.kelas))"
+            : "m.guru_id = '$guru_id'";
+
+        // A. Jadwal Mengajar Hari Ini + Status Sesi
+        $now_time   = date('H:i:s');
+        $found_next = false;
+        $q_today = mysqli_query($koneksi, "
+            SELECT j.jam_mulai, j.jam_selesai, j.kelas, j.mapel_id,
+                   COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel
+            FROM jadwal j
+            LEFT JOIN mapel m ON j.mapel_id = m.id
+            WHERE j.hari = '$hari_ini' AND $where_guru
+            ORDER BY j.jam_mulai ASC
+        ");
+        if ($q_today) {
+            while ($row = mysqli_fetch_assoc($q_today)) {
+                $status = 'upcoming';
+                $lbl    = 'Terjadwal';
+                if ($now_time >= $row['jam_mulai'] && $now_time <= $row['jam_selesai']) {
+                    $status = 'live';
+                    $lbl    = 'Berlangsung';
+                } elseif ($now_time < $row['jam_mulai'] && !$found_next) {
+                    $status     = 'next';
+                    $lbl        = 'Berikutnya';
+                    $found_next = true;
+                } elseif ($now_time > $row['jam_selesai']) {
+                    $status = 'done';
+                    $lbl    = 'Selesai';
+                }
+
+                $kls = $row['kelas'];
+                $guru_jadwal_hari_ini[] = [
+                    'jam'        => date('H:i', strtotime($row['jam_mulai'])) . ' - ' . date('H:i', strtotime($row['jam_selesai'])),
+                    'kelas'      => $kls,
+                    'mapel'      => $row['nama_mapel'],
+                    'jml_siswa'  => $siswa_per_kelas[$kls] ?? 0,
+                    'status'     => $status,
+                    'status_lbl' => $lbl
+                ];
+            }
+        }
+
+        // B. Jadwal Mengajar Besok
+        $q_besok = mysqli_query($koneksi, "
+            SELECT j.jam_mulai, j.jam_selesai, j.kelas,
+                   COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel
+            FROM jadwal j
+            LEFT JOIN mapel m ON j.mapel_id = m.id
+            WHERE j.hari = '$hari_besok' AND $where_guru
+            ORDER BY j.jam_mulai ASC
+        ");
+        if ($q_besok) {
+            while ($row = mysqli_fetch_assoc($q_besok)) {
+                $kls = $row['kelas'];
+                $guru_jadwal_besok[] = [
+                    'jam'       => date('H:i', strtotime($row['jam_mulai'])) . ' - ' . date('H:i', strtotime($row['jam_selesai'])),
+                    'kelas'     => $kls,
+                    'mapel'     => $row['nama_mapel'],
+                    'jml_siswa' => $siswa_per_kelas[$kls] ?? 0
+                ];
+            }
+        }
+
+        // C. Beban Mingguan & Pemetaan Hari per Kelas
+        $hari_per_kelas = [];
+        $q_week = mysqli_query($koneksi, "
+            SELECT j.hari, j.kelas
+            FROM jadwal j
+            LEFT JOIN mapel m ON j.mapel_id = m.id
+            WHERE $where_guru
+            ORDER BY FIELD(j.hari, 'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'), j.jam_mulai ASC
+        ");
+        if ($q_week) {
+            while ($row = mysqli_fetch_assoc($q_week)) {
+                $tot_sesi_minggu++;
+                if (isset($guru_beban_harian[$row['hari']])) {
+                    $guru_beban_harian[$row['hari']]++;
+                }
+                if (!empty($row['kelas'])) {
+                    if (!isset($hari_per_kelas[$row['kelas']])) {
+                        $hari_per_kelas[$row['kelas']] = [];
+                    }
+                    if (!in_array($row['kelas'], $hari_per_kelas[$row['kelas']], true) && !in_array($row['hari'], $hari_per_kelas[$row['kelas']], true)) {
+                        $hari_per_kelas[$row['kelas']][] = $row['hari'];
+                    }
+                }
+            }
+        }
+
+        // D. Daftar Kelas & Mapel yang Diajar
+        $sql_ajar = $has_gmk
+            ? "SELECT m.id AS mapel_id, m.nama_mapel, gmk.kelas
+               FROM guru_mapel_kelas gmk
+               JOIN mapel m ON gmk.mapel_id = m.id
+               WHERE gmk.guru_id = '$guru_id'
+               UNION
+               SELECT m.id AS mapel_id, m.nama_mapel, j.kelas
+               FROM jadwal j
+               JOIN mapel m ON j.mapel_id = m.id
+               WHERE m.guru_id = '$guru_id' AND j.kelas IS NOT NULL AND j.kelas <> ''
+               ORDER BY kelas ASC, nama_mapel ASC"
+            : "SELECT m.id AS mapel_id, m.nama_mapel, j.kelas
+               FROM jadwal j
+               JOIN mapel m ON j.mapel_id = m.id
+               WHERE m.guru_id = '$guru_id' AND j.kelas IS NOT NULL AND j.kelas <> ''
+               ORDER BY kelas ASC, nama_mapel ASC";
+
+        $q_ka = mysqli_query($koneksi, $sql_ajar);
+        $kelas_map = [];
+        if ($q_ka) {
+            while ($row = mysqli_fetch_assoc($q_ka)) {
+                $kls = trim($row['kelas']);
+                if ($kls === '') continue;
+                $guru_mapel_unik[(int)$row['mapel_id']] = $row['nama_mapel'];
+                if (!isset($kelas_map[$kls])) {
+                    $kelas_map[$kls] = [
+                        'kelas'          => $kls,
+                        'mapel_list'     => [],
+                        'first_mapel_id' => (int)$row['mapel_id'],
+                        'jml_siswa'      => $siswa_per_kelas[$kls] ?? 0,
+                        'hari_list'      => $hari_per_kelas[$kls] ?? []
+                    ];
+                }
+                if (!in_array($row['nama_mapel'], $kelas_map[$kls]['mapel_list'], true)) {
+                    $kelas_map[$kls]['mapel_list'][] = $row['nama_mapel'];
+                }
+            }
+        }
+
+        // Fallback jika mapel sudah di-assign ke guru di tabel mapel, tapi jadwal & gmk masih kosong
+        if (empty($kelas_map)) {
+            $q_fb = mysqli_query($koneksi, "
+                SELECT m.id AS mapel_id, m.nama_mapel, s.kelas
+                FROM mapel m
+                CROSS JOIN (SELECT DISTINCT kelas FROM siswa WHERE kelas IS NOT NULL AND kelas <> '') s
+                WHERE m.guru_id = '$guru_id'
+                ORDER BY s.kelas ASC, m.nama_mapel ASC
+            ");
+            if ($q_fb) {
+                while ($row = mysqli_fetch_assoc($q_fb)) {
+                    $kls = trim($row['kelas']);
+                    $guru_mapel_unik[(int)$row['mapel_id']] = $row['nama_mapel'];
+                    if (!isset($kelas_map[$kls])) {
+                        $kelas_map[$kls] = [
+                            'kelas'          => $kls,
+                            'mapel_list'     => [],
+                            'first_mapel_id' => (int)$row['mapel_id'],
+                            'jml_siswa'      => $siswa_per_kelas[$kls] ?? 0,
+                            'hari_list'      => []
+                        ];
+                    }
+                    if (!in_array($row['nama_mapel'], $kelas_map[$kls]['mapel_list'], true)) {
+                        $kelas_map[$kls]['mapel_list'][] = $row['nama_mapel'];
+                    }
+                }
+            }
+        }
+
+        $guru_kelas_ajar = array_values($kelas_map);
+        foreach ($guru_kelas_ajar as $ka) {
+            $tot_siswa_diampu += $ka['jml_siswa'];
+        }
+    }
 } else {
-    // Rekap presensi agregat untuk role admin & guru
+    // Rekap presensi agregat untuk role admin
     $base_s = max(1, (int)$tot_siswa);
     $agg_hadir = $base_s * 22;
     $agg_sakit = max(1, (int)round($base_s * 0.9));
@@ -200,7 +401,7 @@ if ($q_baru) {
 
 // Jadwal: siswa pakai jadwal kelasnya, role lain lihat semua jadwal hari ini
 $jadwal_tampil = $jadwal_hari_ini;
-if ($role !== 'siswa') {
+if ($role === 'admin') {
     $q_jadwal_all = mysqli_query($koneksi, "
         SELECT j.jam_mulai, j.jam_selesai, j.kelas,
                COALESCE(m.nama_mapel, 'Mata Pelajaran') AS nama_mapel,
@@ -279,9 +480,15 @@ foreach ($absen_items as &$ait) {
 unset($ait);
 
 // Titik sinar diagram radial untuk kartu ringkasan
-$burst_vals = ($role === 'siswa')
-    ? array_map(function ($g) { return $g['nilai'] !== null ? (float)$g['nilai'] : 20; }, $grades_data)
-    : [(float)$tot_siswa, (float)$tot_guru, (float)$tot_mapel, (float)$tot_kelas, (float)count($jadwal_tampil)];
+// Titik sinar diagram radial untuk kartu ringkasan
+if ($role === 'siswa') {
+    $burst_vals = array_map(function ($g) { return $g['nilai'] !== null ? (float)$g['nilai'] : 20; }, $grades_data);
+} elseif ($role === 'guru') {
+    $burst_vals = array_map(function ($v) { return max(1, (float)$v); }, array_values($guru_beban_harian));
+} else {
+    $burst_vals = [(float)$tot_siswa, (float)$tot_guru, (float)$tot_mapel, (float)$tot_kelas, (float)count($jadwal_tampil)];
+}
+
 $burst_max = max(1, max($burst_vals));
 $burst_dash = [];
 foreach ($burst_vals as $bi => $bv) {
@@ -440,6 +647,103 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
             min-width: 38px;
             text-align: right;
         }
+	/* Komponen Khusus Dashboard Guru */
+.db-guru-class-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    max-height: 252px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.db-guru-class-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 13px;
+    background: #f6f6f2;
+    border: 1px solid rgba(22, 22, 22, 0.06);
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.db-guru-class-item:hover {
+    background: #efefe5;
+    border-color: rgba(22, 22, 22, 0.16);
+    transform: translateX(2px);
+}
+.db-guru-class-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+.db-guru-kbadge {
+    padding: 6px 11px;
+    border-radius: 10px;
+    background: #161616;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.db-guru-kinfo { min-width: 0; }
+.db-guru-kinfo strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #161616;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.db-guru-kinfo span {
+    display: block;
+    font-size: 11.5px;
+    color: #6f6f68;
+    margin-top: 2px;
+}
+.db-guru-kaction {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #e4e4dc;
+    color: #161616;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.db-guru-kaction:hover {
+    background: #161616;
+    color: #ffffff;
+    border-color: #161616;
+}
+.db-sch-row.is-live {
+    background: #fafaf4;
+    border-radius: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.db-sch-row.is-done { opacity: 0.6; }
+.db-sesi-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+.db-sesi-tag.live { background: #eaf4ed; color: #25683d; }
+.db-sesi-tag.next { background: #efefe5; color: #161616; }
+.db-sesi-tag.done, .db-sesi-tag.upcoming { background: #f2f2f4; color: #6f6f68; 
+}
         @media (max-width: 540px) {
             .db-donut-wrap {
                 grid-template-columns: 1fr;
@@ -448,6 +752,7 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
     </style>
 </head>
 <body>
+<?php include __DIR__ . '/lenis_scroll.php'; ?>
 <?php include "loader.php"; ?>
     <div class="dashboard-container">
 <!-- SIDEBAR -->
@@ -480,6 +785,7 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
                 <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                 <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
                 <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
+				<li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
             </ul>
         </li>
         <?php endif; ?>
@@ -526,6 +832,237 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
 
             <!-- DASHBOARD CONTENT (ESTETIKA EDTECH, LAYOUT SPLIT + BENTO) -->
             <div class="dash-shell">
+
+		<?php if ($role === 'guru'): ?>
+
+    <!-- BARIS 1: HERO KREM GURU + DAFTAR KELAS YANG DIAJAR -->
+    <section class="db-top-split">
+        <div class="db-card db-card-cream">
+            <div>
+                <div class="db-eyebrow">
+                    <span class="db-pill"><span class="db-dot-live"></span> <?= htmlspecialchars($tanggal_label); ?></span>
+                    <?php if (!empty($guru_nip)): ?>
+                        <span class="db-pill">NIP <?= htmlspecialchars($guru_nip); ?></span>
+                    <?php endif; ?>
+                    <span class="db-pill">SMK Sangkuriang 1 Cimahi</span>
+                </div>
+                <h2 class="db-h1">Agenda <span class="db-dim">mengajar</span><br><?= htmlspecialchars($guru_nama); ?></h2>
+                <p class="db-sub">Pantau jadwal kelas hari ini, persiapan sesi mengajar besok, serta daftar rombel dan mata pelajaran yang Anda ampu.</p>
+            </div>
+
+            <div class="db-kpi-row">
+                <div>
+                    <p class="db-kpi-caption">Jadwal mengajar hari <?= htmlspecialchars($hari_ini); ?></p>
+                    <div class="db-kpi-num">
+                        <span aria-hidden="true"><?= count($guru_jadwal_hari_ini); ?><small>sesi</small></span>
+                        <span class="db-sr"><?= count($guru_jadwal_hari_ini); ?> sesi mengajar hari ini</span>
+                    </div>
+                </div>
+                <div class="db-cta-group">
+                    <a href="daftar_nilai.php" class="db-pill db-pill-dark">Input Nilai Siswa</a>
+                    <a href="profile.php" class="db-pill">Edit Profil</a>
+                </div>
+            </div>
+
+            <div class="db-strip">
+                <div class="db-strip-item">
+                    <span class="db-strip-val"><?= count($guru_jadwal_hari_ini); ?></span>
+                    <span class="db-strip-lbl">Sesi hari ini</span>
+                </div>
+                <div class="db-strip-item">
+                    <span class="db-strip-val"><?= count($guru_jadwal_besok); ?></span>
+                    <span class="db-strip-lbl">Sesi besok (<?= htmlspecialchars($hari_besok); ?>)</span>
+                </div>
+                <div class="db-strip-item">
+                    <span class="db-strip-val"><?= count($guru_kelas_ajar); ?></span>
+                    <span class="db-strip-lbl">Kelas diajar</span>
+                </div>
+                <div class="db-strip-item">
+                    <span class="db-strip-val"><?= (int)$tot_siswa_diampu; ?></span>
+                    <span class="db-strip-lbl">Siswa diampu</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanan: Daftar Kelas & Mapel yang Diajar -->
+        <div class="db-card">
+            <div class="db-head">
+                <div>
+                    <h3 class="db-title">Kelas yang diajar</h3>
+                    <span class="db-muted">Rombel &amp; mata pelajaran ampuan Anda</span>
+                </div>
+                <span class="db-pill"><?= count($guru_kelas_ajar); ?> Rombel</span>
+            </div>
+
+            <?php if (count($guru_kelas_ajar) > 0): ?>
+                <div class="db-guru-class-list">
+                    <?php foreach ($guru_kelas_ajar as $ka): ?>
+                        <div class="db-guru-class-item">
+                            <div class="db-guru-class-left">
+                                <span class="db-guru-kbadge"><?= htmlspecialchars($ka['kelas']); ?></span>
+                                <div class="db-guru-kinfo">
+                                    <strong><?= implode(' &middot; ', array_map('htmlspecialchars', $ka['mapel_list'])); ?></strong>
+                                    <span><?= (int)$ka['jml_siswa']; ?> siswa &middot; <?= !empty($ka['hari_list']) ? htmlspecialchars(implode(', ', $ka['hari_list'])) : 'Belum terjadwal'; ?></span>
+                                </div>
+                            </div>
+                            <a href="daftar_nilai.php?kelas=<?= urlencode($ka['kelas']); ?>&mapel_id=<?= (int)$ka['first_mapel_id']; ?>"
+                               class="db-guru-kaction"
+                               title="Input nilai untuk kelas <?= htmlspecialchars($ka['kelas']); ?>">
+                                Nilai <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="db-empty">
+                    <?= $guru_id === 0
+                        ? 'Akun user ini belum ditautkan ke data guru. Hubungi Admin.'
+                        : 'Belum ada kelas atau mata pelajaran yang ditugaskan ke akun Anda.'; ?>
+                </p>
+            <?php endif; ?>
+
+            <div class="db-gal-foot">
+                <span class="db-muted"><?= count($guru_mapel_unik); ?> mata pelajaran diampu</span>
+                <a href="daftar_nilai.php" class="db-pill db-pill-line">Kelola nilai <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BARIS 2: BENTO 3 KOLOM (JADWAL HARI INI | JADWAL BESOK | RINGKASAN MENGAJAR) -->
+    <section class="db-bento-row">
+        <!-- Kolom 1: Jadwal Hari Ini -->
+        <div class="db-card">
+            <div class="db-head">
+                <div>
+                    <h3 class="db-title">Jadwal <?= htmlspecialchars($hari_ini); ?> (Hari Ini)</h3>
+                    <span class="db-muted"><?= count($guru_jadwal_hari_ini); ?> sesi kelas Anda hari ini</span>
+                </div>
+                <span class="db-pill db-pill-dark"><?= htmlspecialchars($hari_ini); ?></span>
+            </div>
+
+            <?php if (count($guru_jadwal_hari_ini) > 0): ?>
+                <ul class="db-sch-list">
+                    <?php foreach ($guru_jadwal_hari_ini as $j): ?>
+                        <li class="db-sch-row is-<?= htmlspecialchars($j['status']); ?>">
+                            <span class="db-sch-time"><?= htmlspecialchars($j['jam']); ?></span>
+                            <div class="db-sch-main">
+                                <strong><?= htmlspecialchars($j['mapel']); ?></strong>
+                                <span><?= (int)$j['jml_siswa']; ?> siswa <span class="db-sesi-tag <?= htmlspecialchars($j['status']); ?>"><?= htmlspecialchars($j['status_lbl']); ?></span></span>
+                            </div>
+                            <span class="db-sch-room">Kelas <?= htmlspecialchars($j['kelas']); ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p class="db-empty">Tidak ada jadwal mengajar hari <?= htmlspecialchars($hari_ini); ?>.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Kolom 2: Jadwal Besok -->
+        <div class="db-card">
+            <div class="db-head">
+                <div>
+                    <h3 class="db-title">Jadwal Besok (<?= htmlspecialchars($hari_besok); ?>)</h3>
+                    <span class="db-muted"><?= htmlspecialchars($tanggal_besok_label); ?> &middot; <?= count($guru_jadwal_besok); ?> sesi</span>
+                </div>
+                <span class="db-pill"><?= htmlspecialchars($hari_besok); ?></span>
+            </div>
+
+            <?php if (count($guru_jadwal_besok) > 0): ?>
+                <ul class="db-sch-list">
+                    <?php foreach ($guru_jadwal_besok as $jb): ?>
+                        <li class="db-sch-row">
+                            <span class="db-sch-time"><?= htmlspecialchars($jb['jam']); ?></span>
+                            <div class="db-sch-main">
+                                <strong><?= htmlspecialchars($jb['mapel']); ?></strong>
+                                <span><?= (int)$jb['jml_siswa']; ?> siswa terdaftar</span>
+                            </div>
+                            <span class="db-sch-room">Kelas <?= htmlspecialchars($jb['kelas']); ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p class="db-empty">Tidak ada jadwal mengajar besok (<?= htmlspecialchars($hari_besok); ?>).</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Kolom 3: Tile Ringkasan Mengajar -->
+        <div class="db-card">
+            <div class="db-head">
+                <div>
+                    <h3 class="db-title">Ringkasan mengajar</h3>
+                    <span class="db-muted">Distribusi sesi Senin – Sabtu</span>
+                </div>
+            </div>
+
+            <div class="db-tiles">
+                <div class="db-tile is-dark">
+                    <span class="db-tile-n"><?= count($guru_jadwal_hari_ini); ?></span>
+                    <span class="db-tile-l">Kelas hari ini</span>
+                </div>
+                <div class="db-tile">
+                    <span class="db-tile-n"><?= count($guru_jadwal_besok); ?></span>
+                    <span class="db-tile-l">Kelas besok</span>
+                </div>
+                <div class="db-tile">
+                    <span class="db-tile-n"><?= count($guru_kelas_ajar); ?></span>
+                    <span class="db-tile-l">Rombel ajar</span>
+                </div>
+                <div class="db-tile">
+                    <span class="db-tile-n"><?= count($guru_mapel_unik); ?></span>
+                    <span class="db-tile-l">Mapel diampu</span>
+                </div>
+                <div class="db-tile is-dark">
+                    <span class="db-tile-n"><?= (int)$tot_sesi_minggu; ?></span>
+                    <span class="db-tile-l">Sesi / minggu</span>
+                </div>
+                <div class="db-tile is-burst" title="Beban mengajar mingguan: Senin (<?= $guru_beban_harian['Senin']; ?>) s/d Sabtu (<?= $guru_beban_harian['Sabtu']; ?>)">
+                    <svg viewBox="0 0 100 100" role="img" aria-label="Diagram radial beban mengajar mingguan">
+                        <g stroke="#161616" stroke-width="1.4" stroke-linecap="round">
+                            <?php foreach ($burst_dash as $bp): ?>
+                                <line x1="<?= $bp[0]; ?>" y1="<?= $bp[1]; ?>" x2="<?= $bp[2]; ?>" y2="<?= $bp[3]; ?>"/>
+                            <?php endforeach; ?>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="db-tile-foot">
+                <span class="db-muted"><?= (int)$tot_siswa_diampu; ?> total siswa diampu</span>
+                <a href="daftar_nilai.php" class="db-pill db-pill-line">Kelola nilai</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BARIS 3: STRIP IDENTITAS GURU -->
+    <section class="db-sys-strip">
+        <div class="db-user-chip">
+            <?php if (!empty($avatar_src)): ?>
+                <img src="<?= htmlspecialchars($avatar_src); ?>" class="db-user-ava" referrerpolicy="no-referrer" alt="Avatar">
+            <?php else: ?>
+                <div class="db-user-ava"><?= strtoupper(substr($guru_nama, 0, 1)); ?></div>
+            <?php endif; ?>
+            <div>
+                <strong><?= htmlspecialchars($guru_nama); ?></strong>
+                <span>Role GURU<?= !empty($guru_nip) ? ' &middot; NIP ' . htmlspecialchars($guru_nip) : ''; ?> &middot; Online</span>
+            </div>
+        </div>
+
+        <div class="db-sys-meta">
+            <span>Institusi <strong>SMK Sangkuriang 1 Cimahi</strong></span>
+            <span>Kompetensi <strong>Rekayasa Perangkat Lunak</strong></span>
+            <span>Tahun Ajaran <strong>2026/2027</strong></span>
+        </div>
+
+        <div class="db-quick-nav">
+            <?php foreach ($quick_links as $ql): ?>
+                <a href="<?= htmlspecialchars($ql[1]); ?>" class="db-pill db-pill-line"><?= htmlspecialchars($ql[0]); ?></a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+<?php else: ?>
+    <!-- ISI DASHBOARD ADMIN & SISWA YANG SUDAH ADA TETAP DI SINI -->
 
                 <!-- BARIS 1: SPLIT ASIMETRIS (HERO KREM + DONUT CHART ABSENSI) -->
                 <section class="db-top-split">
@@ -874,6 +1411,7 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
                         <?php endforeach; ?>
                     </div>
                 </section>
+		<?php endif; ?>
 
             </div>
         </main>

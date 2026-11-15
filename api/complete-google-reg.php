@@ -101,11 +101,7 @@ for ($bi = 0; $bi < 12; $bi++) {
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
 </head>
 <body>
-<div class="au-backdrop">
-    <video autoplay muted loop playsinline id="bg-video">
-        <source src="<?= $base_url ?? ''; ?>/background/auth.mp4" type="video/mp4">
-    </video>
-</div>
+<?php include __DIR__ . '/lenis_scroll.php'; ?>
 
 <main class="au-oauth-shell">
     <!-- BAGIAN ATAS: PITA KREM IDENTITAS GOOGLE -->

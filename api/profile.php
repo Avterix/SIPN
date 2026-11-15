@@ -155,6 +155,7 @@ foreach ($pf_checks as $ci => $ck) {
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
 </head>
 <body>
+<?php include __DIR__ . '/lenis_scroll.php'; ?>
 <?php include "loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
@@ -187,6 +188,7 @@ foreach ($pf_checks as $ci => $ck) {
                 <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                 <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
                 <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
+				<li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
             </ul>
         </li>
         <?php endif; ?>
