@@ -9,11 +9,11 @@
       "handle": "filesystem"
     },
     {
-      "src": "/(assets|background|dashboard|elements|gif|icons|webref)/(.*)",
+      "src": "/(assets|background|gif|icons|webref)/(.*)",
       "dest": "/$1/$2"
     },
     {
-      "src": "/(auth-edtech\\.css|dashboard-bento\\.css|profile\\.css|rapor\\.css|style1\\.css|auth-style\\.css|auth-style2\\.css|auth-style3\\.css|animasi-sipn\\.css|auth\\.js)",
+      "src": "/(animasi-sipn.css|auth-style.css|style1.css)",
       "dest": "/$1"
     },
     {
@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/maintenance.html"
     }
   ]
 }

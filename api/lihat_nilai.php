@@ -170,10 +170,6 @@ foreach ($list_nilai as $i => $row) {
 <body>
 <?php include "loader.php"; ?>
 <div class="video">
-    <video autoplay muted playsinline id="bg-video">
-        <source src="background/main_bg.mp4" type="video/mp4">
-        Browser Anda tidak mendukung tag video.
-    </video>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
