@@ -525,6 +525,11 @@ $master_max = max(1, max(array_column($master_bars, 'val')));
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/analytics/script.js"></script>
     <style>
         /* Donut Chart Absensi (Selaras estetika EdTech) */
         .db-donut-card {
