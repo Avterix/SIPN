@@ -14,21 +14,49 @@ if (!$host || !$user || !$db) {
     exit('Konfigurasi server belum lengkap.');
 }
 
+$http_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$is_local_req = (strpos($http_host, 'localhost') !== false || strpos($http_host, '127.0.0.1') !== false);
+$is_local_db  = in_array($host, ['localhost', '127.0.0.1', '::1'], true);
+
+// Otomatis aktifkan SSL untuk DB remote (seperti Aiven), bisa di-override via DB_SSL=true/false
+$use_ssl = filter_var(env('DB_SSL', $is_local_db ? 'false' : 'true'), FILTER_VALIDATE_BOOLEAN);
+
 $koneksi = false;
+$db_error = '';
+
 try {
-    $koneksi = mysqli_connect($host, $user, $pass, $db, $port);
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    $conn = mysqli_init();
+    mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 8);
+
+    $flags = 0;
+    if ($use_ssl) {
+        mysqli_ssl_set($conn, null, null, null, null, null);
+        $flags = defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT')
+            ? (MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT)
+            : MYSQLI_CLIENT_SSL;
+    }
+
+    if (mysqli_real_connect($conn, $host, $user, $pass, $db, $port, null, $flags)) {
+        $koneksi = $conn;
+    }
 } catch (Throwable $e) {
-    error_log('SIPN: koneksi DB gagal: ' . $e->getMessage());
+    $db_error = $e->getMessage();
+    error_log('SIPN: koneksi DB gagal: ' . $db_error);
 }
+
 if (!$koneksi) {
     http_response_code(500);
+    if ($is_local_req && $db_error !== '') {
+        exit('Layanan sedang bermasalah (Debug Lokal): ' . htmlspecialchars($db_error));
+    }
     exit('Layanan sedang bermasalah. Coba lagi nanti.');
 }
+
 mysqli_set_charset($koneksi, 'utf8mb4');
 
 // Deteksi otomatis Base URL
-$http_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-if (strpos($http_host, 'localhost') !== false || strpos($http_host, '127.0.0.1') !== false) {
+if ($is_local_req) {
     $base_url = 'http://' . $http_host . env('LOCAL_BASE_PATH', '/School_Project/assignment/SIPN');
 } else {
     $base_url = '';
