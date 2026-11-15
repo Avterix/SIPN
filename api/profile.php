@@ -121,6 +121,26 @@ if (!empty($avatar_src)) $progress += 20;
 if (!empty($nis) || !empty($nip)) $progress += 20;
 if (!empty($nama_lengkap)) $progress += 15;
 if ($gh_connected) $progress += 15;
+
+// Data visual untuk tile kelengkapan & radial burst SVG
+$pf_checks = [
+    ['label' => 'Sesi dasar', 'pts' => 30, 'ok' => true],
+    ['label' => 'Foto profil', 'pts' => 20, 'ok' => !empty($avatar_src)],
+    ['label' => ($role === 'guru' ? 'Data NIP' : 'Data NIS'), 'pts' => 20, 'ok' => (!empty($nis) || !empty($nip))],
+    ['label' => 'Nama lengkap', 'pts' => 15, 'ok' => !empty($nama_lengkap)],
+    ['label' => 'GitHub OAuth', 'pts' => 15, 'ok' => $gh_connected],
+];
+$pf_done_count = 0;
+$pf_burst = [];
+foreach ($pf_checks as $ci => $ck) {
+    if ($ck['ok']) $pf_done_count++;
+    $ang = (2 * M_PI * $ci / count($pf_checks)) - M_PI / 2;
+    $len = $ck['ok'] ? 44 : 18;
+    $pf_burst[] = [
+        round(50 + 10 * cos($ang), 2), round(50 + 10 * sin($ang), 2),
+        round(50 + $len * cos($ang), 2), round(50 + $len * sin($ang), 2),
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -128,104 +148,70 @@ if ($gh_connected) $progress += 15;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Profile - SIPN Core</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.3">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/profile.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
-    <style>
-        .profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; animation: fadeInUp 0.5s ease-out forwards; }
-        .profile-card-left { height: 737px; background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .avatar-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 14px; }
-        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
-        .avatar-placeholder { width: 100%; height: 100%; border-radius: 50%; background: #231c32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; }
-        .avatar-upload-btn { position: absolute; bottom: 2px; right: 2px; width: 32px; height: 32px; background: #231c32; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s; }
-        .avatar-upload-btn:hover { transform: scale(1.1); }
-        .profile-name { font-size: 17px; font-weight: 700; color: var(--text-main, #1e293b); margin-bottom: 2px; }
-        .profile-title { font-size: 12px; color: var(--text-muted, #64748b); margin-bottom: 12px; }
-        .profile-verified-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
-        .progress-box { width: 100%; margin-bottom: 20px; text-align: left; }
-        .progress-header { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: #8c94a6; margin-bottom: 6px; letter-spacing: 0.5px; }
-        .progress-bar-bg { width: 100%; height: 6px; background-color: #f1f5f9; border-radius: 10px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background-color: var(--accent-purple, #4f46e5); border-radius: 10px; }
-        .profile-meta-list { width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: left; border-top: 1px solid #f1f5f9; padding-top: 16px; }
-        .meta-item { display: flex; justify-content: space-between; font-size: 12px; }
-        .meta-label { color: var(--text-muted, #64748b); display: flex; align-items: center; gap: 8px; }
-        .meta-val { font-weight: 600; color: var(--text-main, #4d4e8d); }
-        .card-box { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        .form-section-title { font-size: 15px; font-weight: 700; color: var(--text-main, #0f172a); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
-        .github-integration-card { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px; }
-        .gh-info-left { display: flex; align-items: center; gap: 14px; }
-        .gh-info-left i { font-size: 32px; color: #24292e; }
-        .gh-text h4 { font-size: 14px; font-weight: 700; color: #0f172a; }
-        .gh-text p { font-size: 12px; color: #64748b; }
-        .btn-gh-connect { background-color: #24292e; color: #ffffff; padding: 9px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-gh-disconnect { background-color: #fee2e2; color: #dc2626; padding: 9px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; }
-        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        .form-group label { font-size: 12px; font-weight: 600; color: var(--text-main, #334155); }
-        .form-control { background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none; }
-        .alert-box { padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-        .save-btn { background-color: #231c32; color: #ffffff; border: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr; } .form-grid-2 { grid-template-columns: 1fr; } }
-
-    </style>
 </head>
 <body>
 <?php include "loader.php"; ?>
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-logo"><i class="home"></i></div>
-                <h2>SIPN Core</h2>
-            </div>
+    <div class="sidebar-brand">
+        <div class="brand-logo"><i class="home"></i></div>
+        <h2>SIPN - SMK SAKUCI</h2>
+    </div>
 
-            <div class="user-profile-mini">
-                <?php if (!empty($avatar_src)): ?>
-                    <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" style="object-fit: cover;">
-                <?php else: ?>
-                    <div class="user-avatar-initial"><?= strtoupper(substr($username, 0, 1)); ?></div>
-                <?php endif; ?>
-                <div class="user-meta-mini">
-                    <span class="user-name"><?= htmlspecialchars($username); ?></span>
-                    <span class="user-role-badge"><?= htmlspecialchars($role); ?></span>
-                </div>
-            </div>
+    <div class="user-profile-mini">
+        <?php if (!empty($avatar_src)): ?>
+            <img src="<?= htmlspecialchars($avatar_src); ?>" class="user-avatar-initial" style="object-fit: cover;" referrerpolicy="no-referrer">
+        <?php else: ?>
+            <div class="user-avatar-initial"><?= strtoupper(substr($username, 0, 1)); ?></div>
+        <?php endif; ?>
+        <div class="user-meta-mini">
+            <span class="user-name"><?= htmlspecialchars($username); ?></span>
+            <span class="user-role-badge"><?= htmlspecialchars($role); ?></span>
+        </div>
+    </div>
 
-            <ul class="sidebar-menu">
-                <li><a href="dashboard.php"><i class="dashboard"></i> Dashboard</a></li>
-                <?php if ($role === 'admin'): ?>
-                <li class="has-submenu">
-                    <a href="#"><i class="master" style="width:20px; text-align:center;"></i> <span class="menu-label">Master Data</span></a>
-                    <ul class="submenu">
-                        <li><a href="daftar_user.php"><span class="dot user"></span> Kelola User</a></li>
-                        <li><a href="daftar_siswa.php"><span class="dot siswa"></span> Kelola Siswa</a></li>
-                        <li><a href="daftar_guru.php"><span class="dot guru"></span> Kelola Guru</a></li>
-                        <li><a href="daftar_mapel.php"><span class="dot mapel"></span> Mata Pelajaran</a></li>
-                    </ul>
-                </li>
-                <?php endif; ?>
-                <?php if ($role === 'guru'): ?>
-                <li><a href="daftar_nilai.php"><i class="fa-solid fa-pen-to-square"></i> Kelola Nilai</a></li>
-                <?php endif; ?>
-                <?php if ($role === 'siswa'): ?>
-                <li><a href="lihat_nilai.php"><i class="report"></i> View Report Card Grades</a></li>
-                <?php endif; ?>
-                <li><a href="profile.php" class="active"><i class="profile"></i> Manage Profile</a></li>
+    <ul class="sidebar-menu">
+        <li><a href="dashboard.php"><i class="dashboard"></i> <span class="menu-label">Dashboard</span></a></li>
+
+        <?php if ($role === 'admin'): ?>
+        <li class="has-submenu" tabindex="0">
+            <a href="javascript:void(0)"><i class="master"></i> <span class="menu-label">Master Data</span></a>
+            <ul class="submenu">
+                <li><a href="daftar_user.php"><span class="dot user"></span> <span class="menu-label">Kelola User</span></a></li>
+                <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
+                <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
+                <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
             </ul>
+        </li>
+        <?php endif; ?>
 
-                <div class="sidebar-footer">
-        <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
+        <?php if ($role === 'guru'): ?>
+        <li><a href="daftar_nilai.php"><i class="fa-solid fa-pen-to-square"></i> <span class="menu-label">Kelola Nilai</span></a></li>
+        <?php endif; ?>
+
+        <?php if ($role === 'siswa'): ?>
+        <li><a href="lihat_nilai.php"><i class="report"></i> <span class="menu-label">Report Grades</span></a></li>
+        <?php endif; ?>
+
+        <li><a href="profile.php" class="active"><i class="profile"></i> <span class="menu-label">Profile Settings</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="logout.php" class="add-files-box" title="Logout Account">
             <div class="icon-plus"><i class="logout"></i></div>
             <div class="add-text">
                 <strong>System Session</strong>
                 <span>Logout Account</span>
             </div>
-                </a>
-            </div>
-        </aside>
+        </a>
+    </div>
+</aside>
 
         <!-- MAIN CONTENT AREA -->
         <main class="main-content">
@@ -245,117 +231,99 @@ if ($gh_connected) $progress += 15;
                 </div>
             </header>
 
-            <div class="profile-grid">
-                
-                <!-- LEFT CARD: PROFILE SUMMARY -->
-                <div class="profile-card-left">
-                    <div class="avatar-wrapper">
-                        <?php if (!empty($avatar_src)): ?>
-                            <img src="<?= htmlspecialchars($avatar_src); ?>" id="avatarPreview" class="avatar-img" alt="Profile Picture">
-                        <?php else: ?>
-                            <div id="avatarPlaceholder" class="avatar-placeholder"><?= strtoupper(substr($username, 0, 1)); ?></div>
-                            <img src="" id="avatarPreview" class="avatar-img" style="display:none;" alt="Profile Picture">
-                        <?php endif; ?>
-                        
-                        <label for="avatarInput" class="avatar-upload-btn" title="Ubah Foto">
-                            <i class="fa-solid fa-camera"></i>
-                        </label>
-                    </div>
+            <!-- PROFILE CONTENT (ESTETIKA EDTECH, HEADER HORIZONTAL + WORKSPACE ASIMETRIS) -->
+            <div class="pf-shell">
 
-                    <h2 class="profile-name"><?= htmlspecialchars($nama_lengkap); ?></h2>
-                    <span class="profile-title">@<?= htmlspecialchars($username); ?> &middot; <?= ucfirst($role); ?></span>
+                <!-- 1. HEADER IDENTITAS HORIZONTAL (PITA KREM) -->
+                <section class="pf-band">
+                    <!-- Kiri: Avatar & Identitas Utama -->
+                    <div class="pf-identity">
+                        <div class="pf-ava-wrap">
+                            <?php if (!empty($avatar_src)): ?>
+                                <img src="<?= htmlspecialchars($avatar_src); ?>" id="avatarPreview" class="pf-ava-img" alt="Profile Picture" referrerpolicy="no-referrer">
+                            <?php else: ?>
+                                <div id="avatarPlaceholder" class="pf-ava-fallback"><?= strtoupper(substr($username, 0, 1)); ?></div>
+                                <img src="" id="avatarPreview" class="pf-ava-img" style="display:none;" alt="Profile Picture">
+                            <?php endif; ?>
 
-                    <div class="profile-verified-badge">
-                        <i class="fa-solid fa-circle-check"></i> Account Verified
-                    </div>
-
-                    <div class="progress-box">
-                        <div class="progress-header">
-                            <span>PROFILE PROGRESS</span>
-                            <span><?= $progress; ?>%</span>
+                            <label for="avatarInput" class="pf-ava-btn" title="Ubah Foto Profil">
+                                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                                <span class="pf-sr">Ubah foto profil</span>
+                            </label>
                         </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: <?= $progress; ?>%;"></div>
-                        </div>
-                    </div>
 
-                    <div class="profile-meta-list">
-                        <?php if ($role === 'siswa'): ?>
-                            <div class="meta-item">
-                                <span class="meta-label"><i class="fa-solid fa-id-card"></i> NIS</span>
-                                <span class="meta-val"><?= htmlspecialchars($nis ?: '-'); ?></span>
+                        <div>
+                            <div class="pf-badges">
+                                <span class="pf-pill"><span class="pf-dot-ok"></span> Terverifikasi</span>
+                                <span class="pf-pill"><?= ucfirst(htmlspecialchars($role)); ?></span>
                             </div>
-                            <div class="meta-item">
-                                <span class="meta-label"><i class="fa-solid fa-school"></i> Kelas</span>
-                                <span class="meta-val"><?= htmlspecialchars($kelas ?: '-'); ?></span>
+                            <h2 class="pf-h1">Profil <span class="pf-dim">pengguna</span><br><?= htmlspecialchars($nama_lengkap); ?></h2>
+                            <p class="pf-handle">@<?= htmlspecialchars($username); ?> &middot; SMK Sangkuriang 1 Cimahi</p>
+                        </div>
+                    </div>
+
+                    <!-- Tengah: Kelengkapan Profil -->
+                    <div class="pf-progress-col">
+                        <p class="pf-caption">Kelengkapan data profil</p>
+                        <div class="pf-big-num">
+                            <span aria-hidden="true"><?= (int)$progress; ?><small>%</small></span>
+                            <span class="pf-sr"><?= (int)$progress; ?> persen lengkap</span>
+                        </div>
+                        <div class="pf-track" role="progressbar" aria-valuenow="<?= (int)$progress; ?>" aria-valuemin="0" aria-valuemax="100">
+                            <div class="pf-track-fill" style="width: <?= (int)$progress; ?>%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kanan: Ringkasan Metadata -->
+                    <div class="pf-meta-col">
+                        <?php if ($role === 'siswa'): ?>
+                            <div class="pf-meta-row">
+                                <span>NIS</span>
+                                <strong><?= htmlspecialchars($nis ?: '–'); ?></strong>
+                            </div>
+                            <div class="pf-meta-row">
+                                <span>Kelas</span>
+                                <strong><?= htmlspecialchars($kelas ?: '–'); ?></strong>
                             </div>
                         <?php elseif ($role === 'guru'): ?>
-                            <div class="meta-item">
-                                <span class="meta-label"><i class="fa-solid fa-id-card"></i> NIP</span>
-                                <span class="meta-val"><?= htmlspecialchars($nip ?: '-'); ?></span>
+                            <div class="pf-meta-row">
+                                <span>NIP</span>
+                                <strong><?= htmlspecialchars($nip ?: '–'); ?></strong>
                             </div>
                         <?php endif; ?>
 
-                        <div class="meta-item">
-                            <span class="meta-label"><i class="fa-solid fa-venus-mars"></i> Gender</span>
-                            <span class="meta-val"><?= ($jenis_kelamin === 'L') ? 'Laki-laki' : 'Perempuan'; ?></span>
+                        <div class="pf-meta-row">
+                            <span>Jenis kelamin</span>
+                            <strong><?= ($jenis_kelamin === 'L') ? 'Laki-laki' : 'Perempuan'; ?></strong>
                         </div>
-
-                        <div class="meta-item">
-                            <span class="meta-label"><i class="fa-brands fa-github"></i> GitHub</span>
-                            <span class="meta-val" style="color: #4d4e8d;">
-                                <?= $gh_connected ? '@'.htmlspecialchars($gh_username) : 'Unlinked'; ?>
-                            </span>
+                        <div class="pf-meta-row">
+                            <span>GitHub</span>
+                            <strong><?= $gh_connected ? '@' . htmlspecialchars($gh_username) : 'Belum tertaut'; ?></strong>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- RIGHT CONTENT COLUMN -->
-                <div class="right-content-wrapper">
-
-                    <?php if (!empty($msg_text)): ?>
-                        <div class="alert-box <?= ($msg_type === 'success') ? 'alert-success' : 'alert-error'; ?>">
-                            <i class="fa-solid <?= ($msg_type === 'success') ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
-                            <?= htmlspecialchars($msg_text); ?>
+                <!-- ALERT NOTIFIKASI -->
+                <?php if (!empty($msg_text)): ?>
+                    <div class="pf-alert <?= ($msg_type === 'success') ? 'is-success' : 'is-error'; ?>" role="status">
+                        <div class="pf-alert-inner">
+                            <i class="fa-solid <?= ($msg_type === 'success') ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>" aria-hidden="true"></i>
+                            <span><?= htmlspecialchars($msg_text); ?></span>
                         </div>
-                    <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
-                    <div class="card-box">
-                        <div class="form-section-title">
-                            <i class="fa-solid fa-plug" style="color: #4f46e5;"></i> Connected Services & Integrations
-                        </div>
+                <!-- 2. WORKSPACE BAWAH ASIMETRIS (FORM KIRI + MODUL KANAN) -->
+                <div class="pf-workspace">
 
-                        <div class="github-integration-card">
-                            <div class="gh-info-left">
-                                <i class="github"></i>
-                                <div class="gh-text">
-                                    <h4>GitHub Account</h4>
-                                    <?php if ($gh_connected): ?>
-                                        <p>Terhubung sebagai <strong>@<?= htmlspecialchars($gh_username); ?></strong></p>
-                                    <?php else: ?>
-                                        <p>Hubungkan akun GitHub milikmu menggunakan OAuth 2.0 API resmi.</p>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
+                    <!-- KOLOM KIRI: FORMULIR INFORMASI & KEAMANAN -->
+                    <section class="pf-card">
+                        <div class="pf-head">
                             <div>
-                                <?php if ($gh_connected): ?>
-                                    <a href="github-disconnect.php?t=<?= csrf_token(); ?>" class="btn-gh-disconnect" onclick="return confirm('Apakah Anda yakin ingin melepas koneksi GitHub?');">
-                                        Disconnect
-                                    </a>
-                                <?php else: ?>
-                                    <a href="github-login.php" class="btn-gh-connect">
-                                        <i class="connect"></i> Connect GitHub
-                                    </a>
-                                <?php endif; ?>
+                                <h3 class="pf-title">Pengaturan akun & identitas</h3>
+                                <p class="pf-sub">Klik ikon kamera di foto profil untuk mengganti avatar (PNG/JPG/WebP, maks 1 MB).</p>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- FORM EDIT PROFILE -->
-                    <div class="card-box">
-                        <div class="form-section-title">
-                            <i class="fa-solid fa-user-pen" style="color: #4f46e5;"></i> Personal Information
+                            <span class="pf-pill">ID #<?= (int)$user_id; ?></span>
                         </div>
 
                         <form action="profile.php" method="POST">
@@ -363,66 +331,154 @@ if ($gh_connected) $progress += 15;
                             <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="convertBase64(event)">
                             <input type="hidden" name="avatar_base64" id="avatarBase64Input" value="<?= htmlspecialchars($foto_db); ?>">
 
-                            <div class="form-grid-2">
-                                <div class="form-group">
-                                    <label>Username (Login)</label>
-                                    <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($username); ?>" required>
+                            <div class="pf-step-label is-first">
+                                <span class="pf-step-num">01</span>
+                                <span>Informasi personal</span>
+                            </div>
+
+                            <div class="pf-grid-2">
+                                <div class="pf-field">
+                                    <label for="pfUsername">Username (Login)</label>
+                                    <input type="text" id="pfUsername" name="username" class="pf-input" value="<?= htmlspecialchars($username); ?>" required>
                                 </div>
 
                                 <?php if ($role === 'siswa' || $role === 'guru'): ?>
-                                <div class="form-group">
-                                    <label>Nama Lengkap</label>
-                                    <input type="text" name="nama" class="form-control" value="<?= htmlspecialchars($nama_lengkap); ?>" required>
+                                <div class="pf-field">
+                                    <label for="pfNama">Nama Lengkap</label>
+                                    <input type="text" id="pfNama" name="nama" class="pf-input" value="<?= htmlspecialchars($nama_lengkap); ?>" required>
                                 </div>
                                 <?php endif; ?>
                             </div>
 
                             <?php if ($role === 'siswa'): ?>
-                            <div class="form-grid-2">
-                                <div class="form-group">
-                                    <label>NIS (Nomor Induk Siswa)</label>
-                                    <input type="text" name="nis" class="form-control" value="<?= htmlspecialchars($nis); ?>" required>
+                            <div class="pf-grid-2">
+                                <div class="pf-field">
+                                    <label for="pfNis">NIS (Nomor Induk Siswa)</label>
+                                    <input type="text" id="pfNis" name="nis" class="pf-input" value="<?= htmlspecialchars($nis); ?>" required>
                                 </div>
-                                <div class="form-group">
-                                    <label>Kelas</label>
-                                    <input type="text" name="kelas" class="form-control" value="<?= htmlspecialchars($kelas); ?>" placeholder="Contoh: XI RPL 1" required>
+                                <div class="pf-field">
+                                    <label for="pfKelas">Kelas</label>
+                                    <input type="text" id="pfKelas" name="kelas" class="pf-input" value="<?= htmlspecialchars($kelas); ?>" placeholder="Contoh: XI RPL 1" required>
                                 </div>
                             </div>
                             <?php endif; ?>
 
                             <?php if ($role === 'guru'): ?>
-                            <div class="form-group">
-                                <label>NIP (Nomor Induk Pegawai)</label>
-                                <input type="text" name="nip" class="form-control" value="<?= htmlspecialchars($nip); ?>" required>
+                            <div class="pf-field">
+                                <label for="pfNip">NIP (Nomor Induk Pegawai)</label>
+                                <input type="text" id="pfNip" name="nip" class="pf-input" value="<?= htmlspecialchars($nip); ?>" required>
                             </div>
                             <?php endif; ?>
 
                             <?php if ($role === 'siswa' || $role === 'guru'): ?>
-                            <div class="form-group">
-                                <label>Jenis Kelamin</label>
-                                <select name="jenis_kelamin" class="form-control">
+                            <div class="pf-field">
+                                <label for="pfGender">Jenis Kelamin</label>
+                                <select id="pfGender" name="jenis_kelamin" class="pf-input">
                                     <option value="L" <?= ($jenis_kelamin === 'L') ? 'selected' : ''; ?>>Laki-laki</option>
                                     <option value="P" <?= ($jenis_kelamin === 'P') ? 'selected' : ''; ?>>Perempuan</option>
                                 </select>
                             </div>
                             <?php endif; ?>
 
-                            <div class="form-section-title" style="margin-top: 24px;">
-                                <i class="fa-solid fa-lock" style="color: #4f46e5;"></i> Security Settings
+                            <div class="pf-step-label">
+                                <span class="pf-step-num">02</span>
+                                <span>Keamanan kata sandi</span>
                             </div>
 
-                            <div class="form-group">
-                                <label>New Password <small style="color: #64748b; font-weight: 400;">(Kosongkan jika tidak ingin diubah)</small></label>
-                                <input type="password" name="new_password" class="form-control" placeholder="••••••••">
+                            <div class="pf-field">
+                                <label for="pfPass">Password Baru <small>(Kosongkan jika tidak ingin diubah, minimal 6 karakter)</small></label>
+                                <div class="pf-pass-wrap">
+                                    <input type="password" id="pfPass" name="new_password" class="pf-input" placeholder="••••••••">
+                                    <button type="button" class="pf-pass-toggle" id="pfPassToggle" aria-label="Tampilkan password">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <div style="margin-top: 20px; text-align: right;">
-                                <button type="submit" name="update_profile" class="save-btn">
-                                    <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                            <div class="pf-form-foot">
+                                <span class="pf-sub">Perubahan langsung diterapkan pada sesi aktif.</span>
+                                <button type="submit" name="update_profile" class="pf-save-btn">
+                                    <i class="fa-solid fa-check" aria-hidden="true"></i> Simpan perubahan
                                 </button>
                             </div>
                         </form>
-                    </div>
+                    </section>
+
+                    <!-- KOLOM KANAN: INTEGRASI GITHUB + TILE RINGKASAN -->
+                    <aside class="pf-side-stack">
+
+                        <!-- Modul 1: Integrasi GitHub -->
+                        <div class="pf-card">
+                            <div class="pf-head">
+                                <div>
+                                    <h3 class="pf-title">Integrasi layanan</h3>
+                                    <p class="pf-sub">Autentikasi & sinkronisasi avatar OAuth 2.0.</p>
+                                </div>
+                                <span class="pf-pill"><?= $gh_connected ? 'Aktif' : 'Nonaktif'; ?></span>
+                            </div>
+
+                            <div class="pf-gh-box">
+                                <div class="pf-gh-left">
+                                    <div class="pf-gh-ico"><img src="<?= $base_url; ?>/icons/profile/github.png" aria-hidden="true"></img></div>
+                                    <div class="pf-gh-text">
+                                        <strong>GitHub Account</strong>
+                                        <?php if ($gh_connected): ?>
+                                            <span>Terhubung sebagai <b>@<?= htmlspecialchars($gh_username); ?></b></span>
+                                        <?php else: ?>
+                                            <span>Belum terhubung ke akun GitHub</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <?php if ($gh_connected): ?>
+                                        <a href="github-disconnect.php?t=<?= csrf_token(); ?>" class="pf-pill pf-pill-danger" onclick="return confirm('Apakah Anda yakin ingin melepas koneksi GitHub?');">
+                                            Disconnect
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="github-login.php" class="pf-pill pf-pill-dark">
+                                            Connect
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="pf-gh-foot">
+                                <span class="pf-sub">OAuth 2.0 resmi GitHub</span>
+                                <a href="dashboard.php" class="pf-pill pf-pill-line">Kembali ke dashboard</a>
+                            </div>
+                        </div>
+
+                        <!-- Modul 2: Grid Tile Kelengkapan + Diagram Radial -->
+                        <div class="pf-card">
+                            <div class="pf-head">
+                                <div>
+                                    <h3 class="pf-title">Rincian kelengkapan</h3>
+                                    <p class="pf-sub"><?= $pf_done_count; ?> dari <?= count($pf_checks); ?> indikator terpenuhi.</p>
+                                </div>
+                            </div>
+
+                            <div class="pf-tiles">
+                                <?php foreach ($pf_checks as $ck): ?>
+                                    <div class="pf-tile<?= $ck['ok'] ? ' is-dark' : ''; ?>">
+                                        <span class="pf-tile-n"><?= $ck['ok'] ? '+' . $ck['pts'] . '%' : '0%'; ?></span>
+                                        <span class="pf-tile-l"><?= htmlspecialchars($ck['label']); ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+
+                                <div class="pf-tile is-burst">
+                                    <svg viewBox="0 0 100 100" role="img" aria-label="Diagram radial kelengkapan profil">
+                                        <g stroke="#161616" stroke-width="1.4" stroke-linecap="round">
+                                            <?php foreach ($pf_burst as $bp): ?>
+                                                <line x1="<?= $bp[0]; ?>" y1="<?= $bp[1]; ?>" x2="<?= $bp[2]; ?>" y2="<?= $bp[3]; ?>"/>
+                                            <?php endforeach; ?>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                    </aside>
 
                 </div>
 
@@ -435,7 +491,7 @@ if ($gh_connected) $progress += 15;
             const menuLinks = document.querySelectorAll(".sidebar-menu a");
             menuLinks.forEach(link => {
                 link.addEventListener("click", function(e) {
-                    if(this.parentElement.classList.contains("has-submenu")) {
+                    if (this.parentElement.classList.contains("has-submenu")) {
                         e.preventDefault();
                         const submenu = this.nextElementSibling;
                         submenu.style.display = submenu.style.display === "flex" ? "none" : "flex";
@@ -443,6 +499,18 @@ if ($gh_connected) $progress += 15;
                     }
                 });
             });
+
+            const passInput = document.getElementById("pfPass");
+            const passToggle = document.getElementById("pfPassToggle");
+            if (passInput && passToggle) {
+                passToggle.addEventListener("click", () => {
+                    const isHidden = passInput.type === "password";
+                    passInput.type = isHidden ? "text" : "password";
+                    passToggle.innerHTML = isHidden
+                        ? '<i class="fa-regular fa-eye-slash"></i>'
+                        : '<i class="fa-regular fa-eye"></i>';
+                });
+            }
         });
 
         function convertBase64(event) {

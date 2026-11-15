@@ -11,3 +11,7 @@ uploads/
 .*.php#
 .~lock.*
 .DS_Store
+
+# Vercel & log
+.vercel/
+*.log

@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/maintenance.html"
+      "dest": "/api/index.php"
     }
   ]
 }

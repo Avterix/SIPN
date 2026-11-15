@@ -44,9 +44,10 @@ $nis          = $siswa_data['nis'] ?? '-';
 $kelas        = $siswa_data['kelas'] ?? '-';
 
 // 2. QUERY FETCH NILAI RAPOR
-$sql_nilai = "SELECT nr.*, m.nama_mapel, m.kode_mapel 
-              FROM nilai_rapor nr 
-              JOIN mapel m ON nr.mapel_id = m.id 
+$sql_nilai = "SELECT nr.*, m.nama_mapel, m.kode_mapel, g.nama AS nama_guru
+              FROM nilai_rapor nr
+              JOIN mapel m ON nr.mapel_id = m.id
+              LEFT JOIN guru g ON m.guru_id = g.id
               WHERE nr.siswa_id = '$siswa_id'
               ORDER BY m.nama_mapel ASC";
 
@@ -93,6 +94,65 @@ if ($q_nilai && mysqli_num_rows($q_nilai) > 0) {
 
 $rata_rata = $count_mapel > 0 ? round($total_nilai / $count_mapel, 1) : 0;
 if ($count_mapel == 0) $min_nilai = 0;
+
+// ---------- Tambahan khusus tampilan (tidak mengubah perhitungan di atas) ----------
+$pred_rata = '–';
+if ($count_mapel > 0) {
+    if ($rata_rata >= 90) $pred_rata = 'A';
+    elseif ($rata_rata >= 80) $pred_rata = 'B';
+    elseif ($rata_rata >= 70) $pred_rata = 'C';
+    else $pred_rata = 'D';
+}
+$belum_tuntas = $count_mapel - $tuntas_count;
+
+function rp_initial($s)
+{
+    $s = trim((string) $s);
+    if ($s === '') return '?';
+    return function_exists('mb_substr') ? mb_strtoupper(mb_substr($s, 0, 1, 'UTF-8'), 'UTF-8') : strtoupper(substr($s, 0, 1));
+}
+function rp_pct($v)
+{
+    return number_format(max(0, min(100, (float) $v)), 2, '.', '');
+}
+
+// Daftar guru pengajar (satu baris per mapel, tanpa duplikat)
+$guru_list = [];
+$seen_mapel = [];
+foreach ($list_nilai as $row) {
+    $g   = trim((string) ($row['nama_guru'] ?? ''));
+    $key = $row['mapel_id'] ?? $row['nama_mapel'];
+    if ($g === '' || isset($seen_mapel[$key])) continue;
+    $seen_mapel[$key] = true;
+    $guru_list[] = ['nama' => $g, 'mapel' => $row['nama_mapel'], 'nilai' => $row['computed_akhir']];
+}
+
+// Catatan guru (kolom keterangan yang terisi)
+$notes = [];
+foreach ($list_nilai as $row) {
+    $k = trim((string) ($row['keterangan'] ?? ''));
+    if ($k === '' || $k === '-') continue;
+    $g = trim((string) ($row['nama_guru'] ?? ''));
+    $notes[] = [
+        'guru'  => $g !== '' ? $g : 'Guru mapel',
+        'mapel' => $row['nama_mapel'],
+        'teks'  => $k,
+        'akhir' => $row['computed_akhir'],
+        'pred'  => $row['computed_predikat'],
+        'kkm'   => $row['kkm_val'],
+    ];
+}
+
+// Titik sinar diagram radial (satu sinar per mapel, panjang = nilai akhir)
+$burst = [];
+foreach ($list_nilai as $i => $row) {
+    $ang = (2 * M_PI * $i / max(1, $count_mapel)) - M_PI / 2;
+    $len = 12 + (max(0, min(100, (float) $row['computed_akhir'])) / 100) * 34;
+    $burst[] = [
+        round(50 + 10 * cos($ang), 2), round(50 + 10 * sin($ang), 2),
+        round(50 + $len * cos($ang), 2), round(50 + $len * sin($ang), 2),
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -100,53 +160,12 @@ if ($count_mapel == 0) $min_nilai = 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Report Card Grades - SIPN Core</title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.3">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url; ?>/icons/favicon.png">
     
-    <style>
-        .rapor-container { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.5s ease-out forwards; }
-        .card-box { background-color: var(--card-bg, #ffffff); border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .student-banner { display: flex; align-items: center; justify-content: space-between; background: var(--accent-carbon); color: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 8px 20px rgba(35, 28, 50, 0.15); }
-        .student-info-left { display: flex; align-items: center; gap: 20px; }
-        .student-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.3); background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #231c32; }
-        .student-details h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-        .student-details p { font-size: 13px; opacity: 0.85; display: flex; gap: 16px; }
-        .student-details p span { display: inline-flex; align-items: center; gap: 6px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-        .stat-card { background: #ffffff; border-radius: 14px; padding: 18px 20px; border: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; }
-        .stat-meta h4 { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-        .stat-meta .number { font-size: 24px; font-weight: 700; color: #0f172a; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .icon-purple { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
-        .icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .icon-orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-        .icon-blue { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
-        .table-filter-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; gap: 12px; }
-        .btn-print { background-color: #231c32; color: #ffffff; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
-        .btn-print:hover { opacity: 0.9; }
-        .table-responsive { width: 100%; overflow-x: auto; }
-        .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        .data-table th { background-color: #f8fafc; color: #475569; font-weight: 700; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
-        .data-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
-        .data-table tr:hover { background-color: #f8fafc; }
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
-        .badge-success { color: #95a5a6; }
-        .badge-danger { color: #f4f5f8; }
-        .badge-predikat { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
-        .pred-A { color: #15803d; }
-        .pred-B { color: #0369a1; }
-        .pred-C { color: #b45309; }
-        .pred-D { color: #b91c1c; }
-        @media print {
-            body * { visibility: hidden; }
-            .rapor-container, .rapor-container * { visibility: visible; }
-            .sidebar, .topbar, .btn-print { display: none !important; }
-            .rapor-container { position: absolute; left: 0; top: 0; width: 100%; }
-            .card-box { border: none; box-shadow: none; }
-        }
-    </style>
+    <link rel="stylesheet" href="<?= $base_url; ?>/rapor.css?v=1">
 </head>
 <body>
 <?php include "loader.php"; ?>
@@ -176,12 +195,12 @@ if ($count_mapel == 0) $min_nilai = 0;
             </div>
 
             <ul class="sidebar-menu">
-                <li><a href="dashboard.php"><i class="dashboard"></i> Dashboard</a></li>
-                <?php if ($role === 'siswa'): ?>
-                <li><a href="lihat_nilai.php" class="active"><i class="report"></i> View Report Card Grades</a></li>
-                <?php endif; ?>
-                <li><a href="profile.php"><i class="profile"></i> Manage Profile</a></li>
-            </ul>
+        <li><a href="dashboard.php"><i class="dashboard"></i> <span class="menu-label">Dashboard</span></a></li>
+        <?php if ($role === 'siswa'): ?>
+        <li><a href="lihat_nilai.php" class="active"><i class="report"></i> <span class="menu-label">Report Grades</span></a></li>
+        <?php endif; ?>
+        <li><a href="profile.php"><i class="profile"></i> <span class="menu-label">Profile Settings</span></a></li>
+    </ul>
 
                 <div class="sidebar-footer">
         <a href="logout.php" class="add-files-box" style="text-decoration: none; color: inherit;">
@@ -213,124 +232,279 @@ if ($count_mapel == 0) $min_nilai = 0;
             </header>
 
             <div class="rapor-container">
-                <div class="student-banner">
-                    <div class="student-info-left">
-                        <?php if (!empty($avatar_src)): ?>
-                            <img src="<?= htmlspecialchars($avatar_src); ?>" class="student-avatar" alt="Avatar">
-                        <?php else: ?>
-                            <div class="student-avatar"><?= strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
-                        <?php endif; ?>
-                        
-                        <div class="student-details">
-                            <h2><?= htmlspecialchars($nama_lengkap); ?></h2>
-                            <p>
-                                <span><i class="fa-solid fa-id-card"></i> NIS: <?= htmlspecialchars($nis); ?></span>
-                                <span><i class="fa-solid fa-school"></i> Kelas: <?= htmlspecialchars($kelas); ?></span>
-                                <span><i class="fa-solid fa-graduation-cap"></i> Status: Aktif</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <div class="rp-card">
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-meta">
-                            <h4>Rata-Rata Nilai</h4>
-                            <div class="number"><?= $rata_rata; ?></div>
-                        </div>
-                        <div class="stat-icon"><i class="average"></i></div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-meta">
-                            <h4>Total Mata Pelajaran</h4>
-                            <div class="number"><?= $count_mapel; ?></div>
-                        </div>
-                        <div class="stat-icon"><i class="total"></i></div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-meta">
-                            <h4>Nilai Tertinggi</h4>
-                            <div class="number"><?= $max_nilai; ?></div>
-                        </div>
-                        <div class="stat-icon"><i class="high-max"></i></div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-meta">
-                            <h4>Mata Pelajaran Tuntas</h4>
-                            <div class="number"><?= $tuntas_count; ?> / <?= $count_mapel; ?></div>
-                        </div>
-                        <div class="stat-icon"><i class="done"></i></div>
-                    </div>
-                </div>
-
-                <div class="card-box">
-                    <div class="table-filter-header">
-                        <button onclick="window.print()" class="btn-print">
-                            <i class="fa-solid fa-print"></i> Cetak Rapor
-                        </button>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px; text-align: center;">No</th>
-                                    <th>Mata Pelajaran</th>
-                                    <th style="text-align: center;">KKM</th>
-                                    <th style="text-align: center;">Nilai Pengetahuan</th>
-                                    <th style="text-align: center;">Nilai Keterampilan</th>
-                                    <th style="text-align: center;">Nilai Akhir</th>
-                                    <th style="text-align: center;">Predikat</th>
-                                    <th style="text-align: center;">Keterangan</th>
-                                    <th style="text-align: center;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($list_nilai)): ?>
-                                    <?php foreach ($list_nilai as $index => $row): ?>
-                                        <tr>
-                                            <td style="text-align: center; font-weight: 600;"><?= $index + 1; ?></td>
-                                            <td>
-                                                <strong style="color:#0f172a;"><?= htmlspecialchars($row['nama_mapel']); ?></strong>
-                                                <br>
-                                                <small style="color:#64748b;"><?= htmlspecialchars($row['kode_mapel'] ?? '-'); ?></small>
-                                            </td>
-                                            <td style="text-align: center; font-weight: 600;"><?= $row['kkm_val']; ?></td>
-                                            <td style="text-align: center;"><?= $row['pengetahuan_val']; ?></td>
-                                            <td style="text-align: center;"><?= $row['keterampilan_val']; ?></td>
-                                            <td style="text-align: center; font-weight: 700; color: #0f172a;"><?= $row['computed_akhir']; ?></td>
-                                            <td style="text-align: center;">
-                                                <span class="badge-predikat pred-<?= $row['computed_predikat']; ?>"><?= $row['computed_predikat']; ?></span>
-                                            </td>
-                                            <td style="text-align: center; color: #64748b;"><?= htmlspecialchars($row['keterangan'] ?? '-'); ?></td>
-                                            <td style="text-align: center;">
-                                                <?php if ($row['is_tuntas']): ?>
-                                                    <span class="badge badge-success">✔</span>
-                                                <?php else: ?>
-                                                    <span class="badge badge-danger">x</span>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                    <!-- ===== Pita atas (krem) ===== -->
+                    <section class="rp-band">
+                        <div class="rp-hero">
+                            <!-- Ringkasan utama -->
+                            <div class="rp-intro">
+                                <h2 class="rp-h1">Hasil <span class="rp-dim">belajar</span><br><?= e($nama_lengkap); ?></h2>
+                                <p class="rp-caption">Rata-rata nilai akhir</p>
+                                <?php if ($count_mapel > 0): ?>
+                                    <div class="rp-grade"><span aria-hidden="true"><?= e($pred_rata); ?>, <?= e($rata_rata); ?><small>/100</small></span><span class="rp-sr">Rata-rata <?= e($rata_rata); ?>, predikat <?= e($pred_rata); ?></span></div>
                                 <?php else: ?>
-                                    <tr>
-                                        <td colspan="9" style="text-align: center; padding: 32px; color: #64748b;">
-                                            <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 8px; color: #cbd5e1; display: block;"></i>
-                                            Belum ada data nilai rapor untuk siswa ini.
-                                        </td>
-                                    </tr>
+                                    <div class="rp-grade"><span aria-hidden="true">–</span><span class="rp-sr">Belum ada nilai</span></div>
                                 <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                <p class="rp-meta">
+                                    <span>NIS <strong><?= e($nis); ?></strong></span>
+                                    <span>Kelas <strong><?= e($kelas); ?></strong></span>
+                                    <span>Status <strong>Aktif</strong></span>
+                                </p>
+                            </div>
 
+                            <!-- Grafik -->
+                            <div class="rp-chart-col rp-no-print">
+                                <div class="rp-head">
+                                    <h3 class="rp-title">Nilai per mata pelajaran</h3>
+                                    <div class="rp-legend">
+                                        <span><i class="rp-sw rp-sw-kkm"></i>KKM</span>
+                                        <span><i class="rp-sw rp-sw-nilai"></i>Nilai akhir</span>
+                                    </div>
+                                </div>
+
+                                <?php if ($count_mapel > 0): ?>
+                                    <div class="rp-chart" role="group" aria-label="Grafik nilai akhir dibanding KKM untuk setiap mata pelajaran">
+                                        <div class="rp-axis" aria-hidden="true">
+                                            <span style="bottom:90%">A</span>
+                                            <span style="bottom:80%">B</span>
+                                            <span style="bottom:70%">C</span>
+                                            <span style="bottom:0">D</span>
+                                        </div>
+                                        <div class="rp-scroll">
+                                            <div class="rp-plot">
+                                                <div class="rp-gls" aria-hidden="true">
+                                                    <i class="rp-gl" style="bottom:90%"></i>
+                                                    <i class="rp-gl" style="bottom:80%"></i>
+                                                    <i class="rp-gl" style="bottom:70%"></i>
+                                                </div>
+                                                <ul class="rp-bars">
+                                                    <?php foreach ($list_nilai as $i => $row): ?>
+                                                        <li class="rp-grp" tabindex="0"
+                                                            style="--i:<?= (int) $i; ?>;--h:<?= rp_pct($row['computed_akhir']); ?>"
+                                                            title="<?= e($row['nama_mapel']); ?>: nilai akhir <?= e($row['computed_akhir']); ?>, KKM <?= e($row['kkm_val']); ?>">
+                                                            <span class="rp-bar rp-bar-kkm" style="height:<?= rp_pct($row['kkm_val']); ?>%"></span>
+                                                            <span class="rp-bar rp-bar-nilai" style="height:<?= rp_pct($row['computed_akhir']); ?>%"></span>
+                                                            <span class="rp-val"><?= e($row['computed_akhir']); ?></span>
+                                                            <span class="rp-x"><?= e($row['kode_mapel'] ?? '-'); ?></span>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="rp-empty">Belum ada nilai untuk ditampilkan di grafik.</p>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Guru pengajar -->
+                            <aside class="rp-teachers rp-no-print">
+                                <h3 class="rp-title">Guru pengajar</h3>
+                                <p class="rp-sub">Guru pengampu setiap mata pelajaran di rapor ini.</p>
+                                <?php if (!empty($guru_list)): ?>
+                                    <ul class="rp-people" id="rpPeople">
+                                        <?php foreach ($guru_list as $gi => $g): ?>
+                                            <li class="rp-person<?= $gi >= 3 ? ' rp-extra' : ''; ?>">
+                                                <span class="rp-ava"><?= e(rp_initial($g['nama'])); ?></span>
+                                                <div>
+                                                    <strong><?= e($g['nama']); ?></strong>
+                                                    <span class="rp-person-sub"><?= e($g['mapel']); ?></span>
+                                                </div>
+                                                <span class="rp-person-val" title="Nilai akhir"><?= e($g['nilai']); ?></span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                    <?php if (count($guru_list) > 3): ?>
+                                        <button type="button" class="rp-pill" id="rpPeopleToggle" aria-expanded="false">Lihat semua</button>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <p class="rp-empty">Belum ada guru yang ditautkan ke mata pelajaran ini.</p>
+                                <?php endif; ?>
+                            </aside>
+                        </div>
+                    </section>
+
+                    <!-- ===== Bagian bawah (putih) ===== -->
+                    <section class="rp-lower rp-no-print">
+                        <!-- Ringkasan -->
+                        <div class="rp-panel">
+                            <div class="rp-head">
+                                <h3 class="rp-title">Ringkasan nilai</h3>
+                                <button type="button" class="rp-pill rp-pill-line" onclick="window.print()">
+                                    <i class="fa-solid fa-print" aria-hidden="true"></i> Cetak rapor
+                                </button>
+                            </div>
+                            <div class="rp-tiles">
+                                <div class="rp-tile">
+                                    <span class="rp-tile-n"><?= e($min_nilai); ?></span>
+                                    <span class="rp-tile-l">Terendah</span>
+                                </div>
+                                <div class="rp-tile is-dark">
+                                    <span class="rp-tile-n"><?= e($max_nilai); ?></span>
+                                    <span class="rp-tile-l">Tertinggi</span>
+                                </div>
+                                <div class="rp-tile is-dark">
+                                    <span class="rp-tile-n"><?= e($tuntas_count); ?>/<?= e($count_mapel); ?></span>
+                                    <span class="rp-tile-l">Tuntas</span>
+                                </div>
+                                <div class="rp-tile">
+                                    <span class="rp-tile-n"><?= e($count_mapel); ?></span>
+                                    <span class="rp-tile-l">Total mapel</span>
+                                </div>
+                                <div class="rp-tile">
+                                    <span class="rp-tile-n"><?= e($belum_tuntas); ?></span>
+                                    <span class="rp-tile-l">Belum tuntas</span>
+                                </div>
+                                <div class="rp-tile is-burst">
+                                    <svg viewBox="0 0 100 100" role="img" aria-label="Diagram radial: satu garis untuk setiap mata pelajaran, makin panjang makin tinggi nilainya">
+                                        <g stroke="#161616" stroke-width="1.4" stroke-linecap="round">
+                                            <?php foreach ($burst as $bp): ?>
+                                                <line x1="<?= $bp[0]; ?>" y1="<?= $bp[1]; ?>" x2="<?= $bp[2]; ?>" y2="<?= $bp[3]; ?>"/>
+                                            <?php endforeach; ?>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ketuntasan per mapel -->
+                        <div class="rp-panel">
+                            <div class="rp-head">
+                                <h3 class="rp-title">Ketuntasan per mapel</h3>
+                            </div>
+                            <?php if (!empty($list_nilai)): ?>
+                                <ul class="rp-lines">
+                                    <?php foreach ($list_nilai as $row): ?>
+                                        <li class="rp-line">
+                                            <span class="rp-line-meta">KKM <?= e($row['kkm_val']); ?></span>
+                                            <span class="rp-line-name">
+                                                <?= e($row['nama_mapel']); ?>
+                                                <?php if ($row['is_tuntas']): ?>
+                                                    <span class="rp-mark is-ok" aria-hidden="true">✔</span><span class="rp-sr">tuntas</span>
+                                                <?php else: ?>
+                                                    <span class="rp-mark is-no" aria-hidden="true">✕</span><span class="rp-sr">belum tuntas</span>
+                                                <?php endif; ?>
+                                            </span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <p class="rp-empty">Belum ada data nilai rapor untuk siswa ini.</p>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Catatan guru -->
+                        <div class="rp-panel rp-panel-notes">
+                            <div class="rp-head">
+                                <h3 class="rp-title">Catatan guru</h3>
+                            </div>
+                            <?php if (!empty($notes)): ?>
+                                <div class="rp-notes">
+                                    <?php foreach ($notes as $n): ?>
+                                        <article class="rp-note">
+                                            <div class="rp-note-head">
+                                                <span class="rp-ava rp-ava-sm"><?= e(rp_initial($n['guru'])); ?></span>
+                                                <div>
+                                                    <strong><?= e($n['guru']); ?></strong>
+                                                    <span class="rp-person-sub">Guru <?= e($n['mapel']); ?></span>
+                                                </div>
+                                            </div>
+                                            <p class="rp-note-body" title="<?= e($n['teks']); ?>"><?= e($n['teks']); ?></p>
+                                            <div class="rp-note-foot">
+                                                <span class="rp-chip is-dark">Nilai akhir <?= e($n['akhir']); ?></span>
+                                                <span class="rp-chip">Predikat <?= e($n['pred']); ?></span>
+                                                <span class="rp-pill">KKM <?= e($n['kkm']); ?></span>
+                                            </div>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="rp-empty">Belum ada catatan dari guru.</p>
+                            <?php endif; ?>
+                        </div>
+                    </section>
+
+                    <!-- ===== Rincian nilai ===== -->
+                    <section class="rp-detail">
+                        <div class="rp-head">
+                            <div>
+                                <h3 class="rp-title">Rincian nilai</h3>
+                                <p class="rp-sub">Nilai akhir adalah rata-rata nilai pengetahuan dan keterampilan.</p>
+                            </div>
+                        </div>
+
+                        <div class="rp-table-wrap">
+                            <table class="rp-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rp-c" style="width:50px">No</th>
+                                        <th>Mata Pelajaran</th>
+                                        <th class="rp-c">KKM</th>
+                                        <th class="rp-c">Nilai Pengetahuan</th>
+                                        <th class="rp-c">Nilai Keterampilan</th>
+                                        <th class="rp-c">Nilai Akhir</th>
+                                        <th class="rp-c">Predikat</th>
+                                        <th class="rp-c">Keterangan</th>
+                                        <th class="rp-c">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($list_nilai)): ?>
+                                        <?php foreach ($list_nilai as $index => $row): ?>
+                                            <tr>
+                                                <td class="rp-c"><?= $index + 1; ?></td>
+                                                <td>
+                                                    <span class="rp-strong"><?= e($row['nama_mapel']); ?></span>
+                                                    <small>
+                                                        <?= e($row['kode_mapel'] ?? '-'); ?>
+                                                        <?php if (!empty($row['semester'])): ?>, semester <?= e($row['semester']); ?><?php endif; ?>
+                                                    </small>
+                                                </td>
+                                                <td class="rp-c rp-strong"><?= e($row['kkm_val']); ?></td>
+                                                <td class="rp-c"><?= e($row['pengetahuan_val']); ?></td>
+                                                <td class="rp-c"><?= e($row['keterampilan_val']); ?></td>
+                                                <td class="rp-c rp-strong"><?= e($row['computed_akhir']); ?></td>
+                                                <td class="rp-c">
+                                                    <span class="rp-badge is-<?= strtolower(e($row['computed_predikat'])); ?>"><?= e($row['computed_predikat']); ?></span>
+                                                </td>
+                                                <td class="rp-c rp-ket"><?= e(($row['keterangan'] ?? '') !== '' ? $row['keterangan'] : '-'); ?></td>
+                                                <td class="rp-c">
+                                                    <?php if ($row['is_tuntas']): ?>
+                                                        <span class="rp-mark is-ok" title="Tuntas" aria-hidden="true">✔</span><span class="rp-sr">Tuntas</span>
+                                                    <?php else: ?>
+                                                        <span class="rp-mark is-no" title="Belum tuntas" aria-hidden="true">✕</span><span class="rp-sr">Belum tuntas</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="9" class="rp-empty-row">Belum ada data nilai rapor untuk siswa ini.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                </div>
             </div>
         </main>
     </div>
 </div>
+<script>
+(function () {
+    var btn = document.getElementById('rpPeopleToggle');
+    var list = document.getElementById('rpPeople');
+    if (btn && list) {
+        btn.addEventListener('click', function () {
+            var open = list.classList.toggle('is-open');
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            btn.textContent = open ? 'Lihat lebih sedikit' : 'Lihat semua';
+        });
+    }
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,1179 @@
+/* =========================================================
+   SIPN - AUTH-EDTECH.CSS
+   Gaya EdTech selaras rapor.css, dashboard-bento.css, & profile.css
+   ========================================================= */
+
+:root {
+    --au-bg:     #f2f2ec;
+    --au-band:   #efefe5;
+    --au-card:   #ffffff;
+    --au-ink:    #161616;
+    --au-soft:   #3b3b37;
+    --au-muted:  #6f6f68;
+    --au-dim:    #86867e;
+    --au-tile:   #f2f2f4;
+    --au-line:   #e4e4dc;
+    --au-hatch:  #b4b4a8;
+    --au-bad:    #a8432d;
+    --au-ok:     #25683d;
+    --au-ease:   cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background-color: var(--au-bg);
+    color: var(--au-ink);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button, input, select {
+    font-family: inherit;
+}
+
+/* ---------- Background Video Halus ---------- */
+.au-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--au-bg);
+}
+
+#bg-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.14;
+    filter: grayscale(100%) contrast(1.05);
+    pointer-events: none;
+}
+
+.au-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 25% 20%, rgba(239, 239, 229, 0.72), rgba(242, 242, 236, 0.92));
+}
+
+/* ---------- Komponen Pill & Tipografi Bersama ---------- */
+.au-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #e3e3d6;
+    color: var(--au-ink);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.25;
+    border: 0;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+a.au-pill:hover,
+button.au-pill:hover {
+    background: #d6d6c7;
+    transform: translateY(-1px);
+}
+
+.au-pill-dark {
+    background: var(--au-ink);
+    color: #ffffff;
+}
+
+a.au-pill-dark:hover,
+button.au-pill-dark:hover {
+    background: #2f2f2c;
+    color: #ffffff;
+}
+
+.au-pill-line {
+    background: transparent;
+    border: 1px solid var(--au-line);
+}
+
+a.au-pill-line:hover {
+    background: var(--au-tile);
+}
+
+.au-dot-live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--au-ok);
+    display: inline-block;
+}
+
+.au-dim {
+    color: var(--au-dim);
+}
+
+/* ---------- Alert ---------- */
+.auth-alert {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    background: #faece8;
+    border: 1px solid #efd2ca;
+    color: var(--au-bad);
+    animation: auShake 0.45s ease;
+}
+
+.auth-alert.auth-success {
+    background: #eaf4ed;
+    border-color: #cce3d3;
+    color: var(--au-ok);
+    animation: none;
+}
+
+.auth-alert a {
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+/* =========================================================
+   LAYOUT 1: LOGIN PAGE (SPLIT KARTU PUTIH + PITA KREM KANAN)
+   ========================================================= */
+.au-login-shell {
+    width: min(1160px, 100%);
+    background: var(--au-card);
+    border-radius: 26px;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 24px 60px rgba(22, 22, 22, 0.08);
+    padding: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+    gap: 10px;
+    animation: auCardIn 0.7s var(--au-ease) both;
+        zoom: 0.85;
+}
+
+/* Sisi Kiri: Form Putih */
+.au-login-form-col {
+    padding: 32px 42px 34px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.au-brand-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.au-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--au-ink);
+}
+
+.au-brand-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--au-ink);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.au-form-box {
+    width: 100%;
+    max-width: 400px;
+    margin: auto 0;
+}
+
+.au-title {
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--au-ink);
+}
+
+.au-subtitle {
+    margin-top: 8px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--au-muted);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.au-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.au-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--au-soft);
+}
+
+.input-group {
+    position: relative;
+}
+
+.auth-input {
+    width: 100%;
+    background: #f8f8f5;
+    border: 1px solid var(--au-line);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 14px;
+    color: var(--au-ink);
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-input::placeholder {
+    color: #9a9a92;
+}
+
+.auth-input:hover {
+    border-color: #cfcfc4;
+}
+
+.auth-input:focus {
+    background: #ffffff;
+    border-color: var(--au-ink);
+    box-shadow: 0 0 0 3px rgba(22, 22, 22, 0.06);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--au-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.toggle-password:hover {
+    color: var(--au-ink);
+}
+
+.submit-btn {
+    width: 100%;
+    border: 0;
+    border-radius: 999px;
+    background: var(--au-ink);
+    color: #ffffff;
+    padding: 14px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-btn:hover {
+    background: #2f2f2c;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(22, 22, 22, 0.14);
+}
+
+.submit-btn:active {
+    transform: scale(0.99);
+}
+
+.submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.submit-btn.loading i,
+.submit-btn.loading .sign {
+    display: none;
+}
+
+.submit-btn.loading::after {
+    content: "";
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: auSpin 0.7s linear infinite;
+}
+
+.auth-divider {
+    text-align: center;
+    position: relative;
+    margin: 20px 0 16px;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: var(--au-line);
+}
+
+.auth-divider span {
+    position: relative;
+    background: #ffffff;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--au-muted);
+}
+
+.social-auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 1px solid var(--au-line);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #ffffff;
+    color: var(--au-ink);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.social-btn:hover {
+    border-color: var(--au-ink);
+    background: #fafaf7;
+    transform: translateY(-1px);
+}
+
+.google,
+.github {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.google {
+    background-image: url('icons/login/google.webp');
+}
+
+.github {
+    background-image: url('icons/login/github-white-icon.webp');
+    filter: invert(1);
+}
+
+.sign {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: url('icons/login/login.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.status {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background: url('icons/dashboard/graduate.webp') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.auth-footer-link {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--au-line);
+    font-size: 13px;
+    color: var(--au-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.auth-footer-link a {
+    color: var(--au-ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Sisi Kanan: Pita Krem Showcase + Bento Ringkas */
+.au-login-cream-col {
+    background: var(--au-band);
+    border-radius: 20px;
+    padding: 26px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.au-cream-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Showcase Carousel (Kompatibel penuh dengan auth.js) */
+.showcase {
+    position: relative;
+    height: 330px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--au-ink);
+    color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 0.9s ease, transform 6s linear;
+}
+
+.slide.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.s1 { background-image: url('assets/02-bento2.jpeg'); }
+.s2 { background-image: url('assets/01-bento1.jpeg'); }
+.s3 { background-image: url('assets/03-bento3.jpeg'); }
+.s4 { background-image: url('assets/04-bento4.jpeg'); }
+
+.showcase::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(22, 22, 22, 0.35) 0%, transparent 35%, rgba(22, 22, 22, 0.82) 100%);
+}
+
+.show-top,
+.show-bottom {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.show-top {
+    top: 18px;
+}
+
+.show-top b {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(239, 239, 229, 0.9);
+    color: var(--au-ink);
+}
+
+.show-bottom {
+    bottom: 18px;
+    gap: 12px;
+}
+
+.cap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.cap strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+    transition: opacity 0.35s ease;
+}
+
+.cap span {
+    display: block;
+    font-size: 12px;
+    opacity: 0.82;
+    margin-top: 2px;
+    line-height: 1.35;
+    transition: opacity 0.35s ease;
+}
+
+.cap.swap strong,
+.cap.swap span {
+    opacity: 0;
+}
+
+.arrows {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(22, 22, 22, 0.35);
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.arrow:hover {
+    background: #ffffff;
+    color: var(--au-ink);
+    transform: scale(1.06);
+}
+
+.dots {
+    position: absolute;
+    z-index: 2;
+    left: 20px;
+    bottom: 74px;
+    display: flex;
+    gap: 6px;
+}
+
+.dots i {
+    width: 7px;
+    height: 7px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: width 0.35s var(--au-ease), background 0.35s ease;
+}
+
+.dots i.on {
+    width: 22px;
+    background: #ffffff;
+}
+
+/* Strip Tile Bawah Panel Krem (Gaya rapor.css) */
+.au-cream-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.au-tile {
+    padding: 14px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 106px;
+}
+
+.au-tile-n {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.au-tile-l {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--au-muted);
+    margin-top: 10px;
+}
+
+.au-tile.is-dark {
+    background: var(--au-ink);
+    color: #ffffff;
+}
+
+.au-tile.is-dark .au-tile-l {
+    color: #bcbcb4;
+}
+
+.au-tile.is-burst {
+    padding: 6px;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ececf0 76%);
+    align-items: center;
+    justify-content: center;
+}
+
+.au-tile.is-burst svg {
+    width: 86px;
+    height: 86px;
+    display: block;
+}
+
+/* ---------- Animasi ---------- */
+.reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: auRise 0.55s var(--au-ease) forwards;
+    animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+}
+
+@keyframes auCardIn {
+    from { opacity: 0; transform: translateY(22px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes auRise {
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes auSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes auShake {
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+/* ---------- Responsif ---------- */
+@media (max-width: 960px) {
+    .au-login-shell {
+        width: min(520px, 100%);
+        grid-template-columns: 1fr;
+    }
+    .au-login-cream-col {
+        display: none;
+    }
+    .au-login-form-col {
+        padding: 32px 26px;
+    }
+    .au-form-box {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+    .social-auth-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* =========================================================
+   LAYOUT 2: REGISTER PAGE (PITA KREM KIRI + FORM 2-KOLOM KANAN)
+   ========================================================= */
+.au-reg-shell {
+    width: min(1220px, 100%);
+    background: var(--au-card);
+    border-radius: 26px;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 24px 60px rgba(22, 22, 22, 0.08);
+    padding: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+    gap: 10px;
+    animation: auCardIn 0.7s var(--au-ease) both;
+    zoom: 0.85;
+}
+
+.au-reg-cream-col {
+    background: var(--au-band);
+    border-radius: 20px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.au-reg-hero-title {
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 400;
+    line-height: 1.14;
+    letter-spacing: -0.03em;
+    color: var(--au-ink);
+    margin-top: 14px;
+}
+
+.au-reg-hero-sub {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--au-muted);
+}
+
+.au-reg-cream-col .showcase {
+    height: 235px;
+}
+
+.au-reg-cream-col .dots {
+    bottom: 66px;
+}
+
+.au-reg-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.au-step-card {
+    padding: 12px;
+    border-radius: 13px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 92px;
+}
+
+.au-step-card.is-dark {
+    background: var(--au-ink);
+    color: #ffffff;
+}
+
+.au-step-card.is-dark .au-tile-l {
+    color: #bcbcb4;
+}
+
+.au-step-card.is-burst {
+    padding: 4px;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ececf0 76%);
+    align-items: center;
+    justify-content: center;
+}
+
+.au-step-card.is-burst svg {
+    width: 74px;
+    height: 74px;
+    display: block;
+}
+
+/* Sisi Kanan: Form Registrasi 2 Kolom */
+.au-reg-form-col {
+    padding: 28px 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.au-reg-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.au-reg-heading h1 {
+    font-size: clamp(24px, 2.4vw, 30px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--au-ink);
+}
+
+.au-reg-heading p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--au-muted);
+}
+
+.au-section-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--au-muted);
+    margin: 6px 0 2px;
+}
+
+.au-section-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--au-band);
+    color: var(--au-ink);
+    display: inline-grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.au-reg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 14px;
+}
+
+.au-reg-grid .full {
+    grid-column: 1 / -1;
+}
+
+.select-custom {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 38px;
+    background: #f8f8f5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%236f6f68' stroke-width='1.8'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 14px center;
+}
+
+.select-custom:focus {
+    background-color: #ffffff;
+}
+
+.select-custom option {
+    background: #ffffff;
+    color: var(--au-ink);
+}
+
+#jurusan_container {
+    opacity: 0.45;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+#jurusan_container.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.au-reg-form-col .auth-divider {
+    margin: 16px 0 12px;
+}
+
+.au-reg-form-col .auth-footer-link {
+    margin-top: 16px;
+    padding-top: 14px;
+}
+
+@media (max-width: 980px) {
+    .au-reg-shell {
+        width: min(600px, 100%);
+        grid-template-columns: 1fr;
+    }
+    .au-reg-cream-col {
+        display: none;
+    }
+    .au-reg-form-col {
+        padding: 28px 24px;
+    }
+}
+
+@media (max-width: 560px) {
+    .au-reg-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* =========================================================
+   LAYOUT 3: COMPLETE OAUTH REG (TOP CREAM BAND + 2-COL BODY)
+   Untuk complete-github-reg.php & complete-google-reg.php
+   ========================================================= */
+.au-oauth-shell {
+    width: min(1020px, 100%);
+    background: var(--au-card);
+    border-radius: 26px;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 24px 60px rgba(22, 22, 22, 0.08);
+    overflow: hidden;
+    animation: auCardIn 0.7s var(--au-ease) both;
+    zoom: 0.85;
+}
+
+/* Pita Krem Atas: Header + Kartu Profil OAuth */
+.au-oauth-band {
+    background: var(--au-band);
+    padding: 30px 36px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+    gap: 28px;
+    align-items: center;
+    border-bottom: 1px solid rgba(22, 22, 22, 0.08);
+}
+
+.au-oauth-eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.au-oauth-title {
+    font-size: clamp(24px, 2.7vw, 34px);
+    font-weight: 400;
+    line-height: 1.14;
+    letter-spacing: -0.03em;
+    color: var(--au-ink);
+}
+
+.au-oauth-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--au-muted);
+}
+
+/* Kartu Akun OAuth Tertaut di Kanan Atas */
+.au-provider-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.au-provider-left {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+}
+
+.au-provider-ava,
+.au-provider-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex: 0 0 48px;
+    border: 2px solid var(--au-band);
+}
+
+.au-provider-ava {
+    object-fit: cover;
+    display: block;
+}
+
+.au-provider-fallback {
+    background: var(--au-ink);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.au-provider-meta {
+    min-width: 0;
+}
+
+.au-provider-meta strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--au-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.au-provider-meta span {
+    display: block;
+    font-size: 12px;
+    color: var(--au-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bagian Bawah Putih: Sidebar Status + Form 2 Kolom */
+.au-oauth-body {
+    padding: 30px 36px 34px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.68fr) minmax(0, 1.32fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.au-oauth-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-right: 28px;
+    border-right: 1px solid var(--au-line);
+}
+
+.au-oauth-aside-head h2 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--au-ink);
+}
+
+.au-oauth-aside-head p {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--au-muted);
+}
+
+.au-oauth-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.au-oauth-tiles .au-tile {
+    background: var(--au-tile);
+    border: 0;
+    min-height: 98px;
+}
+
+.au-oauth-tiles .au-tile.is-dark {
+    background: var(--au-ink);
+}
+
+.au-oauth-tiles .au-tile.is-burst {
+    grid-column: 1 / -1;
+    min-height: 112px;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ececf0 76%);
+}
+
+.au-oauth-note {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8f8f5;
+    border: 1px solid var(--au-line);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--au-muted);
+}
+
+.au-oauth-note strong {
+    color: var(--au-ink);
+}
+
+.au-oauth-form-wrap {
+    min-width: 0;
+}
+
+@media (max-width: 880px) {
+    .au-oauth-band {
+        grid-template-columns: 1fr;
+        padding: 24px 22px;
+    }
+    .au-oauth-body {
+        grid-template-columns: 1fr;
+        padding: 24px 22px 28px;
+    }
+    .au-oauth-aside {
+        padding-right: 0;
+        border-right: 0;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--au-line);
+    }
+    .au-oauth-tiles {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .au-oauth-tiles .au-tile.is-burst {
+        grid-column: auto;
+        min-height: 98px;
+    }
+}
+
+@media (max-width: 560px) {
+    .au-provider-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .au-oauth-tiles {
+        grid-template-columns: 1fr;
+    }
+}

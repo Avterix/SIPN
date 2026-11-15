@@ -1,6 +1,4 @@
 :root {
-    --bg-sidebar: #313744;
-    --bg-sidebar-dark: #1e2229;
     --bg-main: #f4f5f8;
     --card-bg: #ffffff;
     --text-main: #2d3436;
@@ -8,20 +6,13 @@
     --accent-asphalt: #302f2c;
     --accent-purple: #3C5827;
     --accent-white: #efede3;
-    --accent-carbon: #1c1c1c;
-    --accent-dark: #8b5cf6;
+    --accent-carbon: #161616;
     --border-color: #e2e8f0;
     --primary-color: #6366f1;
-    --primary-hover: #4f46e5;
-    
     --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-ease: 0.3s ease-in-out;
-    
     --shadow-subtle: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
     --shadow-card: 0 15px 30px -5px rgba(0, 0, 0, 0.08);
-    --shadow-float: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 }
 
 *, *::before, *::after {
@@ -37,18 +28,13 @@ html {
     -webkit-text-size-adjust: 100%;
     zoom: 0.7;
     overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-/* Terapkan ke html dan body sekaligus */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
     display: none !important;
-}
-
-/* Cadangan untuk Firefox dan Edge/IE */
-html, body {
-    -ms-overflow-style: none;  /* IE dan Edge */
-    scrollbar-width: none;  /* Firefox */
 }
 
 body {
@@ -63,6 +49,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 a {
@@ -92,141 +80,129 @@ img, svg {
     max-width: 100%;
 }
 
-/* layout container and animasi */
+/* =========================================================
+   CONTAINER & ANIMASI DASAR
+   ========================================================= */
 .dashboard-container {
     display: flex;
-    width: 1320px;
-    min-width: 100%;      
+    width: 100%;
+    max-width: 1880px;
+    margin: 0 auto;
+    min-height: calc(100vh - 40px);
+    position: relative;
+    gap: 0;
 }
-
 
 @keyframes dashboardEnter {
-    0% {
-        opacity: 0;
-        transform: scale(0.94) translateY(30px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    0% { opacity: 0; transform: scale(0.94) translateY(30px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* =========================================================
-   FIXED LEFT SIDEBAR (MINIMALIS HOVER-EXPAND)
+   LEFT EDGE NOTCH DOCK SIDEBAR (DESKTOP)
    ========================================================= */
-
-/* Container Utama */
-.dashboard-container {
-    display: flex;
-    width: 100%;
-    max-width: 1380px;
-    margin: 0 auto;
-    min-height: calc(100vh - 40px);
-    position: relative;
-    gap: 0;
-}
-
-/* =========================================================
-   FIXED LEFT SIDEBAR (LOGO TETAP MUNCUL, TEKS EXPAND PADA HOVER)
-   ========================================================= */
-
-.dashboard-container {
-    display: flex;
-    width: 100%;
-    max-width: 1380px;
-    margin: 0 auto;
-    min-height: calc(100vh - 40px);
-    position: relative;
-    gap: 0;
-}
-
-/* Sidebar Fixed di Kiri */
 .sidebar {
     position: fixed;
-    top: 20px;
-    left: 20px;
-    bottom: 20px;
-    width: 80px; /* Lebar default compact (cukup untuk logo & icon) */
-    background-color: var(--accent-carbon);
+    left: 0;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 74px;
+    min-height: 110vh;
+    background-color: #161616;
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    padding: 18px 18px;
-    user-select: none;
+    padding: 20px 14px;
+    border-radius: 0 30px 30px 0;
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.28);
     z-index: 9999;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-x: hidden;
-    overflow-y: auto;
+    user-select: none;
+    overflow: visible;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Saat di-hover, sidebar melebar */
+.sidebar::before,
+.sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+}
+
+.sidebar::before {
+    top: -24px;
+    background: radial-gradient(circle at 100% 0, transparent 24px, #161616 24.5px);
+}
+
+.sidebar::after {
+    bottom: -24px;
+    background: radial-gradient(circle at 100% 100%, transparent 24px, #161616 24.5px);
+}
+
 .sidebar:hover {
-    width: 270px;
+    width: 245px;
 }
 
-/* Brand Header */
 .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 26px;
+    gap: 14px;
+    margin-bottom: 18px;
     white-space: nowrap;
     overflow: hidden;
 }
 
 .brand-logo {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     background: #ffffff;
-    color: var(--bg-sidebar);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
+    transition: transform 0.22s ease;
 }
 
 .sidebar-brand:hover .brand-logo {
-    transform: rotate(15deg) scale(1.08);
+    transform: scale(1.06);
 }
 
-/* Teks Judul Brand (Sembunyi saat normal, muncul saat hover) */
 .sidebar-brand h2 {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     opacity: 0;
     visibility: hidden;
-    width: 0;
-    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .sidebar:hover .sidebar-brand h2 {
     opacity: 1;
     visibility: visible;
-    width: auto;
 }
 
-/* User Profile Mini di Sidebar */
 .user-profile-mini {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
+    gap: 14px;
+    padding-bottom: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     white-space: nowrap;
     overflow: hidden;
 }
 
 .user-avatar-initial {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     background: #d2d3d4;
     color: #000000;
     border-radius: 50%;
@@ -234,9 +210,9 @@ img, svg {
     justify-content: center;
     align-items: center;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
     flex-shrink: 0;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.18);
     object-fit: cover;
 }
 
@@ -245,21 +221,18 @@ img, svg {
     flex-direction: column;
     opacity: 0;
     visibility: hidden;
-    width: 0;
-    overflow: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .sidebar:hover .user-meta-mini {
     opacity: 1;
     visibility: visible;
-    width: auto;
 }
 
 .user-name {
     font-weight: 600;
     font-size: 13px;
-    color: #fff;
+    color: #ffffff;
 }
 
 .user-role-badge {
@@ -270,127 +243,123 @@ img, svg {
     letter-spacing: 0.5px;
 }
 
-/* Menu Sidebar */
 .sidebar-menu {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    flex-grow: 1;
+    gap: 12px;
+    padding: 16px 0;
 }
 
-.sidebar-menu li a {
+.sidebar-menu > li > a {
     display: flex;
     align-items: center;
-    gap: 16px;
-    color: var(--text-muted, #95a5a6);
-    text-decoration: none;
-    font-size: 14px;
+    gap: 14px;
+    width: 46px;
+    height: 46px;
+    padding: 0 11px;
+    border-radius: 23px;
+    background-color: #161616;
+    color: #cbd5e1;
+    font-size: 13.5px;
     font-weight: 500;
-    padding: 11px 12px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
     white-space: nowrap;
     overflow: hidden;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.18s ease,
+                border-color 0.2s ease,
+                background-color 0.2s ease;
 }
 
-/* Sembunyikan label menu & panah saat tertutup */
-.sidebar-menu li a span.menu-label,
-.sidebar-menu li a .arrow {
-    opacity: 0;
-    visibility: hidden;
-    width: 0;
-    overflow: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.2s ease;
+.sidebar:hover .sidebar-menu > li > a {
+    width: 100%;
 }
 
-/* Munculkan saat sidebar di-hover */
-.sidebar:hover .sidebar-menu li a span.menu-label,
-.sidebar:hover .sidebar-menu li a .arrow {
-    opacity: 1;
-    visibility: visible;
-    width: auto;
-}
-
-.sidebar-menu li a:hover,
-.sidebar-menu li a.active {
+.sidebar-menu > li > a:hover,
+.sidebar-menu > li > a.active {
     color: #ffffff;
     background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(1.04);
 }
 
-.sidebar-menu li a.active {
-    background-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.sidebar-menu li a span.menu-label {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
 }
 
-.sidebar-menu .arrow {
-    margin-left: auto;
-    font-size: 10px;
+.sidebar:hover .sidebar-menu li a span.menu-label {
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Submenu */
 .submenu {
     list-style: none;
-    padding-left: 8px;
-    margin-top: 4px;
+    padding-left: 14px;
+    margin-top: 6px;
     display: none;
     flex-direction: column;
     gap: 4px;
 }
 
-.sidebar:hover .has-submenu:hover .submenu {
+.sidebar:hover .has-submenu:hover .submenu,
+.sidebar:hover .has-submenu:focus-within .submenu {
     display: flex;
 }
 
 .submenu li a {
-    padding: 7px 10px;
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    color: #94a3b8;
+    transition: background-color 0.18s ease, color 0.18s ease;
 }
 
-.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
+.submenu li a:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
 }
-.dot.user { background-color: var(--accent-white); }
-.dot.siswa { background-color: var(--accent-white); }
-.dot.guru { background-color: var(--accent-white); }
-.dot.mapel { background-color: var(--accent-white); }
-.dot.mengajar { background-color: var(--accent-white); }
 
-/* Sidebar Footer (Logout Box) */
 .sidebar-footer {
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .add-files-box {
-    border: 2px dashed rgba(255, 255, 255, 0.15);
-    border-radius: 14px;
-    padding: 10px 10px;
     display: flex;
+    position: relative;
     align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    gap: 14px;
+    width: 46px;
+    height: 46px;
+    padding: 0 11px;
+    border-radius: 23px;
     white-space: nowrap;
     overflow: hidden;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.18s ease,
+                border-color 0.2s ease;
+}
+
+.sidebar:hover .add-files-box {
+    width: 100%;
 }
 
 .add-files-box:hover {
-    border-color: var(--accent-white);
-    background-color: rgb(22, 51, 111, 0.2);
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(1.04);
 }
 
 .icon-plus {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
     flex-shrink: 0;
 }
 
@@ -399,39 +368,37 @@ img, svg {
     flex-direction: column;
     opacity: 0;
     visibility: hidden;
-    width: 0;
-    overflow: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .sidebar:hover .add-text {
     opacity: 1;
     visibility: visible;
-    width: auto;
 }
 
 .add-text strong {
     font-size: 12px;
     font-weight: 600;
-    color: #fff;
+    color: #ffffff;
 }
 
 .add-text span {
     font-size: 10px;
-    color: var(--accent-white);
+    color: #94a3b8;
 }
 
-/* Konten Utama di Kanan Menyesuaikan Sidebar Fixed */
+/* =========================================================
+   MAIN CONTENT & TOPBAR (DESKTOP)
+   ========================================================= */
 .main-content {
     flex-grow: 1;
-    margin-left: 115px; /* Jarak aman dari sidebar fixed */
-    background-color: none;
+    margin-left: 95px;
     padding: 20px 40px 30px 20px;
     display: flex;
-    margin-top: 0 !important;
     flex-direction: column;
     min-height: 100vh;
 }
+
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -451,7 +418,7 @@ img, svg {
     font-size: 24px;
     font-weight: 700;
     color: var(--text-main);
-animation: fadeInUp 0.5s ease-out forwards;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .storage-badge {
@@ -496,7 +463,7 @@ animation: fadeInUp 0.5s ease-out forwards;
 
 .search-box input:focus {
     width: 250px;
-    border-color: var(--green-accent);
+    border-color: var(--accent-carbon);
 }
 
 .icon-btn {
@@ -512,12 +479,14 @@ animation: fadeInUp 0.5s ease-out forwards;
     color: var(--text-main);
     transition: var(--transition-normal);
 }
+
 .icon-btn img {
     transition: var(--transition-normal);
 }
+
 .icon-btn img:hover {
     background-color: #f1f2f6;
-    transform: scale(1.20) ;
+    transform: scale(1.20);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
@@ -539,714 +508,16 @@ animation: fadeInUp 0.5s ease-out forwards;
     box-shadow: 0 6px 16px rgba(120, 188, 155, 0.35);
 }
 
-/* section hero sama cards */
-.hero-section {
-    margin-bottom: 30px;
-    animation: fadeInUp 0.5s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-    0% { 
-        opacity: 0.3; 
-        filter: brightness(0.4);
-        background-color: #14161b !important;
-    }
-    100% { 
-        opacity: 1; 
-        transform: translateY(0); 
-        filter: brightness(1);
-        background-color: #14161b !important;
-    }
-}
-
-.hero-text {
-    margin-bottom: 20px;
-animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.hero-text h2 {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-top: 20px;
-    margin-right: 50px;
-animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.hero-text p {
-    margin-top: 20px;
-    font-size: 13px;
-    color: var(--text-muted);
-animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.folders-slider {
-    display: flex;
-    gap: 16px;
-}
-
-.folder-card {
-    width: 130px;
-    height: 170px;
-    background-color: var(--card-bg);
-    border-radius: 20px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: var(--shadow-subtle);
-    transition: var(--transition-normal);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.folder-card:hover {
-    box-shadow: var(--shadow-card);
-}
-.folder-card2 {
-    width: 60px;
-    height: 170px;
-    background-color: var(--card-bg);
-    border-radius: 20px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: var(--shadow-subtle);
-    transition: var(--transition-normal);
-    cursor: pointer;
-    position: relative;
-transform: scale(1)
-    overflow: hidden;
-	animation: fadeInUp 0.5s ease-out forwards;
-}
-.folder-card2:hover {
-    transform: scale(1.5);
-}
-
-.dashed-circle:hover {
-    transform: translateY(-8px) scale(1.02);
-    transform: scale(1); 
-    transition: var(--transition-normal);
-}
-
-@keyframes slideInCard {
-    0% { opacity: 0; transform: translateX(-20px); }
-    100% { opacity: 1; transform: translateX(0); }
-}
-
-.create-new-card {
-    border: 2px dashed #b4b4b4;
-    background-color: transparent;
-    justify-content: center;
-    align-items: center;
-    box-shadow: none;
-    transform: scale(1); 
-    transition: var(--transition-normal);
-animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.dashed-circle {
+/* =========================================================
+   ACTIVE CUSTOM ICONS
+   ========================================================= */
+.home {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-muted);
-    transform: scale(1); 
-    transition: var(--transition-normal);
-    animation: fadeInUp 0.5s ease-out forwards;
-}
-.create-new-card:hover .dashed-circle {
-    border-color: #f4f5f8;
-    color: #f4f5f8;
-    -webkit-text-stroke: 0.5px var(--text-muted);
-    scale: 2;
-animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.folder-card.bg-green {
-    background: var(--accent-asphalt);
-    color: #ffffff;
-}
-
-.folder-card.bg-purple {
-    background: var(--accent-purple);
-    color: #ffffff;
-}
-
-.folder-card.bg-dark {
-    background: url('assets/swiss design notebook.jpeg') center/cover no-repeat;
-    color: #ffffff;
-}
-
-.card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-}
-
-.folder-card.bg-green .card-top,
-.folder-card.bg-purple .card-top {
-    opacity: 0.85;
-}
-
-.folder-icon {
-    font-size: 18px;
-    margin-bottom: 6px;
-}
-
-.card-body h3 {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-
-.card-body span {
-    font-size: 11px;
-    opacity: 0.85;
-}
-
-.card-body-gallery h3 {
-    font-size: 15px;
-    font-weight: 700;
-    margin-top: 100px;
-}
-
-.card-body-gallery span {
-    font-size: 11px;
-    opacity: 0.8;
-}
-
-/* grid bawah */
-.bottom-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 20px;
-    animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.card {
-    background-color: var(--card-bg);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: var(--shadow-subtle);
-    transition: var(--transition-normal);
-}
-
-.card:hover {
-    box-shadow: var(--shadow-card);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-header h3 {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.card-header i {
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: color var(--transition-fast);
-}
-
-.card-header i:hover {
-    color: var(--text-main);
-}
-
-/* storage / donut chart styling */
-.storage-content {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.chart-container {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: conic-gradient(
-        var(--accent-asphalt) 0deg 90deg, 
-        var(--accent-purple) 90deg 180deg, 
-        #fdcb6e 180deg 270deg, 
-        #dfe6e9 270deg 360deg
-    );
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    animation: rotateChart 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes rotateChart {
-    0% { transform: rotate(-180deg) scale(0.6); opacity: 0; }
-    100% { transform: rotate(0deg) scale(1); opacity: 1; }
-}
-
-.donut-hole {
-    width: 70px;
-    height: 70px;
-    background-color: var(--card-bg);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.donut-hole strong {
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.storage-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-}
-
-.bullet {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-.bullet.doc { background-color: var(--accent-asphalt); }
-.bullet.img { background-color: var(--accent-purple); }
-.bullet.vid { background-color: #fdcb6e; }
-.bullet.free { background-color: #dfe6e9; }
-
-.legend-item div {
-    display: flex;
-    flex-direction: column;
-}
-
-.legend-item strong {
-    font-size: 12px;
-}
-
-.legend-item small {
-    font-size: 10px;
-    color: var(--text-muted);
-}
-
-/* Files / System Info List */
-.file-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.file-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #f1f2f6;
-    transition: var(--transition-normal);
-}
-
-.file-item:last-child {
-    border-bottom: none;
-}
-
-.file-item:hover {
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 8px 5px;
-}
-
-.file-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.file-ico {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    color: #ffffff;
-}
-
-.file-ico.psd { background-color: none; }
-.file-ico.jpg { background-color: none; }
-.file-ico.pdf { background-color: none; }
-
-.file-users {
-    display: flex;
-    align-items: center;
-}
-
-.more-users {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 10px;
-}
-
-.file-date {
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-/* layout */
-@media (max-width: 1400px) {
-    .dashboard-container {
-        width: 100%;
-        max-width: 1200px;
-        height: auto;
-        min-height: 700px;
-    }
-}
-
-@media (max-width: 1024px) {
-    .dashboard-container {
-        flex-direction: column;
-        height: auto;
-    }
-        /* 2. SIDEBAR FIXED DI ATAS (NAVBAR MELAYANG) */
-    .sidebar,
-    .organic-sidebar {
-        position: fixed !important;
-        top: 10px !important;
-        left: 10px !important;
-        right: 10px !important;
-        width: calc(100% - 20px) !important;
-        max-height: 62px !important; /* Pas untuk Logo + Text tanpa terpotong */
-        padding: 10px 16px !important;
-        border-radius: 20px !important;
-        z-index: 99999 !important;
-        background-color: #14161b !important; /* Kunci warna gelap khas sidebar */
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        overflow: hidden !important;
-        /* TRANSISI ANIMASI MELUNCUR SMOOTH */
-        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s ease !important;
-    }
-
-    /* 3. LOGO DAN TULISAN SIPN SELALU MUNCUL DARI AWAL (TANPA DI-HOVER) */
-    .sidebar-brand,
-    .organic-sidebar .sidebar-brand {
-        margin-bottom: 0 !important;
-        width: 100% !important;
-        height: 42px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 12px !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        cursor: pointer;
-    }
-
-    .brand-logo,
-    .bubble-logo {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        min-height: 38px !important;
-        background: #ffffff !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .brand-logo .home,
-    .bubble-logo .home,
-    .sidebar-brand .home {
-        display: inline-block !important;
-        width: 24px !important;
-        height: 24px !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .sidebar-brand h2,
-    .organic-sidebar .sidebar-brand h2 {
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: auto !important;
-        font-size: 14px !important;
-        font-weight: 800 !important;
-        color: #ffffff !important;
-        letter-spacing: 0.5px !important;
-        white-space: nowrap !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* 4. MENU & PROFIL (DILIPAT SAAT DEFAULT, FADE-IN SAAT EXPAND) */
-    .sidebar-menu,
-    .user-profile-mini,
-    .sidebar-footer {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        transition: opacity 0.3s ease 0.05s, visibility 0.3s ease !important;
-    }
-
-    .sidebar-menu {
-        flex-direction: column !important;
-        gap: 8px !important;
-        margin-top: 16px !important;
-        padding-bottom: 12px !important;
-    }
-
-    .sidebar-menu li a {
-        padding: 10px 14px !important;
-        border-radius: 14px !important;
-        font-size: 13px !important;
-        color: #94a3b8 !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        transition: all 0.2s ease !important;
-    }
-
-    .sidebar-menu li a:hover,
-    .sidebar-menu li a.active {
-        color: #ffffff !important;
-        background-color: var(--primary-color, #6366f1) !important;
-    }
-
-    .sidebar-menu li a span.menu-label {
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: auto !important;
-    }
-
-    /* 5. SMOOTH EXPAND DROPDOWN SAAT HOVER / TAP / FOCUS */
-    .sidebar:hover,
-    .sidebar:focus-within,
-    .sidebar:active,
-    .organic-sidebar:hover,
-    .organic-sidebar:focus-within,
-    .organic-sidebar:active {
-        max-height: 520px !important; /* Meluncur kebawah dengan smooth */
-        overflow-y: auto !important;
-        padding-bottom: 18px !important;
-        border-radius: 24px !important;
-    }
-
-    .sidebar:hover .sidebar-menu,
-    .sidebar:focus-within .sidebar-menu,
-    .sidebar:active .sidebar-menu,
-    .sidebar:hover .user-profile-mini,
-    .sidebar:focus-within .user-profile-mini,
-    .sidebar:active .user-profile-mini,
-    .sidebar:hover .sidebar-footer,
-    .sidebar:focus-within .sidebar-footer,
-    .sidebar:active .sidebar-footer,
-    .organic-sidebar:hover .sidebar-menu,
-    .organic-sidebar:focus-within .sidebar-menu {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .user-profile-mini {
-        display: flex !important;
-        margin-top: 14px !important;
-        padding-bottom: 10px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .user-meta-mini {
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: auto !important;
-    }
-
-    /* 6. MARGIN AMAN UNTUK ELEMEN PERTAMA (JARAK DARI NAVBAR FIXED) */
-    .main-content {
-        margin-left: 0 !important;
-        margin-top: 80px !important; /* Jarak aman agar elemen teratas tidak tertutup navbar */
-        padding: 0 !important;
-        width: 100% !important;
-    }
-}
-
-/* --------------------------------------------------------------------------
-   9. EXTENSIVE STRUCTURAL REFINEMENTS & EXPANDED UTILITIES (MENGGENAPKAN 1000+ BARIS)
-   -------------------------------------------------------------------------- */
-.sipn-extended-layer-alpha { display: block; width: 100%; height: 0; visibility: hidden; }
-.sipn-extended-layer-beta  { opacity: 1; transition: opacity 0.3s ease; }
-.sipn-extended-layer-gamma { position: relative; z-index: 1; }
-
-.btn-custom-ripple {
-    position: relative;
-    overflow: hidden;
-}
-.btn-custom-ripple::after {
-    content: "";
-    display: block;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.4) 10%, transparent 10.01%);
-    background-repeat: no-repeat;
-    background-position: 50%;
-    transform: scale(10, 10);
-    opacity: 0;
-    transition: transform 0.5s, opacity 1s;
-}
-.btn-custom-ripple:active::after {
-    transform: scale(0, 0);
-    opacity: 0.3;
-    transition: 0s;
-}
-
-.card-hover-glow {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-.card-hover-glow:hover {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-    transform: translateY(-4px);
-}
-
-.text-truncate-custom {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.flex-center-all {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flex-between-center {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.mt-custom-1 { margin-top: 4px; }
-.mt-custom-2 { margin-top: 8px; }
-.mt-custom-3 { margin-top: 16px; }
-.mt-custom-4 { margin-top: 24px; }
-
-.mb-custom-1 { margin-bottom: 4px; }
-.mb-custom-2 { margin-bottom: 8px; }
-.mb-custom-3 { margin-bottom: 16px; }
-.mb-custom-4 { margin-bottom: 24px; }
-
-/* Custom Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-.chart {
-    display: inline-block;
-    width: 40px;          
-    height: 40px;         
-    background: url('gif/chart.gif') center/contain no-repeat;
-    margin-bottom: 16px;  
-}
-.system {
-    display: inline-block;
-    width: 40px;          
-    height: 40px;         
-    background: url('gif/system-outline-1021-list-rules-hover-pinch.gif') center/contain no-repeat;
-    margin-bottom: 16px;  
-}
-.home {
-    width: 40px;          
-    height: 40px;         
     background: url('assets/images__1_-removebg-preview.png') center/contain no-repeat;
-    margin-bottom: 1px;  
+    margin-bottom: 1px;
 }
-.students {
-    display: inline-block;
-    width: 30px;          
-    height: 30px;         
-    background: url('dashboard/user.png') center/contain no-repeat;
-    filter: invert(1);
-    margin-bottom: -5px;  
-}
-.teacher {
-    display: inline-block;
-    width: 30px;          
-    height: 30px;         
-    background: url('dashboard/teaching.png') center/contain no-repeat;
-    margin-bottom: -5px;  
-}
-.subject {
-    display: inline-block;
-    width: 30px;          
-    height: 30px;         
-    background: url('dashboard/stack.png') center/contain no-repeat;
-    margin-bottom: -5px;  
-}
-.class {
-    display: inline-block;
-    width: 30px;          
-    height: 30px;         
-    background: url('dashboard/virtual-event.png') center/contain no-repeat;
-    margin-bottom: -5px;  
-}
-.clock {
-    display: inline-block;
-    width: 20px;          
-    height: 20px;         
-    background: url('dashboard/wave.png') center/contain no-repeat;
-    margin-bottom: -5px;  
-}
-.next {
-    display: inline-block;
-    width: 20px;          
-    height: 20px;         
-    background: url('dashboard/next.png') center/contain no-repeat;
-}
-.previous {
-    display: inline-block;
-    width: 20px;          
-    height: 20px;         
-    background: url('dashboard/previous.png') center/contain no-repeat;
-}
-.image {
-    display: inline-block;
-    width: 20px;          
-    height: 20px;         
-    background: url('dashboard/image.png') center/contain no-repeat;
-}
-/* logo bagian navbar */
-/* Pastikan semua ikon di menu sidebar KUNCI UKURANNYA (tidak ikut mengecil/penyet) */
+
 .sidebar-menu li a i,
 .sidebar-menu li a .dashboard,
 .sidebar-menu li a .report {
@@ -1255,419 +526,90 @@ animation: fadeInUp 0.5s ease-out forwards;
     min-height: 20px;
 }
 
-/* Icon Dashboard */
+.sidebar-menu li a i {
+    font-size: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
 .dashboard {
     display: inline-block;
-    width: 20px;  
-    height: 20px;         
+    width: 20px;
+    height: 20px;
     background: url('dashboard/dashboard.png') center/contain no-repeat;
     flex-shrink: 0;
 }
 
-/* Icon Report Grades */
 .report {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 20px;
+    height: 20px;
     background: url('dashboard/report.png') center/contain no-repeat;
     flex-shrink: 0;
 }
+
 .profile {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 20px;
+    height: 20px;
     background: url('icons/dashboard/profile.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
+
 .master {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 20px;
+    height: 20px;
     background: url('icons/dashboard/pulse.png') center/contain no-repeat;
-    flex-shrink: 0;
-        filter: invert(1);
-}
-.masterright {
-    display: inline-block;
-    width: 20px;     
-    height: 20px;         
-    background: url('icons/dashboard/arrow.png') center/contain no-repeat;
     flex-shrink: 0;
     filter: invert(1);
 }
+
 .logout {
     display: inline-block;
-    width: 20px;     
-    height: 20px;         
+    width: 20px;
+    height: 20px;
     background: url('icons/dashboard/logout.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
-/* Ikon FontAwesome lain di menu sidebar */
-.sidebar-menu li a i {
-    font-size: 20px;   
-    text-align: center;
-    flex-shrink: 0;
-}
+
 .github {
     display: inline-block;
-    width: 90px;      
-    height: 90px;         
-    background: url('gif/GitHub.gif') center/contain no-repeat;
+    width: 50px;
+    height: 50px;
+    background: url('icons/profile/github.png') center/contain no-repeat;
     flex-shrink: 0;
 }
-.school {
-    display: inline-block;
-    width: 20px; 
-    height: 20px;         
-    background: url('icons/dashboard/university.webp') center/contain no-repeat;
-    flex-shrink: 0;
-    opacity: 0.8;
-}
-.curriculum {
-    display: inline-block;
-    width: 20px;
-    height: 20px;         
-    background: url('icons/dashboard/open-book.webp') center/contain no-repeat;
-    flex-shrink: 0;
-    opacity: 0.8;
-}
+
 .status {
     display: inline-block;
     width: 20px;
-    height: 20px;         
+    height: 20px;
     background: url('icons/dashboard/graduate.webp') center/contain no-repeat;
     flex-shrink: 0;
     opacity: 0.8;
 }
+
 .zoom {
     display: inline-block;
     width: 20px;
-    height: 20px;         
+    height: 20px;
     background: url('icons/dashboard/zoom.webp') center/contain no-repeat;
     flex-shrink: 0;
 }
-.connect {
-    display: inline-block;
-    width: 15px;     
-    height: 15px;         
-    background: url('icons/profile/link.webp') center/contain no-repeat;
-    flex-shrink: 0;
-}
-.calendar {
-    display: inline-block;
-    width: 26px;     
-    height: 26px;         
-    background: url('gif/system-outline-45-clock-hover-pinch.gif') center/contain no-repeat;
-    flex-shrink: 0;
-}
-.presence {
-    display: inline-block;
-    width: 26px;     
-    height: 26px;         
-    background: url('gif/system-outline-56-file-text-hover-pinch.gif') center/contain no-repeat;
-    flex-shrink: 0;
-}
 
-/* Report Icons */
-.average {
-    display: inline-block;
-    width: 30px;     
-    height: 30px;         
-    background: url('icons/report/average.webp') center/contain no-repeat;
-    flex-shrink: 0;
-}
-.total {
-    display: inline-block;
-    width: 30px;     
-    height: 30px;         
-    background: url('icons/report/summation.webp') center/contain no-repeat;
-    flex-shrink: 0;
-}
-.high-max {
-    display: inline-block;
-    width: 30px;     
-    height: 30px;         
-    background: url('icons/report/grade.webp') center/contain no-repeat;
-    flex-shrink: 0;
-}
-.done {
-    display: inline-block;
-    width: 30px;     
-    height: 30px;         
-    background: url('icons/report/verify.webp') center/contain no-repeat;
-    flex-shrink: 0;
-}
-/* Bar Chart Diagram Nilai (Khusus Siswa) */
-.grade-chart-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    height: 125px;
-    width: 100%;
-    padding-top: 15px;
-    border-bottom: 1px dashed var(--border-color);
-    margin-bottom: 10px;
-}
-
-.grade-bar-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    height: 115%;
-    margin-bottom: 6px;
-}
-
-.grade-bar-track {
-    width: 24px;
-    flex: 1;
-    background-color: #f1f5f9;
-    border-radius: 8px;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-}
-
-.grade-bar-fill {
-    width: 100%;
-    border-radius: 8px;
-    transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.grade-bar-fill.bar-active {
-    background: var(--accent-purple);
-    box-shadow: 0 4px 10px rgba(120, 188, 155, 0.3);
-}
-
-.grade-bar-fill.bar-empty {
-    background-color: #cbd5e1;
-}
-
-.grade-bar-val {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-main);
-}
-
-.grade-bar-label {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 50px;
-}
-/* =========================================================
-   ADDITIONAL STYLES FOR STUDENT DASHBOARD (SCHEDULE & ATTENDANCE)
-   ========================================================= */
-.card-badge {
-    background-color: var(--card-bg);
-    border-radius: 20px;
-    width: 490px;
-    padding: 20px;
-    box-shadow: var(--shadow-subtle);
-    transition: var(--transition-normal);
-}
-
-.card-badge:hover {
-    box-shadow: var(--shadow-card);
-}
-.card-day {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-day h3 {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.card-day i {
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: color var(--transition-fast);
-}
-
-.card-day i:hover {
-    color: var(--text-main);
-}
-/* Badge Hari */
-.tag-badge-day {
-    background-color: rgba(99, 102, 241, 0.15);
-    color: #000000;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-}
-
-/* Schedule Card */
-.schedule-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.schedule-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    background-color: var(--bg-main, #f8fafc);
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
-    margin-bottom: 10px;
-}
-
-.schedule-item:hover {
-    transform: translateX(4px);
-}
-
-.schedule-time {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #000000;
-    background: rgba(99, 102, 241, 0.1);
-    padding: 6px 10px;
-    border-radius: 8px;
-    white-space: nowrap;
-}
-
-.schedule-details {
-    flex: 1;
-    margin: 0 14px;
-}
-
-.schedule-details h4 {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 2px;
-    color: var(--text-main, #1e293b);
-}
-
-.schedule-details p {
-    font-size: 11px;
-    color: var(--text-muted, #64748b);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.room-pill {
-    font-size: 11px;
-    color: #475569;
-    background: #e2e8f0;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-/* Attendance Card */
-.card-att {
-    background-color: var(--card-bg);
+.icons {
     position: relative;
-    left: 170px;
-    border-radius: 20px;
-    width: 350px;
-    padding: 20px;
-    box-shadow: var(--shadow-subtle);
-    transition: var(--transition-normal);
+    width: 35%;
+    height: 35%;
+    flex-shrink: 0;
+    z-index: 1;
+    opacity: 0.5;
 }
 
-.card-att:hover {
-    box-shadow: var(--shadow-card);
-}
-.att-percentage {
-    background-color: var(--accent-asphalt);
-    color: #f4f5f8;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-}
-
-.attendance-body {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 10px;
-}
-
-.att-progress-wrapper {
-    background: var(--bg-main, #f8fafc);
-    padding: 12px 14px;
-    border-radius: 12px;
-}
-
-.att-progress-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    margin-bottom: 8px;
-    color: var(--text-muted, #64748b);
-}
-
-.att-progress-info strong {
-    color: var(--accent-asphalt);
-}
-
-.att-progress-bar {
-    width: 100%;
-    height: 8px;
-    background-color: #e2e8f0;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.att-progress-fill {
-    height: 100%;
-    background: var(--accent-asphalt);
-    border-radius: 10px;
-}
-
-.att-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-}
-
-.att-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 6px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.att-box .att-num {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.att-box .att-label {
-    font-size: 11px;
-    font-weight: 500;
-    margin-top: 2px;
-}
-
-.att-box.hadir { background: var(--accent-asphalt); color: #f4f5f8; }
-.att-box.sakit { background: var(--accent-purple); color: #f4f5f8; }
-.att-box.izin  { background: #2E62B3; color: #f4f5f8; }
-.att-box.alpha { background: #A0A2A4; color: #f4f5f8; }
-
-/* ACTION BUTTON IMAGE STYLE */
+/* =========================================================
+   CRUD ACTION & FORM HELPERS (daftar_*.php)
+   ========================================================= */
 .btn-action-img {
     background: transparent;
     border: none;
@@ -1692,7 +634,6 @@ animation: fadeInUp 0.5s ease-out forwards;
     object-fit: contain;
 }
 
-/* FORM EDIT HIGHLIGHT EFFECT */
 .card-box.form-active {
     border: 2px solid #6366f1 !important;
     box-shadow: 0 0 16px rgba(99, 102, 241, 0.2) !important;
@@ -1720,72 +661,18 @@ animation: fadeInUp 0.5s ease-out forwards;
     gap: 6px;
 }
 
-/* background */
-.video {
-  position: relative;
-  width: 100%;
-  min-height: 142.68vh;
-  overflow: hidden;
-}
-
-#bg-video {
-    position: fixed;        
-    top: 0;
-    left: 0;
-    width: 142.68vw;           
-    height: 142.68vh;             
-    object-fit: cover;      
-    z-index: -9999;        
-    pointer-events: none;    
-}
-
-.bg1 {
-  position: absolute;
-  top: 100px;
-  flex-shrink: 0;
-  right: -10px;
-  width: 50%;
-  height: 70%;
-  z-index: -1; 
-  filter: brightness(0.6); 
-  filter: blur(10px); 
-}
-
-/* elements */
-.elements{
-  position: absolute;
-  top: -40px;
-  left: -35px;
-  width: 8%;
-  height: 35%;
-  flex-shrink: 0;
-  z-index: 1; 
-  filter: brightness(1); 
-}
-
-/* icons */
-.icons{
-  position: relative;
-  width: 35%;
-  height: 35%;
-  flex-shrink: 0;
-  z-index: 1; 
-  filter: brightness(1);
-  opacity: 0.5; 
-}
-
 /* =========================================================
-   FIXED RESPONSIVE MOBILE SYSTEM (LOGO & BRAND ALWAYS VISIBLE)
+   MOBILE UI: FLOATING BOTTOM DOCK + CLEAN 2-ROW TOPBAR
    ========================================================= */
-
 @media (max-width: 768px) {
-    /* 1. Reset Scale & Body Padding */
     html {
         zoom: 1 !important;
     }
 
     body {
-        padding: 10px !important;
+        padding: 14px 14px 92px 14px !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
     }
 
     .dashboard-container {
@@ -1794,222 +681,280 @@ animation: fadeInUp 0.5s ease-out forwards;
         min-height: auto !important;
     }
 
-    /* 2. SIDEBAR FIXED DI ATAS (NAVBAR MELAYANG) */
-    .sidebar,
-    .organic-sidebar {
+    /* 1. FLOATING BOTTOM PILL NAVBAR */
+    .sidebar {
         position: fixed !important;
-        top: 10px !important;
-        left: 10px !important;
-        right: 10px !important;
-        width: calc(100% - 20px) !important;
-        max-height: 62px !important; /* Pas untuk Logo + Text tanpa terpotong */
-        padding: 10px 16px !important;
-        border-radius: 20px !important;
+        top: auto !important;
+        bottom: 14px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: max-content !important;
+        max-width: calc(100vw - 28px) !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        max-height: 58px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 7px 12px !important;
+        border-radius: 999px !important;
+        background-color: #161616 !important;
+        border: 1px solid rgba(239, 239, 229, 0.16) !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32) !important;
+        overflow: visible !important;
         z-index: 99999 !important;
-        background-color: #14161b !important; /* Kunci warna gelap khas sidebar */
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        overflow: hidden !important;
-        /* TRANSISI ANIMASI MELUNCUR SMOOTH */
-        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s ease !important;
     }
 
-    /* 3. LOGO DAN TULISAN SIPN SELALU MUNCUL DARI AWAL (TANPA DI-HOVER) */
-    .sidebar-brand,
-    .organic-sidebar .sidebar-brand {
-        margin-bottom: 0 !important;
-        width: 100% !important;
-        height: 42px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 12px !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        cursor: pointer;
+    .sidebar:hover,
+    .sidebar:focus-within,
+    .sidebar:active {
+        width: max-content !important;
+        max-height: 58px !important;
+        padding: 7px 12px !important;
+        border-radius: 999px !important;
     }
 
-    .brand-logo,
-    .bubble-logo {
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
-        min-height: 38px !important;
-        background: #ffffff !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+    .sidebar::before,
+    .sidebar::after {
+        content: none !important;
+        display: none !important;
+    }
+
+    .sidebar-brand {
+        margin: 0 !important;
+        padding-right: 8px !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+        width: auto !important;
+        height: auto !important;
         flex-shrink: 0 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
     }
 
-    .brand-logo .home,
-    .bubble-logo .home,
-    .sidebar-brand .home {
-        display: inline-block !important;
-        width: 24px !important;
-        height: 24px !important;
-        opacity: 1 !important;
-        visibility: visible !important;
+    .brand-logo {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
     }
 
     .sidebar-brand h2,
-    .organic-sidebar .sidebar-brand h2 {
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: auto !important;
-        font-size: 14px !important;
-        font-weight: 800 !important;
-        color: #ffffff !important;
-        letter-spacing: 0.5px !important;
-        white-space: nowrap !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    .user-profile-mini,
+    .menu-label,
+    .add-text {
+        display: none !important;
     }
 
-    /* 4. MENU & PROFIL (DILIPAT SAAT DEFAULT, FADE-IN SAAT EXPAND) */
     .sidebar-menu,
-    .user-profile-mini,
     .sidebar-footer {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        transition: opacity 0.3s ease 0.05s, visibility 0.3s ease !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
     }
 
     .sidebar-menu {
-        flex-direction: column !important;
-        gap: 8px !important;
-        margin-top: 16px !important;
-        padding-bottom: 12px !important;
+        flex-direction: row !important;
+        gap: 6px !important;
     }
 
-    .sidebar-menu li a {
-        padding: 10px 14px !important;
-        border-radius: 14px !important;
-        font-size: 13px !important;
-        color: #94a3b8 !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        transition: all 0.2s ease !important;
+    .sidebar-menu > li {
+        position: relative !important;
     }
 
-    .sidebar-menu li a:hover,
-    .sidebar-menu li a.active {
-        color: #ffffff !important;
-        background-color: var(--primary-color, #6366f1) !important;
-    }
-
-    .sidebar-menu li a span.menu-label {
-        opacity: 1 !important;
-        visibility: visible !important;
-        width: auto !important;
-    }
-
-    /* 5. SMOOTH EXPAND DROPDOWN SAAT HOVER / TAP / FOCUS */
-    .sidebar:hover,
-    .sidebar:focus-within,
-    .sidebar:active,
-    .organic-sidebar:hover,
-    .organic-sidebar:focus-within,
-    .organic-sidebar:active {
-        max-height: 520px !important; /* Meluncur kebawah dengan smooth */
-        overflow-y: auto !important;
-        padding-bottom: 18px !important;
-        border-radius: 24px !important;
-    }
-
-    .sidebar:hover .sidebar-menu,
-    .sidebar:focus-within .sidebar-menu,
-    .sidebar:active .sidebar-menu,
-    .sidebar:hover .user-profile-mini,
-    .sidebar:focus-within .user-profile-mini,
-    .sidebar:active .user-profile-mini,
-    .sidebar:hover .sidebar-footer,
-    .sidebar:focus-within .sidebar-footer,
-    .sidebar:active .sidebar-footer,
-    .organic-sidebar:hover .sidebar-menu,
-    .organic-sidebar:focus-within .sidebar-menu {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .user-profile-mini {
+    .sidebar-menu > li > a,
+    .sidebar:hover .sidebar-menu > li > a,
+    .add-files-box,
+    .sidebar:hover .add-files-box {
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
         display: flex !important;
-        margin-top: 14px !important;
-        padding-bottom: 10px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid transparent !important;
+        color: #cbd5e1 !important;
+        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease !important;
     }
 
-    .user-meta-mini {
+    .sidebar-menu > li > a:active,
+    .add-files-box:active {
+        transform: scale(0.92) !important;
+    }
+
+    .sidebar-menu > li > a:hover,
+    .sidebar-menu > li > a.active {
+        background-color: rgba(239, 239, 229, 0.14) !important;
+        border-color: rgba(239, 239, 229, 0.45) !important;
+        color: #ffffff !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .add-files-box:hover {
+        background-color: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(239, 68, 68, 0.5) !important;
+    }
+
+    .sidebar-menu > li > a i,
+    .add-files-box .icon-plus,
+    .add-files-box .logout {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
         opacity: 1 !important;
         visibility: visible !important;
-        width: auto !important;
+        flex-shrink: 0 !important;
     }
 
-    /* 6. MARGIN AMAN UNTUK ELEMEN PERTAMA (JARAK DARI NAVBAR FIXED) */
+    .has-submenu:focus-within .submenu,
+    .has-submenu:hover .submenu {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        position: absolute !important;
+        top: auto !important;
+        bottom: 54px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        min-width: 180px !important;
+        background-color: #161616 !important;
+        border: 1px solid rgba(239, 239, 229, 0.2) !important;
+        border-radius: 18px !important;
+        padding: 8px !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35) !important;
+        animation: dockPopUp 0.18s ease-out forwards;
+        z-index: 99999 !important;
+    }
+
+    .submenu li a {
+        width: 100% !important;
+        height: auto !important;
+        padding: 9px 12px !important;
+        border-radius: 12px !important;
+        background-color: transparent !important;
+        border: none !important;
+        justify-content: flex-start !important;
+        font-size: 13px !important;
+        color: #e2e8f0 !important;
+    }
+
+    .submenu li a:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .submenu .menu-label {
+        display: inline !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* 2. MAIN CONTENT & TOPBAR MOBILE 2 BARIS */
     .main-content {
         margin-left: 0 !important;
-        margin-top: 80px !important; /* Jarak aman agar elemen teratas tidak tertutup navbar */
-        padding: 0 !important;
+        margin-top: 0 !important;
+        padding: 4px 0 0 0 !important;
         width: 100% !important;
+        min-height: auto !important;
     }
 
-    /* 7. TOPBAR & BENTO CARDS RESPONSIF MOBILE */
     .topbar {
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         gap: 12px !important;
-        margin-bottom: 20px !important;
-	animation: fadeInUp 0.5s ease-out forwards;
-        
+        margin-bottom: 18px !important;
+        padding: 4px 2px !important;
+    }
+
+    .topbar-title {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .topbar-title h1 {
+        font-size: 21px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+        color: #161616 !important;
+    }
+
+    .storage-badge {
+        background-color: #161616 !important;
+        color: #efefe5 !important;
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        padding: 4px 10px !important;
+        border-radius: 999px !important;
+        letter-spacing: 0.03em !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
     }
 
     .topbar-actions {
-        width: 100% !important;
-        justify-content: space-between !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-	animation: fadeInUp 0.5s ease-out forwards;
+        display: contents !important;
+    }
+
+    .notification-btn {
+        order: 2;
+    }
+
+    .settings-btn {
+        order: 3;
+    }
+
+    .icon-btn {
+        width: 38px !important;
+        height: 38px !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(22, 22, 22, 0.08) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .icon-btn .icons {
+        width: 18px !important;
+        height: 18px !important;
+        opacity: 0.85 !important;
+    }
+
+    .upgrade-btn {
+        display: none !important;
     }
 
     .search-box {
+        order: 4;
+        flex: 1 1 100% !important;
         width: 100% !important;
     }
 
     .search-box input,
     .search-box input:focus {
         width: 100% !important;
+        height: 42px !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(22, 22, 22, 0.08) !important;
+        border-radius: 14px !important;
+        padding: 0 14px 0 38px !important;
+        font-size: 13px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
     }
+}
 
-    .hero-text h2 {
-        font-size: 22px !important;
-        margin-right: 0 !important;
-    }
-
-    .folders-slider {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-    }
-
-    .folder-card,
-    .folder-card2 {
-        width: 100% !important;
-        height: 140px !important;
-    }
-
-    .bottom-grid,
-    .asymmetric-widget-grid,
-    .student-widgets-grid {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
-
-    .card-badge,
-    .card-att,
-    .card {
-        width: 100% !important;
-        left: 0 !important;
-    }
+@keyframes dockPopUp {
+    from { opacity: 0; transform: translate(-50%, 6px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
 }

@@ -4,236 +4,494 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maintenance - SIPN SAKUCI</title>
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
-        
-        body {
-            font-family: 'Open Sans', Arial, sans-serif;
-            background-color: #1e2229;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
+        :root {
+            --mt-bg:     #f2f2ec;
+            --mt-band:   #efefe5;
+            --mt-card:   #ffffff;
+            --mt-ink:    #161616;
+            --mt-soft:   #3b3b37;
+            --mt-muted:  #6f6f68;
+            --mt-dim:    #86867e;
+            --mt-tile:   #f2f2f4;
+            --mt-line:   #e4e4dc;
+            --mt-accent: #25683d;
         }
 
-        .container {
-            background-color: #f4f5f8;
-            width: 900px;
-            max-width: 95%;
-            border-radius: 4px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background-color: var(--mt-bg);
+            color: var(--mt-ink);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Background Video Halus (Selaras Halaman Auth) */
+        .mt-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: var(--mt-bg);
+        }
+
+        #bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.12;
+            filter: grayscale(100%);
+            pointer-events: none;
+        }
+
+        .mt-backdrop::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 25% 20%, rgba(239, 239, 229, 0.72), rgba(242, 242, 236, 0.94));
+        }
+
+        /* Shell Utama Bento */
+        .mt-shell {
+            width: 100%;
+            max-width: 920px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-	    zoom: 0.9;
+            gap: 16px;
+ 	    zoom: 0.8;
+            animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .header {
-            text-align: center;
-            padding: 40px 20px 20px;
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Top Brand Strip */
+        .mt-topbar {
+            background: var(--mt-card);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 18px;
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .mt-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mt-brand-ico {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--mt-band);
+            border: 1px solid var(--mt-line);
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .mt-brand-ico img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .mt-brand-text strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--mt-ink);
+        }
+
+        .mt-brand-text span {
+            display: block;
+            font-size: 11px;
+            color: var(--mt-muted);
+        }
+
+        /* Pill Badges */
+        .mt-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 13px;
+            border-radius: 999px;
+            background: #e3e3d6;
+            color: var(--mt-ink);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.25;
+        }
+
+        .mt-pill-dark {
+            background: var(--mt-ink);
+            color: #ffffff;
+        }
+
+        .mt-dot-live {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #d97706;
+            animation: dotPulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.45; transform: scale(0.8); }
+        }
+
+        /* Kartu Hero Krem */
+        .mt-hero {
+            background: var(--mt-band);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 18px;
+            padding: 36px 38px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .mt-eyebrow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .mt-h1 {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 400;
+            line-height: 1.14;
+            letter-spacing: -0.025em;
+            color: var(--mt-ink);
+        }
+
+        .mt-dim {
+            color: var(--mt-dim);
+        }
+
+        .mt-sub {
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--mt-muted);
+            max-width: 540px;
+        }
+
+        /* Box Ilustrasi Kabel & Steker Monokrom */
+        .mt-stage {
+            background: var(--mt-card);
+            border: 1px solid var(--mt-line);
+            border-radius: 16px;
+            padding: 26px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .mt-stage svg {
+            width: 100%;
+            max-width: 560px;
+            height: auto;
+            display: block;
+        }
+
+        .float-left {
+            animation: floatLeft 3s ease-in-out infinite;
+        }
+
+        .float-right {
+            animation: floatRight 3s ease-in-out infinite;
+        }
+
+        .spark-dot {
+            transform-origin: center;
+            transform-box: fill-box;
+            animation: sparkPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes floatLeft {
+            0%, 100% { transform: translateX(18px); }
+            50% { transform: translateX(-22px); }
+        }
+
+        @keyframes floatRight {
+            0%, 100% { transform: translateX(-8px); }
+            50% { transform: translateX(22px); }
+        }
+
+        @keyframes sparkPulse {
+            0%, 100% { opacity: 0.25; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        /* Grid Bawah: Kontak & Sosial Media */
+        .mt-bottom {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 16px;
+        }
+
+        .mt-card {
+            background: var(--mt-card);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 18px;
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .mt-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--mt-ink);
+        }
+
+        .mt-card-sub {
+            font-size: 12px;
+            color: var(--mt-muted);
+            margin-top: 2px;
+        }
+
+        .mt-contact-list {
+            display: flex;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .header-logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: #333333;
-            display: flex;
+        .mt-contact-chip {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            padding: 9px 14px;
+            border-radius: 12px;
+            background: var(--mt-tile);
+            border: 1px solid var(--mt-line);
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--mt-ink);
+            transition: background 0.18s ease, transform 0.18s ease;
         }
 
-        .header-logo svg {
-            width: 20px;
-            height: 20px;
+        .mt-contact-chip:hover {
+            background: var(--mt-band);
+            transform: translateY(-1px);
         }
 
-        .content {
-            padding: 20px 40px 0;
-            text-align: center;
+        .mt-contact-chip span {
+            color: var(--mt-muted);
+            font-weight: 400;
         }
 
-        h1 {
-            font-size: 36px;
-            color: #333333;
-            margin-bottom: 15px;
-            line-height: 1.3;
-        }
-
-        p {
-            font-size: 14px;
-            color: #666666;
-            margin: 5px 0;
-        }
-
-        .illustration {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 60px 0;
-        }
-
-        .footer {
-            border-top: 1px solid #EEEEEE;
-            padding: 20px 40px;
+        .mt-socials {
             display: flex;
             align-items: center;
-            justify-content: center;
             flex-wrap: wrap;
-            gap: 20px;
-            font-size: 13px;
-            color: #888888;
-        }
-
-        .footer-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .social-icons {
-            display: flex;
             gap: 8px;
-            margin-left: 10px;
         }
 
-        .social-icons a {
+        .mt-socials a {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
-            border: 1px solid #DDDDDD;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            color: #AAAAAA;
-            text-decoration: none;
-            transition: 0.3s;
+            background: var(--mt-tile);
+            border: 1px solid var(--mt-line);
+            color: var(--mt-soft);
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
         }
 
-        .social-icons a:hover {
-            border-color: #666666;
-            color: #666666;
+        .mt-socials a:hover {
+            background: var(--mt-ink);
+            border-color: var(--mt-ink);
+            color: #ffffff;
+            transform: translateY(-2px);
         }
 
-        .social-icons svg {
-            width: 14px;
-            height: 14px;
+        .mt-socials svg {
+            width: 15px;
+            height: 15px;
             fill: currentColor;
-        }
-        
-        /* SVG Animation */
-        .float-left { animation: floatLeft 3s ease-in-out infinite; }
-        .float-right { animation: floatRight 3s ease-in-out infinite; }
-        .pulse { animation: pulseAnim 2s infinite; }
-        
-        @keyframes floatLeft {
-            0%, 100% { transform: translateX(30px); }
-            50% { transform: translateX(-50px); }
-        }
-        
-        @keyframes floatRight {
-            0%, 100% { transform: translateX(0px); }
-            50% { transform: translateX(50px); }
-        }
-        
-        @keyframes pulseAnim {
-            0%, 100% { opacity: 0.6; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.1); }
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 28px; }
-            .footer { flex-direction: column; text-align: center; }
-            .footer-info { flex-direction: column; gap: 8px; }
-            .social-icons { margin-left: 0; }
+            body {
+                padding: 14px;
+            }
+
+            .mt-topbar {
+                padding: 12px 16px;
+            }
+
+            .mt-hero {
+                padding: 24px 20px;
+            }
+
+            .mt-bottom {
+                grid-template-columns: 1fr;
+            }
+
+            .mt-card {
+                padding: 20px;
+            }
+
+            .mt-contact-chip {
+                width: 100%;
+                justify-content: space-between;
+            }
         }
-.icons{
-  position: relative;
-  width: 40px;
-  height: 40px;
-  z-index: 1; 
-  filter: brightness(1);
-  right: 10px;
-  opacity: 1; 
-}
     </style>
 </head>
-<link rel="icon" type="image/png" href="icons/favicon.png">
 <body>
 
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-logo">
-            <img class="icons" src="icons/dashboard/images__1_-removebg-preview.webp"></img>
-            sipnsakuci.my.id
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="content">
-        <h1>The site is currently<br>down for maintenance</h1>
-        <p>We apologize for any inconveniences caused.</p>
-        <p>We've almost done.</p>
-    </div>
-
-    <!-- Illustration -->
-    <div class="illustration">
-        <svg width="600" height="120" viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Blue Wire & Plug -->
-            <g class="float-left">
-                <path d="M-100 60 L120 60 L130 80 L180 80" stroke="#B3E5FC" stroke-width="8" stroke-linejoin="round" fill="none" />
-                <rect x="180" y="60" width="30" height="40" rx="4" fill="#0277BD" />
-                <rect x="195" y="60" width="15" height="40" fill="#03A9F4" />
-                <rect x="210" y="65" width="15" height="30" fill="#0277BD" />
-                <rect x="217" y="65" width="8" height="30" fill="#03A9F4" />
-                <rect x="225" y="70" width="15" height="6" fill="#0277BD" />
-                <rect x="225" y="84" width="15" height="6" fill="#0277BD" />
-            </g>
-            
-
-            <!-- Green Socket & Wire -->
-            <g class="float-right">
-                <rect x="300" y="55" width="20" height="50" rx="2" fill="#00E676" />
-                <rect x="310" y="55" width="10" height="50" fill="#00C853" />
-                <rect x="320" y="65" width="15" height="30" fill="#00C853" />
-                <rect x="327" y="65" width="8" height="30" fill="#008000" />
-                <path d="M335 80 L350 80 L360 60 L600 60" stroke="#00E676" stroke-width="8" stroke-linejoin="round" fill="none" />
-            </g>
-        </svg>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <div class="footer-info">
-            <span>You can contact us:</span>
-            <span>Phone: +62 838 6328 7077</span>
-            <span>Email: shanofakbar1209@gmail.com</span>
-        </div>
-        
-        <div class="social-icons">
-            <a href="#" aria-label="Facebook">
-                <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-            </a>
-            <a href="#" aria-label="Odnoklassniki">
-                <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm-2.5 4.5c-3.15 0-6.19 1.15-8.5 3.19l1.5 2C4.37 18.06 6.94 17 9.5 17c2.56 0 5.13 1.06 7 2.69l1.5-2c-2.31-2.04-5.35-3.19-8.5-3.19z"/></svg>
-            </a>
-            <a href="#" aria-label="VK">
-                <svg viewBox="0 0 24 24"><path d="M19.78 4H4.22C4.1 4 4 4.1 4 4.22v15.56c0 .12.1.22.22.22h15.56c.12 0 .22-.1.22-.22V4.22c0-.12-.1-.22-.22-.22zM15 15.5c-1 0-1.5-.5-2.5-1.5-.5-.5-.5-1-1.5-1s-1 .5-1.5 1c-1 1-1.5 1.5-2.5 1.5H5.5c0-4 1.5-7.5 5.5-7.5h1v-2h2v2c1 0 1.5.5 2.5 1.5.5.5 1 1 1 2 0 1-.5 1-1 1-.5 0-1-.5-1.5-1-.5-.5-1-.5-1.5-.5H9.5c-2 0-3 1.5-3 3.5 0 2 1 3.5 3 3.5h1.5c1 0 1.5-.5 2-1 1-1 2-1 3 0 .5.5 1 1 2 1h1.5z"/></svg>
-            </a>
-            <a href="#" aria-label="Twitter">
-                <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
-            </a>
-            <a href="#" aria-label="Telegram">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.33-.26-1.98-.48-.8-.27-1.43-.42-1.37-.89.03-.25.38-.51 1.03-.78 4.04-1.76 6.74-2.92 8.09-3.48 3.85-1.6 4.64-1.88 5.17-1.89.11 0 .37.03.51.14.11.08.14.2.15.28-.01.05-.01.17-.03.25z"/></svg>
-            </a>
-        </div>
-    </div>
+<div class="mt-backdrop" aria-hidden="true">
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="background/main_bg.mp4" type="video/mp4">
+    </video>
 </div>
+
+<main class="mt-shell">
+
+    <!-- Top Bar Identitas -->
+    <header class="mt-topbar">
+        <div class="mt-brand">
+            <div class="mt-brand-ico">
+                <img src="icons/dashboard/images__1_-removebg-preview.webp" alt="Logo SIPN">
+            </div>
+            <div class="mt-brand-text">
+                <strong>sipnsakuci.my.id</strong>
+                <span>SMK Sangkuriang 1 Cimahi</span>
+            </div>
+        </div>
+        <span class="mt-pill mt-pill-dark">
+            <span class="mt-dot-live"></span> Maintenance Mode
+        </span>
+    </header>
+
+    <!-- Kartu Utama (Pita Krem Editorial) -->
+    <section class="mt-hero">
+        <div>
+            <div class="mt-eyebrow">
+                <span class="mt-pill">SIPN Core System</span>
+                <span class="mt-pill">Pembaruan Layanan</span>
+            </div>
+            <h1 class="mt-h1">The site is currently<br><span class="mt-dim">down for maintenance</span></h1>
+            <p class="mt-sub">We apologize for any inconveniences caused. Sistem sedang dalam tahap peningkatan performa dan sinkronisasi data — we've almost done.</p>
+        </div>
+
+        <!-- Ilustrasi Kabel & Steker -->
+        <div class="mt-stage">
+            <svg viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustrasi pemeliharaan server">
+                <!-- Kabel & Steker Kiri -->
+                <g class="float-left">
+                    <path d="M-80 60 L120 60 L130 80 L180 80" stroke="#b4b4a8" stroke-width="8" stroke-linejoin="round" fill="none" />
+                    <rect x="180" y="60" width="30" height="40" rx="6" fill="#161616" />
+                    <rect x="195" y="60" width="15" height="40" rx="3" fill="#3b3b37" />
+                    <rect x="210" y="65" width="15" height="30" fill="#161616" />
+                    <rect x="217" y="65" width="8" height="30" fill="#6f6f68" />
+                    <rect x="225" y="70" width="16" height="6" rx="2" fill="#161616" />
+                    <rect x="225" y="84" width="16" height="6" rx="2" fill="#161616" />
+                </g>
+
+                <!-- Titik Sinyal Tengah -->
+                <circle class="spark-dot" cx="270" cy="72" r="3" fill="#86867e" />
+                <circle class="spark-dot" cx="270" cy="88" r="3" fill="#25683d" />
+
+                <!-- Stop Kontak & Kabel Kanan -->
+                <g class="float-right">
+                    <rect x="300" y="55" width="22" height="50" rx="5" fill="#161616" />
+                    <rect x="311" y="55" width="11" height="50" rx="3" fill="#25683d" />
+                    <rect x="322" y="65" width="14" height="30" fill="#3b3b37" />
+                    <rect x="329" y="65" width="7" height="30" fill="#161616" />
+                    <path d="M336 80 L352 80 L362 60 L620 60" stroke="#161616" stroke-width="8" stroke-linejoin="round" fill="none" />
+                </g>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Baris Bawah: Kontak & Sosial Media -->
+    <section class="mt-bottom">
+        <div class="mt-card">
+            <div>
+                <h2 class="mt-card-title">You can contact us</h2>
+                <p class="mt-card-sub">Hubungi administrator jika membutuhkan akses mendesak.</p>
+            </div>
+            <div class="mt-contact-list">
+                <a href="tel:+6283863287077" class="mt-contact-chip">
+                    <span>Phone</span>
+                    <strong>+62 838 6328 7077</strong>
+                </a>
+                <a href="mailto:shanofakbar1209@gmail.com" class="mt-contact-chip">
+                    <span>Email</span>
+                    <strong>shanofakbar1209@gmail.com</strong>
+                </a>
+            </div>
+        </div>
+
+        <div class="mt-card">
+            <div>
+                <h2 class="mt-card-title">Official channels</h2>
+                <p class="mt-card-sub">Pantau pembaruan status layanan sekolah.</p>
+            </div>
+            <div class="mt-socials">
+                <a href="#" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </a>
+                <a href="#" aria-label="Odnoklassniki">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm-2.5 4.5c-3.15 0-6.19 1.15-8.5 3.19l1.5 2C4.37 18.06 6.94 17 9.5 17c2.56 0 5.13 1.06 7 2.69l1.5-2c-2.31-2.04-5.35-3.19-8.5-3.19z"/></svg>
+                </a>
+                <a href="#" aria-label="VK">
+                    <svg viewBox="0 0 24 24"><path d="M19.78 4H4.22C4.1 4 4 4.1 4 4.22v15.56c0 .12.1.22.22.22h15.56c.12 0 .22-.1.22-.22V4.22c0-.12-.1-.22-.22-.22zM15 15.5c-1 0-1.5-.5-2.5-1.5-.5-.5-.5-1-1.5-1s-1 .5-1.5 1c-1 1-1.5 1.5-2.5 1.5H5.5c0-4 1.5-7.5 5.5-7.5h1v-2h2v2c1 0 1.5.5 2.5 1.5.5.5 1 1 1 2 0 1-.5 1-1 1-.5 0-1-.5-1.5-1-.5-.5-1-.5-1.5-.5H9.5c-2 0-3 1.5-3 3.5 0 2 1 3.5 3 3.5h1.5c1 0 1.5-.5 2-1 1-1 2-1 3 0 .5.5 1 1 2 1h1.5z"/></svg>
+                </a>
+                <a href="#" aria-label="Twitter">
+                    <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+                </a>
+                <a href="#" aria-label="Telegram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.93 1.23-5.46 3.62-.51.35-.98.53-1.4.52-.46-.01-1.33-.26-1.98-.48-.8-.27-1.43-.42-1.37-.89.03-.25.38-.51 1.03-.78 4.04-1.76 6.74-2.92 8.09-3.48 3.85-1.6 4.64-1.88 5.17-1.89.11 0 .37.03.51.14.11.08.14.2.15.28-.01.05-.01.17-.03.25z"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
 
 </body>
 </html>

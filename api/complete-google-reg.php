@@ -77,228 +77,238 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_registration']
         }
     }
 }
-?>
 
+// Titik sinar radial dekoratif (selaras rapor.css)
+$gg_burst = [];
+for ($bi = 0; $bi < 12; $bi++) {
+    $ang = (2 * M_PI * $bi / 12) - M_PI / 2;
+    $len = ($bi % 3 === 0) ? 44 : (($bi % 2 === 0) ? 34 : 24);
+    $gg_burst[] = [
+        round(50 + 10 * cos($ang), 2), round(50 + 10 * sin($ang), 2),
+        round(50 + $len * cos($ang), 2), round(50 + $len * sin($ang), 2),
+    ];
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Setup - SIPN</title>
-    <link rel="stylesheet" href="<?php echo $base_url ?? ''; ?>/auth-style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Complete Setup - Google SIPN</title>
+    <link rel="stylesheet" href="<?= $base_url ?? ''; ?>/auth-edtech.css?v=1.2">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
-    
-    <style>
-        *, *::before, *::after, body, input, button, select, label, h1, h2, h3, h4, p, span, div {
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-        }
-
-        .google-user-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background-color: var(--card-bg, #14161b);
-            border: 1px solid var(--input-border, #2a2e39);
-            padding: 12px 16px;
-            border-radius: var(--radius-sm, 12px);
-            margin-bottom: 18px;
-        }
-
-        .google-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--input-focus, #6366f1);
-            flex-shrink: 0;
-        }
-
-        .google-avatar-fallback {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background-color: var(--input-focus, #6366f1);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .google-user-info h4 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-primary, #ffffff);
-            margin-bottom: 2px;
-        }
-
-        .google-user-info p {
-            font-size: 12px;
-            color: var(--text-secondary, #9ca3af);
-        }
-
-        #jurusan_container {
-            display: none;
-        }
-    </style>
 </head>
 <body>
+<div class="au-backdrop">
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="<?= $base_url ?? ''; ?>/background/auth.mp4" type="video/mp4">
+    </video>
+</div>
 
-    <div class="auth-wrapper">
-        <!-- SISI KIRI: FORM REGISTRASI SISWA GOOGLE -->
-        <div class="auth-form-side">
-            <div class="auth-top-logo">
-                <i class="fa-solid fa-shapes"></i>
+<main class="au-oauth-shell">
+    <!-- BAGIAN ATAS: PITA KREM IDENTITAS GOOGLE -->
+    <section class="au-oauth-band">
+        <div>
+            <div class="au-oauth-eyebrow">
+                <span class="au-pill"><i class="google" aria-hidden="true"></i> Google OAuth 2.0</span>
+                <span class="au-pill"><span class="au-dot-live"></span> Tahap 2 dari 2</span>
             </div>
+            <h1 class="au-oauth-title">Lengkapi <span class="au-dim">profil</span><br>siswa Google</h1>
+            <p class="au-oauth-sub">Tautkan data NIS, rombel kelas, dan kata sandi cadangan untuk mengaktifkan akun SIPN.</p>
+        </div>
 
-            <div class="auth-header-text">
-                <span class="auth-pill"><i class="fa-brands fa-google" style="color: #ea4335; margin-right: 4px;"></i> Google Student Account</span>
-                <h1>Complete Setup</h1>
-                <p>Enter your student details to complete registration</p>
-            </div>
-
-            <!-- PREVIEW PROFIL GOOGLE -->
-            <div class="google-user-card">
+        <div class="au-provider-card">
+            <div class="au-provider-left">
                 <?php if (!empty($temp['avatar'])): ?>
-                    <img src="<?= htmlspecialchars($temp['avatar']); ?>" class="google-avatar" alt="Google Avatar" referrerpolicy="no-referrer">
+                    <img src="<?= htmlspecialchars($temp['avatar']); ?>" class="au-provider-ava" alt="Google Avatar" referrerpolicy="no-referrer">
                 <?php else: ?>
-                    <div class="google-avatar-fallback">
+                    <div class="au-provider-fallback">
                         <?= strtoupper(substr($temp['nama_lengkap'], 0, 1)); ?>
                     </div>
                 <?php endif; ?>
-                <div class="google-user-info">
-                    <h4><?= htmlspecialchars($temp['nama_lengkap']); ?></h4>
-                    <p><?= htmlspecialchars($temp['google_email']); ?></p>
+                <div class="au-provider-meta">
+                    <strong><?= htmlspecialchars($temp['nama_lengkap']); ?></strong>
+                    <span><?= htmlspecialchars($temp['google_email']); ?></span>
+                </div>
+            </div>
+            <a href="login.php" class="au-pill au-pill-line">Ganti akun</a>
+        </div>
+    </section>
+
+    <!-- BAGIAN BAWAH: SIDEBAR RINGKASAN + FORM 2 KOLOM -->
+    <section class="au-oauth-body">
+        <aside class="au-oauth-aside">
+            <div class="au-oauth-aside-head">
+                <h2>Status aktivasi</h2>
+                <p>Akun Google sudah terverifikasi. Isi formulir di samping untuk membuat profil siswa.</p>
+            </div>
+
+            <div class="au-oauth-tiles">
+                <div class="au-tile is-dark">
+                    <span class="au-tile-n">OAuth</span>
+                    <span class="au-tile-l">Google terhubung</span>
+                </div>
+                <div class="au-tile">
+                    <span class="au-tile-n">Siswa</span>
+                    <span class="au-tile-l">Role otomatis</span>
+                </div>
+                <div class="au-tile is-burst">
+                    <svg viewBox="0 0 100 100" role="img" aria-label="Diagram radial aktivasi akun Google">
+                        <g stroke="#161616" stroke-width="1.4" stroke-linecap="round">
+                            <?php foreach ($gg_burst as $bp): ?>
+                                <line x1="<?= $bp[0]; ?>" y1="<?= $bp[1]; ?>" x2="<?= $bp[2]; ?>" y2="<?= $bp[3]; ?>"/>
+                            <?php endforeach; ?>
+                        </g>
+                    </svg>
                 </div>
             </div>
 
+            <div class="au-oauth-note">
+                <strong>Catatan keamanan:</strong> Password baru tetap diperlukan agar akun tetap bisa masuk secara manual selain lewat tombol Google.
+            </div>
+        </aside>
+
+        <div class="au-oauth-form-wrap">
             <?php if (!empty($msg_error)): ?>
-                <div class="auth-alert"><?= htmlspecialchars($msg_error); ?></div>
+                <div class="auth-alert" role="alert"><?= htmlspecialchars($msg_error); ?></div>
             <?php endif; ?>
 
             <form action="" method="POST" class="auth-form" id="googleRegForm">
                 <?= csrf_field(); ?>
-                
-                <div class="input-group">
-                    <input type="text" name="username" class="auth-input" value="<?= htmlspecialchars($temp['username']); ?>" placeholder="Username" required autocomplete="off">
+
+                <div class="au-section-tag" style="margin-top: 0;">
+                    <span class="au-section-num">01</span>
+                    <span>Kredensial & identitas siswa</span>
                 </div>
 
-                <!-- INPUT PASSWORD -->
-                <div class="input-group">
-                    <input type="password" name="password" class="auth-input" placeholder="Create Password (min. 6 chars)" required>
+                <div class="au-reg-grid">
+                    <div class="au-field">
+                        <label for="ggUser" class="au-label">Username SIPN</label>
+                        <div class="input-group">
+                            <input type="text" id="ggUser" name="username" class="auth-input" value="<?= htmlspecialchars($temp['username']); ?>" placeholder="Username" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="au-field">
+                        <label for="ggPass" class="au-label">Buat Password</label>
+                        <div class="input-group">
+                            <input type="password" id="ggPass" name="password" class="auth-input" placeholder="Minimal 6 karakter" required>
+                            <i class="fa-regular fa-eye-slash toggle-password" aria-label="Tampilkan password"></i>
+                        </div>
+                    </div>
+
+                    <div class="au-field">
+                        <label for="ggNis" class="au-label">NIS (Nomor Induk Siswa)</label>
+                        <div class="input-group">
+                            <input type="text" id="ggNis" name="nis" class="auth-input" placeholder="Nomor Induk Siswa" required>
+                        </div>
+                    </div>
+
+                    <div class="au-field">
+                        <label for="ggNama" class="au-label">Nama Lengkap</label>
+                        <div class="input-group">
+                            <input type="text" id="ggNama" name="nama" class="auth-input" value="<?= htmlspecialchars($temp['nama_lengkap']); ?>" placeholder="Nama lengkap" required>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <input type="text" name="nis" class="auth-input" placeholder="Student ID (NIS)" required>
+                <div class="au-section-tag">
+                    <span class="au-section-num">02</span>
+                    <span>Rombel kelas & gender</span>
                 </div>
 
-                <div class="input-group">
-                    <input type="text" name="nama" class="auth-input" value="<?= htmlspecialchars($temp['nama_lengkap']); ?>" placeholder="Full Name" required>
-                </div>
+                <div class="au-reg-grid">
+                    <div class="au-field">
+                        <label for="tingkat_kelas" class="au-label">Tingkat Kelas</label>
+                        <div class="input-group">
+                            <select id="tingkat_kelas" class="auth-input select-custom" required onchange="tampilkanJurusan()">
+                                <option value="" disabled selected>Pilih Tingkat Kelas</option>
+                                <option value="X">Kelas X (Sepuluh)</option>
+                                <option value="XI">Kelas XI (Sebelas)</option>
+                                <option value="XII">Kelas XII (Dua Belas)</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <!-- DROPDOWN TINGKAT KELAS -->
-                <div class="input-group">
-                    <select id="tingkat_kelas" class="auth-input select-custom" required onchange="tampilkanJurusan()">
-                        <option value="" disabled selected>Pilih Tingkat Kelas</option>
-                        <option value="X" style="background:#18181b; color:#fff;">Kelas X (Sepuluh)</option>
-                        <option value="XI" style="background:#18181b; color:#fff;">Kelas XI (Sebelas)</option>
-                        <option value="XII" style="background:#18181b; color:#fff;">Kelas XII (Dua Belas)</option>
-                    </select>
-                </div>
+                    <div class="au-field" id="jurusan_container">
+                        <label for="jurusan" class="au-label">Kompetensi Keahlian</label>
+                        <div class="input-group">
+                            <select id="jurusan" class="auth-input select-custom" onchange="gabungKelas()">
+                                <option value="" disabled selected>Pilih Jurusan</option>
+                                <option value="RPL">Rekayasa Perangkat Lunak (RPL)</option>
+                                <option value="MPLB">Manajemen Perkantoran (MPLB)</option>
+                                <option value="AKL">Akuntansi (AKL)</option>
+                                <option value="PM">Pemasaran (PM)</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <!-- DROPDOWN JURUSAN -->
-                <div class="input-group" id="jurusan_container">
-                    <select id="jurusan" class="auth-input select-custom" onchange="gabungKelas()">
-                        <option value="" disabled selected>Pilih Jurusan</option>
-                        <option value="RPL" style="background:#18181b; color:#fff;">Rekayasa Perangkat Lunak (RPL)</option>
-                        <option value="MPLB" style="background:#18181b; color:#fff;">Manajemen Perkantoran (MPLB)</option>
-                        <option value="AKL" style="background:#18181b; color:#fff;">Akuntansi (AKL)</option>
-                        <option value="PM" style="background:#18181b; color:#fff;">Pemasaran (PM)</option>
-                    </select>
-                </div>
+                    <input type="hidden" name="kelas_gabungan" id="kelas_gabungan" required>
 
-                <!-- INPUT HIDDEN KELAS GABUNGAN -->
-                <input type="hidden" name="kelas_gabungan" id="kelas_gabungan" required>
-
-                <!-- DROPDOWN JENIS KELAMIN -->
-                <div class="input-group">
-                    <select name="jenis_kelamin" class="auth-input select-custom" required>
-                        <option value="" disabled selected>Select Gender</option>
-                        <option value="L" style="background:#18181b; color:#fff;">Male (Laki-laki)</option>
-                        <option value="P" style="background:#18181b; color:#fff;">Female (Perempuan)</option>
-                    </select>
+                    <div class="au-field full">
+                        <label for="ggGender" class="au-label">Jenis Kelamin</label>
+                        <div class="input-group">
+                            <select id="ggGender" name="jenis_kelamin" class="auth-input select-custom" required>
+                                <option value="" disabled selected>Pilih Gender</option>
+                                <option value="L">Laki-laki (Male)</option>
+                                <option value="P">Perempuan (Female)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" name="submit_registration" class="submit-btn" onclick="return validasiKelas()">
-                    <span>Complete Pendaftaran</span>
-                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>Selesaikan Pendaftaran</span>
+                    <i class="sign" aria-hidden="true"></i>
                 </button>
             </form>
-
-            <div class="auth-footer-link">
-                Wrong account? <a href="login.php">Back to Sign In</a>
-            </div>
         </div>
+    </section>
+</main>
 
-        <!-- SISI KANAN: BENTO GRID VISUAL -->
-        <div class="auth-visual-side">
-            <div class="bento-grid">
-                <div class="bento-cell cell-image-1"></div>
-                <div class="bento-cell cell-image-2"></div>
-                <div class="bento-cell cell-accent-yellow">
-                    <h3>Maximum Customization</h3>
-                    <p>Tailor every aspect of your 3D object to your specifications.</p>
-                    <div class="bento-icon-corner"><i class="fa-solid fa-cube"></i></div>
-                </div>
-                <div class="bento-cell cell-accent-green"></div>
-                <div class="bento-cell cell-text-dark">
-                    <h4>Fast Generation</h4>
-                    <p>Create unique 3D objects in seconds.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<script>
+    function tampilkanJurusan() {
+        var tingkat = document.getElementById("tingkat_kelas").value;
+        var container = document.getElementById("jurusan_container");
+        var jurusan = document.getElementById("jurusan");
 
-    <!-- JAVASCRIPT LOGIKA KELAS & JURUSAN -->
-    <script>
-        function tampilkanJurusan() {
-            var tingkat = document.getElementById("tingkat_kelas").value;
-            var jurusanContainer = document.getElementById("jurusan_container");
-            var jurusan = document.getElementById("jurusan");
-            
-            if (tingkat !== "") {
-                jurusanContainer.style.display = "block";
-                jurusan.required = true;
-            } else {
-                jurusanContainer.style.display = "none";
-                jurusan.required = false;
-            }
-            
-            jurusan.value = "";
-            document.getElementById("kelas_gabungan").value = "";
+        container.classList.toggle("show", tingkat !== "");
+        jurusan.required = (tingkat !== "");
+
+        jurusan.value = "";
+        document.getElementById("kelas_gabungan").value = "";
+    }
+
+    function gabungKelas() {
+        var tingkat = document.getElementById("tingkat_kelas").value;
+        var jurusan = document.getElementById("jurusan").value;
+
+        if (tingkat !== "" && jurusan !== "") {
+            document.getElementById("kelas_gabungan").value = tingkat + " " + jurusan;
         }
+    }
 
-        function gabungKelas() {
-            var tingkat = document.getElementById("tingkat_kelas").value;
-            var jurusan = document.getElementById("jurusan").value;
-            
-            if (tingkat !== "" && jurusan !== "") {
-                document.getElementById("kelas_gabungan").value = tingkat + " " + jurusan;
-            }
+    function validasiKelas() {
+        var kelasGabungan = document.getElementById("kelas_gabungan").value;
+        if (kelasGabungan === "") {
+            alert("Harap pilih Tingkat Kelas dan Jurusan secara lengkap!");
+            return false;
         }
+        return true;
+    }
 
-        function validasiKelas() {
-            var kelasGabungan = document.getElementById("kelas_gabungan").value;
-            if (kelasGabungan === "") {
-                alert("Harap pilih Tingkat Kelas dan Jurusan secara lengkap!");
-                return false;
-            }
-            return true;
-        }
-    </script>
+    document.querySelectorAll(".toggle-password").forEach(function (icon) {
+        icon.addEventListener("click", function () {
+            var input = this.previousElementSibling;
+            if (!input) return;
+            var isPass = input.type === "password";
+            input.type = isPass ? "text" : "password";
+            this.classList.toggle("fa-eye", isPass);
+            this.classList.toggle("fa-eye-slash", !isPass);
+        });
+    });
+</script>
 </body>
 </html>
