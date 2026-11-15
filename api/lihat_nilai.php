@@ -719,6 +719,16 @@ $label_tipe = [
             color: #64748b;
         }
     </style>
+    <!-- Vercel Speed Insights -->
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/analytics/script.js"></script>
 </head>
 <body>
 <?php include __DIR__ . '/lenis_scroll.php'; ?>
