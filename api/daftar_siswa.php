@@ -147,7 +147,7 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
             --ds-tile:  #f2f2f4;
             --ds-line:  #e4e4dc;
             --ds-hatch: #b4b4a8;
-            --ds-ok:    #25683d;
+            --ds-ok:    #ffffff;
             --ds-bad:   #a8432d;
 
             display: flex;
@@ -446,7 +446,7 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
         }
 
         .ds-alert.is-success {
-            background: #eaf4ed;
+            background: #4A5D4E;
             color: var(--ds-ok);
             border: 1px solid #cce3d3;
         }

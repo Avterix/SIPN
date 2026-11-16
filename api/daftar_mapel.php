@@ -129,7 +129,7 @@ $ring_dash = round(($assigned_pct / 100) * $ring_circ, 2);
             --dm-tile:  #f2f2f4;
             --dm-line:  #e4e4dc;
             --dm-hatch: #b4b4a8;
-            --dm-ok:    #25683d;
+            --dm-ok:    #ffffff;
             --dm-bad:   #a8432d;
 
             display: flex;
@@ -427,7 +427,7 @@ $ring_dash = round(($assigned_pct / 100) * $ring_circ, 2);
         }
 
         .dm-alert.is-success {
-            background: #eaf4ed;
+            background: #4A5D4E;
             color: var(--dm-ok);
             border: 1px solid #cce3d3;
         }

@@ -146,7 +146,7 @@ foreach ($users_guru as $ug) {
             --dg-tile:  #f2f2f4;
             --dg-line:  #e4e4dc;
             --dg-hatch: #b4b4a8;
-            --dg-ok:    #25683d;
+            --dg-ok:    #ffffff;
             --dg-bad:   #a8432d;
 
             display: flex;
@@ -409,7 +409,7 @@ foreach ($users_guru as $ug) {
         }
 
         .dg-alert.is-success {
-            background: #eaf4ed;
+            background: #4A5D4E;
             color: var(--dg-ok);
             border: 1px solid #cce3d3;
         }

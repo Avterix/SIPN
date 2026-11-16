@@ -2,7 +2,7 @@
   // stagger animasi elemen form
   document.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--i', i));
 
-  // show/hide password (semua ikon .toggle-password)
+  // show/hide password (semua ikon .toggle-password di register.php)
   document.querySelectorAll('.toggle-password').forEach(icon => {
     icon.addEventListener('click', () => {
       const input = icon.parentElement.querySelector('input');
@@ -18,6 +18,21 @@
   });
   window.addEventListener('pageshow', () =>
     document.querySelectorAll('.submit-btn.loading').forEach(b => b.classList.remove('loading')));
+
+  // expose fungsi ke window agar bisa dipanggil onclick di login.php
+  window.togglePassVisibility = function () {
+    const inp  = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (!inp || !icon) return;
+
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      icon.className = 'pw';
+    } else {
+      inp.type = 'password';
+      icon.className = 'unpw';
+    }
+  };
 
   // carousel
   const slides = [...document.querySelectorAll('.slide')];

@@ -8,7 +8,7 @@
     --accent-asphalt: #302f2c;
     --accent-purple: #3C5827;
     --accent-white: #efede3;
-    --accent-carbon: #161616;
+    --accent-carbon: var(--accent-asphalt);
     --accent-dark: #8b5cf6;
     --border-color: #e2e8f0;
     --primary-color: #6366f1;
@@ -130,7 +130,7 @@ img, svg {
     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Lengkungan cekung atas & bawah disamain ke #161616 */
+/* Lengkungan cekung atas & bawah disamain ke var(--accent-asphalt) */
 .sidebar::before,
 .sidebar::after {
     content: "";
@@ -143,12 +143,12 @@ img, svg {
 
 .sidebar::before {
     top: -24px;
-    background: radial-gradient(circle at 100% 0, transparent 24px, #161616 24.5px);
+    background: radial-gradient(circle at 100% 0, transparent 24px, var(--accent-asphalt) 24.5px);
 }
 
 .sidebar::after {
     bottom: -24px;
-    background: radial-gradient(circle at 100% 100%, transparent 24px, #161616 24.5px);
+    background: radial-gradient(circle at 100% 100%, transparent 24px, var(--accent-asphalt) 24.5px);
 }
 
 .sidebar:hover {
@@ -168,7 +168,9 @@ img, svg {
 .brand-logo {
     width: 46px;
     height: 46px;
-    background: #ffffff;
+    position: relative;
+    right: 1px;
+    background: transparent;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -884,6 +886,159 @@ img, svg {
 }
 
 /* =========================================================
+   BUAT UHH, ICON ICON DI SI FILE LIHAT_NILAI.PHP
+   ========================================================= */
+
+.add {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/add.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.rekap {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/repeat.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.tampilkan {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/eye.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.tambah {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/new-tab.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.download {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/download.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.simpan {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/bookmark.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.simpan2 {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/simpan.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.hapus {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/delete.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.tutup {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/close.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.buka {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/padlock-unlock.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.kelola {
+    display: inline-block;
+    width: 20px;     
+    height: 20px;         
+    background: url('icons/teacher_grade/asset-allocation.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.terkumpul {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/collection.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.download2 {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/downloadable.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.terlambat {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/downloadable.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   INI TEH BUAT MASTER DATA POKOKNYA
+   ========================================================= */
+
+.simpanakun {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/master_data/daftar_user/verified-account.png') center/contain no-repeat;
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+    filter: invert(1);
+}
+
+.unpw {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/master_data/daftar_user/eye.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.pw {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/master_data/daftar_user/invisible.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+/* =========================================================
    ADMIN CRUD ACTION & FORM EDIT HIGHLIGHT
    ========================================================= */
 .btn-action-img {
@@ -1007,7 +1162,7 @@ img, svg {
         gap: 8px !important;
         padding: 7px 12px !important;
         border-radius: 999px !important;
-        background-color: #161616 !important;
+        background-color: var(--accent-asphalt) !important;
         border: 1px solid rgba(239, 239, 229, 0.16) !important;
         box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32) !important;
         overflow: visible !important;
@@ -1133,7 +1288,7 @@ img, svg {
         left: 50% !important;
         transform: translateX(-50%) !important;
         min-width: 180px !important;
-        background-color: #161616 !important;
+        background-color: var(--accent-asphalt) !important;
         border: 1px solid rgba(239, 239, 229, 0.2) !important;
         border-radius: 18px !important;
         padding: 8px !important;
@@ -1197,11 +1352,11 @@ img, svg {
         font-size: 21px !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
-        color: #161616 !important;
+        color: var(--accent-asphalt) !important;
     }
 
     .storage-badge {
-        background-color: #161616 !important;
+        background-color: var(--accent-asphalt) !important;
         color: #efefe5 !important;
         font-size: 10px !important;
         font-weight: 600 !important;

@@ -1135,7 +1135,21 @@ a.au-pill-line:hover {
     line-height: 1.5;
     color: var(--au-muted);
 }
+.unpw {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/master_data/daftar_user/eye.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
 
+.pw {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/master_data/daftar_user/invisible.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
 .au-oauth-note strong {
     color: var(--au-ink);
 }

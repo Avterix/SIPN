@@ -14,11 +14,11 @@ if (!$is_dashboard && !$is_nilai && !$is_profile) {
 ?>
 <style>
 /* 1. Kunci Zoom 0.7 sejak awal */
-html { zoom: 0.7; }
+html { zoom: 0.8; }
 
 #page-loader {
     position: fixed; top: 0; left: 0;
-    width: calc(100vw / 0.7); height: calc(100vh / 0.7); height: calc(100dvh / 0.7);
+    width: calc(100vw / 0.8); height: calc(100vh / 0.8); height: calc(100dvh / 0.8);
     background-color: var(--bg-main, #f4f5f8);
     z-index: 999999;
     padding: 20px; box-sizing: border-box;

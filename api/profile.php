@@ -194,7 +194,7 @@ foreach ($pf_checks as $ci => $ck) {
         <?php endif; ?>
 
         <?php if ($role === 'guru'): ?>
-        <li><a href="daftar_nilai.php"><i class="fa-solid fa-pen-to-square"></i> <span class="menu-label">Kelola Nilai</span></a></li>
+        <li><a href="daftar_nilai.php"><i class="kelola"></i> <span class="menu-label">Kelola Nilai</span></a></li>
         <?php endif; ?>
 
         <?php if ($role === 'siswa'): ?>

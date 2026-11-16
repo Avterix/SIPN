@@ -65,7 +65,7 @@ mysqli_query($koneksi, "
 ");
 
 // Pastikan direktori upload tersedia
-$dir_soal  = __DIR__ . '/uploads/tugas_soal';
+$dir_soal   = __DIR__ . '/uploads/tugas_soal';
 $dir_kumpul = __DIR__ . '/uploads/pengumpulan_tugas';
 if (!is_dir($dir_soal)) {
     @mkdir($dir_soal, 0755, true);
@@ -120,6 +120,253 @@ function guruBolehAksesMapel($koneksi, $role, $guru_id, $mapel_id, $has_gmk)
     return ($res && mysqli_num_rows($res) > 0);
 }
 
+// Helper MIME Type & Stream Download Bersih (Anti-Corrupt Buffer)
+function detectSafeMime($filepath, $ext)
+{
+    $map = [
+        'pdf'  => 'application/pdf',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'webp' => 'image/webp',
+        'gif'  => 'image/gif',
+        'txt'  => 'text/plain; charset=utf-8',
+        'csv'  => 'text/plain; charset=utf-8',
+        'md'   => 'text/plain; charset=utf-8',
+        'log'  => 'text/plain; charset=utf-8',
+        'json' => 'text/plain; charset=utf-8',
+        'xml'  => 'text/plain; charset=utf-8',
+        'html' => 'text/plain; charset=utf-8',
+        'css'  => 'text/plain; charset=utf-8',
+        'js'   => 'text/plain; charset=utf-8',
+        'php'  => 'text/plain; charset=utf-8',
+        'py'   => 'text/plain; charset=utf-8',
+        'java' => 'text/plain; charset=utf-8',
+        'cpp'  => 'text/plain; charset=utf-8',
+        'c'    => 'text/plain; charset=utf-8',
+        'sql'  => 'text/plain; charset=utf-8',
+        'zip'  => 'application/zip',
+        'rar'  => 'application/x-rar-compressed',
+        '7z'   => 'application/x-7z-compressed',
+        'doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xls'  => 'application/vnd.ms-excel',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'ppt'  => 'application/vnd.ms-powerpoint',
+        'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'mp4'  => 'video/mp4'
+    ];
+    if (isset($map[$ext])) {
+        return $map[$ext];
+    }
+    if (function_exists('mime_content_type')) {
+        $detected = @mime_content_type($filepath);
+        if ($detected) {
+            return $detected;
+        }
+    }
+    return 'application/octet-stream';
+}
+
+function streamFileToBrowser($filepath, $download_name, $inline = false)
+{
+    if (!is_file($filepath) || !is_readable($filepath)) {
+        http_response_code(404);
+        exit('File tidak ditemukan di server.');
+    }
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    $ext  = strtolower(pathinfo($download_name, PATHINFO_EXTENSION));
+    $mime = $inline ? detectSafeMime($filepath, $ext) : 'application/octet-stream';
+    $safe_name = preg_replace('/[^\w\s\.\-\(\)\[\]]+/u', '_', $download_name);
+    if ($safe_name === '' || $safe_name === null) {
+        $safe_name = basename($filepath);
+    }
+
+    $disposition = $inline ? 'inline' : 'attachment';
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: ' . $mime);
+    header('Content-Disposition: ' . $disposition . '; filename="' . $safe_name . '"; filename*=UTF-8\'\'' . rawurlencode($safe_name));
+    header('Content-Transfer-Encoding: binary');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($filepath));
+
+    readfile($filepath);
+    exit;
+}
+
+// 4. HANDLE DOWNLOAD / PREVIEW FILE TUGAS SISWA, LAMPIRAN SOAL, & BATCH ZIP
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
+    $action = $_GET['action'];
+
+    // A. Download / Preview satu file kiriman siswa
+    if ($action === 'download_submisi') {
+        $sub_id = (int) ($_GET['id'] ?? 0);
+        $inline = isset($_GET['inline']) && $_GET['inline'] === '1';
+
+        $q_sub_dl = mysqli_query($koneksi, "
+            SELECT pt.file_tugas, pt.nama_file_asli, t.mapel_id, s.nis, s.nama AS nama_siswa
+            FROM pengumpulan_tugas pt
+            JOIN tugas t ON pt.tugas_id = t.id
+            JOIN siswa s ON pt.siswa_id = s.id
+            WHERE pt.id = '$sub_id'
+            LIMIT 1
+        ");
+
+        if (!$q_sub_dl || mysqli_num_rows($q_sub_dl) === 0) {
+            http_response_code(404);
+            exit('Data pengumpulan tugas tidak ditemukan.');
+        }
+
+        $sub_row = mysqli_fetch_assoc($q_sub_dl);
+        if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $sub_row['mapel_id'], $has_gmk)) {
+            http_response_code(403);
+            exit('Kamu tidak memiliki akses ke file tugas ini.');
+        }
+
+        $stored_file = basename((string) ($sub_row['file_tugas'] ?? ''));
+        $full_path   = $dir_kumpul . '/' . $stored_file;
+
+        if ($stored_file === '' || !is_file($full_path)) {
+            http_response_code(404);
+            exit('File tugas siswa tidak ditemukan di folder uploads.');
+        }
+
+        $orig_name = !empty($sub_row['nama_file_asli'])
+            ? $sub_row['nama_file_asli']
+            : ($sub_row['nis'] . '_' . $sub_row['nama_siswa'] . '_' . $stored_file);
+
+        streamFileToBrowser($full_path, $orig_name, $inline);
+    }
+
+    // B. Download lampiran soal guru
+    if ($action === 'download_soal') {
+        $tid = (int) ($_GET['id'] ?? 0);
+        $q_t_dl = mysqli_query($koneksi, "SELECT mapel_id, judul, file_lampiran FROM tugas WHERE id = '$tid' LIMIT 1");
+        if (!$q_t_dl || mysqli_num_rows($q_t_dl) === 0) {
+            http_response_code(404);
+            exit('Tugas tidak ditemukan.');
+        }
+
+        $t_row = mysqli_fetch_assoc($q_t_dl);
+        if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
+            http_response_code(403);
+            exit('Akses ditolak.');
+        }
+
+        $stored_soal = basename((string) ($t_row['file_lampiran'] ?? ''));
+        $full_soal   = $dir_soal . '/' . $stored_soal;
+
+        if ($stored_soal === '' || !is_file($full_soal)) {
+            http_response_code(404);
+            exit('File lampiran soal tidak ditemukan.');
+        }
+
+        $ext_soal  = pathinfo($stored_soal, PATHINFO_EXTENSION);
+        $dl_soal   = 'Lampiran_' . $t_row['judul'] . ($ext_soal ? '.' . $ext_soal : '');
+        streamFileToBrowser($full_soal, $dl_soal, false);
+    }
+
+    // C. Download Semua Hasil Tugas Siswa dalam 1 File ZIP
+    if ($action === 'download_zip') {
+        $tid = (int) ($_GET['tugas_id'] ?? 0);
+        $q_t_zip = mysqli_query($koneksi, "SELECT * FROM tugas WHERE id = '$tid' LIMIT 1");
+
+        if (!$q_t_zip || mysqli_num_rows($q_t_zip) === 0) {
+            $msg_type = 'error';
+            $msg_text = 'Tempat pengumpulan tugas tidak ditemukan.';
+        } else {
+            $t_row = mysqli_fetch_assoc($q_t_zip);
+            if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
+                http_response_code(403);
+                exit('Akses ditolak.');
+            }
+
+            if (!class_exists('ZipArchive')) {
+                $msg_type = 'error';
+                $msg_text = 'Ekstensi PHP ZipArchive belum aktif di server. Silakan unduh file siswa satu per satu.';
+            } else {
+                $q_all_sub = mysqli_query($koneksi, "
+                    SELECT pt.*, s.nis, s.nama AS nama_siswa
+                    FROM pengumpulan_tugas pt
+                    JOIN siswa s ON pt.siswa_id = s.id
+                    WHERE pt.tugas_id = '$tid'
+                    ORDER BY s.nama ASC
+                ");
+
+                $tmp_zip = tempnam(sys_get_temp_dir(), 'sipn_tugas_');
+                $zip = new ZipArchive();
+
+                if ($zip->open($tmp_zip, ZipArchive::OVERWRITE) === true) {
+                    $added_count = 0;
+
+                    if ($q_all_sub) {
+                        while ($sr = mysqli_fetch_assoc($q_all_sub)) {
+                            $prefix = preg_replace('/[^\w\s\-]+/u', '', $sr['nis'] . '_' . $sr['nama_siswa']);
+                            $prefix = trim(preg_replace('/\s+/', '_', $prefix));
+
+                            // Masukkan file upload siswa jika ada
+                            if (!empty($sr['file_tugas'])) {
+                                $fpath = $dir_kumpul . '/' . basename($sr['file_tugas']);
+                                if (is_file($fpath)) {
+                                    $orig = !empty($sr['nama_file_asli']) ? basename($sr['nama_file_asli']) : basename($sr['file_tugas']);
+                                    $zip->addFile($fpath, $prefix . '/' . $orig);
+                                    $added_count++;
+                                }
+                            }
+
+                            // Jika siswa mengirim link atau jawaban teks, sertakan file ringkasan .txt
+                            $has_link = !empty($sr['link_tugas']);
+                            $has_teks = trim((string) ($sr['jawaban_teks'] ?? '')) !== '';
+                            if ($has_link || $has_teks) {
+                                $txt_content  = "Nama Siswa : " . $sr['nama_siswa'] . " (" . $sr['nis'] . ")\n";
+                                $txt_content .= "Waktu Kumpul: " . ($sr['submitted_at'] ?? '-') . "\n";
+                                if ($has_link) {
+                                    $txt_content .= "Link Tugas : " . $sr['link_tugas'] . "\n";
+                                }
+                                if (!empty($sr['catatan_siswa'])) {
+                                    $txt_content .= "Catatan    : " . $sr['catatan_siswa'] . "\n";
+                                }
+                                if ($has_teks) {
+                                    $txt_content .= "\n--- JAWABAN TEKS ---\n" . $sr['jawaban_teks'] . "\n";
+                                }
+                                $zip->addFromString($prefix . '/Jawaban_&_Link.txt', $txt_content);
+                                $added_count++;
+                            }
+                        }
+                    }
+
+                    $zip->close();
+
+                    if ($added_count > 0 && is_file($tmp_zip)) {
+                        $zip_filename = 'Tugas_' . $t_row['judul'] . '_' . $t_row['kelas'] . '.zip';
+                        while (ob_get_level() > 0) {
+                            ob_end_clean();
+                        }
+                        $safe_zip = preg_replace('/[^\w\s\.\-\(\)]+/u', '_', $zip_filename);
+                        header('Content-Type: application/zip');
+                        header('Content-Disposition: attachment; filename="' . $safe_zip . '"');
+                        header('Content-Length: ' . filesize($tmp_zip));
+                        readfile($tmp_zip);
+                        @unlink($tmp_zip);
+                        exit;
+                    } else {
+                        @unlink($tmp_zip);
+                        $msg_type = 'error';
+                        $msg_text = 'Belum ada file atau jawaban siswa yang terkumpul untuk diunduh sebagai ZIP.';
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Helper sinkronisasi otomatis nilai tugas -> nilai_rapor (agar otomatis tampil di lihat_nilai.php)
 function sinkronNilaiRapor($koneksi, $siswa_id, $mapel_id, $semester)
 {
@@ -143,9 +390,9 @@ function sinkronNilaiRapor($koneksi, $siswa_id, $mapel_id, $semester)
 
     if ($q_avg) {
         while ($r = mysqli_fetch_assoc($q_avg)) {
-            if ($r['kategori'] === 'pengetahuan' && (int)$r['jml'] > 0) {
+            if ($r['kategori'] === 'pengetahuan' && (int) $r['jml'] > 0) {
                 $avg_pengetahuan = max(0, min(100, (int) $r['rata_nilai']));
-            } elseif ($r['kategori'] === 'keterampilan' && (int)$r['jml'] > 0) {
+            } elseif ($r['kategori'] === 'keterampilan' && (int) $r['jml'] > 0) {
                 $avg_keterampilan = max(0, min(100, (int) $r['rata_nilai']));
             }
         }
@@ -171,7 +418,7 @@ function sinkronNilaiRapor($koneksi, $siswa_id, $mapel_id, $semester)
             UPDATE nilai_rapor
             SET nilai_pengetahuan = '$new_p',
                 nilai_keterampilan = '$new_k'
-            WHERE id = '" . (int)$existing['id'] . "'
+            WHERE id = '" . (int) $existing['id'] . "'
         ");
     } else {
         $new_p = ($avg_pengetahuan !== null) ? $avg_pengetahuan : 0;
@@ -184,13 +431,13 @@ function sinkronNilaiRapor($koneksi, $siswa_id, $mapel_id, $semester)
     }
 }
 
-// 4. FILTER AKTIF DARI URL
+// 5. FILTER AKTIF DARI URL
 $filter_kelas    = trim($_GET['kelas'] ?? '');
 $filter_mapel_id = (int) ($_GET['mapel_id'] ?? 0);
 $filter_semester = ($_GET['semester'] ?? '1') === '2' ? '2' : '1';
 $selected_tugas  = (int) ($_GET['tugas_id'] ?? 0);
 
-// 5. HANDLE SEMUA AKSI POST
+// 6. HANDLE SEMUA AKSI POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_require();
 
@@ -276,7 +523,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $q_t = mysqli_query($koneksi, "SELECT id, mapel_id, status FROM tugas WHERE id = '$tid' LIMIT 1");
         if ($q_t && mysqli_num_rows($q_t) > 0) {
             $t_row = mysqli_fetch_assoc($q_t);
-            if (guruBolehAksesMapel($koneksi, $role, $guru_id, (int)$t_row['mapel_id'], $has_gmk)) {
+            if (guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
                 $next_status = ($t_row['status'] === 'buka') ? 'tutup' : 'buka';
                 mysqli_query($koneksi, "UPDATE tugas SET status = '$next_status' WHERE id = '$tid'");
                 $selected_tugas = $tid;
@@ -294,8 +541,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $q_t = mysqli_query($koneksi, "SELECT * FROM tugas WHERE id = '$tid' LIMIT 1");
         if ($q_t && mysqli_num_rows($q_t) > 0) {
             $t_row = mysqli_fetch_assoc($q_t);
-            if (guruBolehAksesMapel($koneksi, $role, $guru_id, (int)$t_row['mapel_id'], $has_gmk)) {
-                // Hapus file soal & file jawaban siswa
+            if (guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
                 if (!empty($t_row['file_lampiran']) && file_exists($dir_soal . '/' . $t_row['file_lampiran'])) {
                     @unlink($dir_soal . '/' . $t_row['file_lampiran']);
                 }
@@ -313,7 +559,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_query($koneksi, "DELETE FROM tugas WHERE id = '$tid'");
 
                 foreach ($affected_students as $sid) {
-                    sinkronNilaiRapor($koneksi, $sid, (int)$t_row['mapel_id'], $t_row['semester']);
+                    sinkronNilaiRapor($koneksi, $sid, (int) $t_row['mapel_id'], $t_row['semester']);
                 }
 
                 if ($selected_tugas === $tid) {
@@ -335,7 +581,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $q_t = mysqli_query($koneksi, "SELECT id, mapel_id, semester FROM tugas WHERE id = '$tid' LIMIT 1");
         if ($q_t && mysqli_num_rows($q_t) > 0) {
             $t_row = mysqli_fetch_assoc($q_t);
-            if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int)$t_row['mapel_id'], $has_gmk)) {
+            if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
                 http_response_code(403);
                 exit('Kamu tidak memiliki akses untuk menilai tugas ini.');
             }
@@ -359,7 +605,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         catatan_guru = '$cat_esc',
                         graded_at = NOW()
                 ");
-                sinkronNilaiRapor($koneksi, $sid, (int)$t_row['mapel_id'], $t_row['semester']);
+                sinkronNilaiRapor($koneksi, $sid, (int) $t_row['mapel_id'], $t_row['semester']);
             }
 
             $msg_type = "success";
@@ -376,7 +622,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $q_t = mysqli_query($koneksi, "SELECT id, mapel_id, semester FROM tugas WHERE id = '$tid' LIMIT 1");
         if ($q_t && mysqli_num_rows($q_t) > 0) {
             $t_row = mysqli_fetch_assoc($q_t);
-            if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int)$t_row['mapel_id'], $has_gmk)) {
+            if (!guruBolehAksesMapel($koneksi, $role, $guru_id, (int) $t_row['mapel_id'], $has_gmk)) {
                 http_response_code(403);
                 exit('Kamu tidak memiliki akses untuk menilai tugas ini.');
             }
@@ -403,7 +649,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         catatan_guru = '$cat_esc',
                         graded_at = NOW()
                 ");
-                sinkronNilaiRapor($koneksi, $sid, (int)$t_row['mapel_id'], $t_row['semester']);
+                sinkronNilaiRapor($koneksi, $sid, (int) $t_row['mapel_id'], $t_row['semester']);
                 $count_saved++;
             }
 
@@ -443,7 +689,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (mysqli_query($koneksi, $query_save)) {
             $msg_type = "success";
-            $msg_text = "Nilai rapor akhir siswa berhasil disimpan!";
+            $msg_text = "➤\u{00A0}\u{00A0}\u{00A0}Nilai rapor akhir siswa berhasil disimpan!";
         } else {
             $msg_type = "error";
             $msg_text = "Gagal menyimpan nilai: " . mysqli_error($koneksi);
@@ -451,7 +697,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 6. AMBIL DAFTAR MAPEL & KELAS YANG DIAJAR GURU INI
+// 7. AMBIL DAFTAR MAPEL & KELAS YANG DIAJAR GURU INI
 if ($role === 'admin') {
     $q_mapel_guru = mysqli_query($koneksi, "
         SELECT m.id AS mapel_id, m.nama_mapel, s.kelas 
@@ -493,13 +739,13 @@ if (($filter_mapel_id <= 0 || $filter_kelas === '') && !empty($opsi_ajar)) {
 
 $active_mapel_nama = 'Mata Pelajaran';
 foreach ($opsi_ajar as $oa) {
-    if ((int)$oa['mapel_id'] === $filter_mapel_id) {
+    if ((int) $oa['mapel_id'] === $filter_mapel_id) {
         $active_mapel_nama = $oa['nama_mapel'];
         break;
     }
 }
 
-// 7. AMBIL DAFTAR TEMPAT PENGUMPULAN TUGAS UNTUK MAPEL + KELAS + SEMESTER AKTIF
+// 8. AMBIL DAFTAR TEMPAT PENGUMPULAN TUGAS UNTUK MAPEL + KELAS + SEMESTER AKTIF
 $list_tugas = [];
 if ($filter_mapel_id > 0 && $filter_kelas !== '') {
     $kelas_esc = mysqli_real_escape_string($koneksi, $filter_kelas);
@@ -527,7 +773,7 @@ if ($filter_mapel_id > 0 && $filter_kelas !== '') {
 $active_tugas = null;
 if (!empty($list_tugas)) {
     foreach ($list_tugas as $lt) {
-        if ((int)$lt['id'] === $selected_tugas) {
+        if ((int) $lt['id'] === $selected_tugas) {
             $active_tugas = $lt;
             break;
         }
@@ -538,18 +784,18 @@ if (!empty($list_tugas)) {
     }
 }
 
-// 8. FETCH DAFTAR SISWA & STATUS PENGUMPULAN TUGAS AKTIF + REKAP RAPOR
+// 9. FETCH DAFTAR SISWA & STATUS PENGUMPULAN TUGAS AKTIF + REKAP RAPOR
 $list_siswa_tugas = [];
 $list_siswa_nilai = [];
 $stat_kumpul      = 0;
 $stat_dinilai     = 0;
 $stat_belum_nilai = 0;
+$stat_ada_file    = 0;
 
 if ($filter_kelas !== '') {
     $kelas_esc = mysqli_real_escape_string($koneksi, $filter_kelas);
     $sem_esc   = mysqli_real_escape_string($koneksi, $filter_semester);
 
-    // Data submisi siswa untuk slot tugas yang dipilih
     if ($active_tugas !== null) {
         $tid_active = (int) $active_tugas['id'];
         $q_sub = mysqli_query($koneksi, "
@@ -564,9 +810,13 @@ if ($filter_kelas !== '') {
         ");
         if ($q_sub) {
             while ($sr = mysqli_fetch_assoc($q_sub)) {
-                $has_submission = !empty($sr['file_tugas']) || !empty($sr['link_tugas']) || trim((string)($sr['jawaban_teks'] ?? '')) !== '';
+                $has_file       = !empty($sr['file_tugas']);
+                $has_submission = $has_file || !empty($sr['link_tugas']) || trim((string) ($sr['jawaban_teks'] ?? '')) !== '';
                 $is_graded      = ($sr['nilai'] !== null);
 
+                if ($has_file) {
+                    $stat_ada_file++;
+                }
                 if ($has_submission) {
                     $stat_kumpul++;
                     if (!$is_graded) {
@@ -577,6 +827,7 @@ if ($filter_kelas !== '') {
                     $stat_dinilai++;
                 }
 
+                $sr['has_file']       = $has_file;
                 $sr['has_submission'] = $has_submission;
                 $sr['is_graded']      = $is_graded;
                 $list_siswa_tugas[]   = $sr;
@@ -584,7 +835,6 @@ if ($filter_kelas !== '') {
         }
     }
 
-    // Data rekap nilai rapor akhir kelas
     $q_siswa_list = mysqli_query($koneksi, "
         SELECT s.id AS siswa_id, s.nis, s.nama, s.kelas,
                nr.id AS nilai_id, nr.nilai_kkm, nr.nilai_pengetahuan, nr.nilai_keterampilan, nr.keterangan
@@ -608,13 +858,19 @@ $label_tipe = [
     'link'  => 'Link / Tautan',
     'teks'  => 'Jawaban Teks'
 ];
+
+$previewable_exts = [
+    'pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif',
+    'txt', 'csv', 'md', 'log', 'json', 'xml',
+    'html', 'css', 'js', 'php', 'py', 'java', 'cpp', 'c', 'sql'
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Tugas & Nilai Siswa - SIPN</title>
+    <title>Kelola Tugas &amp; Nilai Siswa - SIPN</title>
     <link rel="stylesheet" href="<?php echo $base_url; ?>/style1.css?v=1.3">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -643,7 +899,7 @@ $label_tipe = [
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-top: 30px;
         }
         .gn-pill {
             display: inline-flex;
@@ -655,14 +911,14 @@ $label_tipe = [
             border: 1px solid rgba(22, 22, 22, 0.09);
             font-size: 12px;
             font-weight: 600;
-            color: #161616;
+            color: var(--accent-asphalt);
             text-decoration: none;
         }
         .gn-hero-title {
             font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.02em;
-            color: #161616;
+            color: var(--accent-asphalt);
             margin: 0 0 6px;
         }
         .gn-hero-title span {
@@ -682,11 +938,11 @@ $label_tipe = [
             gap: 10px;
         }
         .btn-dark-pill {
-            background: #161616;
+            background: var(--accent-asphalt);
             color: #ffffff;
             border: none;
-            padding: 11px 18px;
-            border-radius: 999px;
+            padding: 9px 20px;
+            border-radius: 7px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -702,7 +958,7 @@ $label_tipe = [
         }
         .btn-light-pill {
             background: #ffffff;
-            color: #161616;
+            color: var(--accent-asphalt);
             border: 1px solid rgba(22, 22, 22, 0.14);
             padding: 10px 16px;
             border-radius: 999px;
@@ -738,7 +994,7 @@ $label_tipe = [
             margin: 0;
             font-size: 16px;
             font-weight: 700;
-            color: #161616;
+            color: var(--accent-asphalt);
         }
         .card-head p {
             margin: 3px 0 0;
@@ -774,10 +1030,10 @@ $label_tipe = [
             font-family: inherit;
             outline: none;
             background: #f8fafc;
-            color: #161616;
+            color: var(--accent-asphalt);
         }
         .form-control:focus {
-            border-color: #161616;
+            border-color: var(--accent-asphalt);
             background: #ffffff;
         }
 
@@ -791,7 +1047,7 @@ $label_tipe = [
             align-items: center;
             gap: 10px;
         }
-        .alert-success { background: #eaf4ed; color: #1e5b34; border: 1px solid #b7dfc4; }
+        .alert-success { background: #4A5D4E; color: #ffffff; border: 1px solid #b7dfc4; }
         .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
         /* Grid Slot Tempat Pengumpulan Tugas */
@@ -817,7 +1073,7 @@ $label_tipe = [
         }
         .tugas-slot.is-selected {
             background: #ffffff;
-            border-color: #161616;
+            border-color: var(--accent-asphalt);
             box-shadow: 0 6px 18px rgba(22, 22, 22, 0.08);
         }
         .tugas-badges {
@@ -832,16 +1088,16 @@ $label_tipe = [
             padding: 3px 9px;
             border-radius: 999px;
         }
-        .t-badge.kat-keterampilan { background: #161616; color: #ffffff; }
+        .t-badge.kat-keterampilan { background: var(--accent-asphalt); color: #ffffff; }
         .t-badge.kat-pengetahuan { background: #e2e8f0; color: #1e293b; }
         .t-badge.tipe { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
-        .t-badge.st-buka { background: #dcfce7; color: #15803d; }
-        .t-badge.st-tutup { background: #fee2e2; color: #b91c1c; }
+        .t-badge.st-buka { background: #efefe5; color: var(--accent-asphalt); }
+        .t-badge.st-tutup { background: var(--accent-asphalt); color: #ffffff; }
 
         .tugas-title {
             font-size: 15px;
             font-weight: 700;
-            color: #161616;
+            color: var(--accent-asphalt);
             margin: 0 0 4px;
         }
         .tugas-desc {
@@ -872,7 +1128,7 @@ $label_tipe = [
         }
         .tugas-progress-fill {
             height: 100%;
-            background: #161616;
+            background: var(--accent-asphalt);
             border-radius: 999px;
         }
         .tugas-slot-actions {
@@ -890,16 +1146,16 @@ $label_tipe = [
             font-size: 12px;
             font-weight: 700;
             text-decoration: none;
-            background: #161616;
+            background: var(--accent-asphalt);
             color: #ffffff;
         }
         .tugas-slot:not(.is-selected) .btn-slot-open {
             background: #ffffff;
-            color: #161616;
+            color: var(--accent-asphalt);
             border: 1px solid rgba(22, 22, 22, 0.16);
         }
         .tugas-slot:not(.is-selected) .btn-slot-open:hover {
-            background: #161616;
+            background: var(--accent-asphalt);
             color: #ffffff;
         }
         .btn-icon-sm {
@@ -915,7 +1171,7 @@ $label_tipe = [
             justify-content: center;
             font-size: 12px;
         }
-        .btn-icon-sm:hover { background: #f1f5f9; color: #161616; }
+        .btn-icon-sm:hover { background: #f1f5f9; color: var(--accent-asphalt); }
         .btn-icon-sm.danger:hover { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
 
         /* Stat Strip & Filter Tab Submisi */
@@ -946,9 +1202,9 @@ $label_tipe = [
             cursor: pointer;
         }
         .chip-btn.active {
-            background: #161616;
+            background: var(--accent-asphalt);
             color: #ffffff;
-            border-color: #161616;
+            border-color: var(--accent-asphalt);
         }
 
         /* Tabel Penilaian */
@@ -984,11 +1240,11 @@ $label_tipe = [
             font-size: 13px;
         }
         .data-table input[type="number"]:focus {
-            border-color: #161616;
+            border-color: var(--accent-asphalt);
             outline: none;
         }
         .btn-save-sm {
-            background: #161616;
+            background: var(--accent-asphalt);
             color: #ffffff;
             border: none;
             padding: 7px 12px;
@@ -1003,7 +1259,7 @@ $label_tipe = [
         }
         .btn-save-sm:hover { opacity: 0.88; }
         .btn-save-green {
-            background: #15803d;
+            background: #4A5D4E;
             color: #ffffff;
             border: none;
             padding: 9px 16px;
@@ -1014,8 +1270,9 @@ $label_tipe = [
             display: inline-flex;
             align-items: center;
             gap: 7px;
+            text-decoration: none;
         }
-        .btn-save-green:hover { background: #166534; }
+        .btn-save-green:hover { background: #38463A ; }
 
         /* Badge Status & Lampiran Siswa */
         .st-pill {
@@ -1028,10 +1285,10 @@ $label_tipe = [
             font-weight: 700;
             white-space: nowrap;
         }
-        .st-pill.ok { background: #dcfce7; color: #15803d; }
+        .st-pill.ok { background: #efefe5; color: var(--accent-asphalt); }
         .st-pill.late { background: #fef3c7; color: #b45309; }
         .st-pill.wait { background: #f1f5f9; color: #64748b; }
-        .st-pill.graded { background: #161616; color: #ffffff; }
+        .st-pill.graded { background: var(--accent-asphalt); color: #ffffff; }
 
         .sub-artifact-list {
             display: flex;
@@ -1051,9 +1308,19 @@ $label_tipe = [
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
+            font-family: inherit;
         }
         .artifact-btn:hover {
             background: #e2e8f0;
+        }
+        .artifact-btn.is-dl {
+            background: var(--accent-asphalt);
+            color: #ffffff;
+            border-color: var(--accent-asphalt);
+        }
+        .artifact-btn.is-dl:hover {
+            opacity: 0.88;
+            background: var(--accent-asphalt);
         }
 
         /* Modal */
@@ -1081,15 +1348,19 @@ $label_tipe = [
             padding: 24px 26px;
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
         }
+        .modal-card.is-wide {
+            max-width: 820px;
+        }
         .modal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
             margin-bottom: 16px;
             padding-bottom: 12px;
             border-bottom: 1px solid #e2e8f0;
         }
-        .modal-header h3 { margin: 0; font-size: 17px; color: #161616; }
+        .modal-header h3 { margin: 0; font-size: 17px; color: var(--accent-asphalt); }
         .modal-close {
             background: #f1f5f9;
             border: none;
@@ -1098,6 +1369,7 @@ $label_tipe = [
             border-radius: 50%;
             cursor: pointer;
             font-size: 15px;
+            flex-shrink: 0;
         }
         .modal-grid {
             display: grid;
@@ -1110,8 +1382,8 @@ $label_tipe = [
     </style>
 </head>
 <body>
-<?php include __DIR__ . '/lenis_scroll.php'; ?>
 <?php require __DIR__ . "/loader.php"; ?>
+<div class="video">
     <div class="dashboard-container">
         <!-- SIDEBAR -->
         <aside class="sidebar">
@@ -1143,12 +1415,13 @@ $label_tipe = [
                         <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                         <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
                         <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
+                        <li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas</span></a></li>
                     </ul>
                 </li>
                 <?php endif; ?>
 
                 <?php if ($role === 'guru' || $role === 'admin'): ?>
-                <li><a href="daftar_nilai.php" class="active"><i class="fa-solid fa-pen-to-square"></i> <span class="menu-label">Kelola Nilai</span></a></li>
+                <li><a href="daftar_nilai.php" class="active"><i class="kelola"></i> <span class="menu-label">Kelola Nilai</span></a></li>
                 <?php endif; ?>
 
                 <?php if ($role === 'siswa'): ?>
@@ -1177,10 +1450,9 @@ $label_tipe = [
                     <span class="storage-badge">Role: <?= strtoupper($role); ?></span>
                 </div>
                 <div class="topbar-actions">
-                    <button type="button" class="btn-dark-pill" onclick="openModal('modalBuatTugas')">
-                        <i class="fa-solid fa-folder-plus"></i> Buat Tempat Tugas
+<button type="button" class="btn-dark-pill" onclick="openModal('modalBuatTugas')">
+                        <i class="add"></i> Buat Tempat Tugas
                     </button>
-                    <a href="profile.php" class="icon-btn settings-btn" title="Settings"><i class="fa-solid fa-user-gear"></i></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
             </header>
@@ -1189,7 +1461,6 @@ $label_tipe = [
 
                 <?php if (!empty($msg_text)): ?>
                     <div class="alert-box <?= ($msg_type === 'success') ? 'alert-success' : 'alert-error'; ?>">
-                        <i class="fa-solid <?= ($msg_type === 'success') ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
                         <span><?= htmlspecialchars($msg_text); ?></span>
                     </div>
                 <?php endif; ?>
@@ -1197,22 +1468,23 @@ $label_tipe = [
                 <!-- HERO BANNER -->
                 <section class="gn-hero">
                     <div>
-                        <div class="gn-eyebrow">
-                            <span class="gn-pill"><i class="fa-solid fa-book"></i> <?= htmlspecialchars($active_mapel_nama); ?></span>
-                            <span class="gn-pill"><i class="fa-solid fa-users"></i> Kelas <?= htmlspecialchars($filter_kelas ?: '-'); ?></span>
-                            <span class="gn-pill">Semester <?= htmlspecialchars($filter_semester); ?></span>
-                        </div>
+  
                         <h2 class="gn-hero-title">Pengumpulan Tugas <span>&amp; Penilaian</span></h2>
                         <p class="gn-hero-sub">
-                            Buat wadah pengumpulan tugas untuk siswa (file, link, atau teks). Tugas yang dikirim siswa dari halaman <strong>Lihat Nilai</strong> otomatis masuk ke sini dan nilainya langsung tersinkron ke rapor siswa.
-                        </p>
+                            Buat wadah pengumpulan tugas untuk siswa (file, link, atau teks). Unduh atau pratinjau hasil kiriman siswa langsung dari tabel penilaian, dan nilai otomatis tersinkron ke rapor.
+                        </p> 
+			<div class="gn-eyebrow">
+                            <span class="gn-pill"> <?= htmlspecialchars($active_mapel_nama); ?></span>
+                            <span class="gn-pill"> Kelas <?= htmlspecialchars($filter_kelas ?: '-'); ?></span>
+                            <span class="gn-pill">Semester <?= htmlspecialchars($filter_semester); ?></span>
+                        </div>
                     </div>
                     <div class="gn-hero-actions">
                         <button type="button" class="btn-dark-pill" onclick="openModal('modalBuatTugas')">
                             <i class="fa-solid fa-plus"></i> Buat Tempat Pengumpulan Tugas
                         </button>
                         <a href="#rekap-rapor" class="btn-light-pill">
-                            <i class="fa-solid fa-table-list"></i> Rekap Nilai Rapor
+                            <i class="rekap"></i> Rekap Nilai Rapor
                         </a>
                     </div>
                 </section>
@@ -1229,9 +1501,9 @@ $label_tipe = [
                             ">
                                 <?php if (!empty($opsi_ajar)): ?>
                                     <?php foreach ($opsi_ajar as $opt):
-                                        $selected = ((int)$opt['mapel_id'] === $filter_mapel_id && $opt['kelas'] === $filter_kelas) ? 'selected' : '';
+                                        $selected = ((int) $opt['mapel_id'] === $filter_mapel_id && $opt['kelas'] === $filter_kelas) ? 'selected' : '';
                                     ?>
-                                        <option value="<?= (int)$opt['mapel_id'] . '|' . htmlspecialchars($opt['kelas']); ?>" <?= $selected; ?>>
+                                        <option value="<?= (int) $opt['mapel_id'] . '|' . htmlspecialchars($opt['kelas']); ?>" <?= $selected; ?>>
                                             <?= htmlspecialchars($opt['nama_mapel']); ?> — Kelas <?= htmlspecialchars($opt['kelas']); ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -1239,7 +1511,7 @@ $label_tipe = [
                                     <option value="">Belum ada jadwal / mapel mengajar</option>
                                 <?php endif; ?>
                             </select>
-                            <input type="hidden" name="mapel_id" id="mapel_id_input" value="<?= (int)$filter_mapel_id; ?>">
+                            <input type="hidden" name="mapel_id" id="mapel_id_input" value="<?= (int) $filter_mapel_id; ?>">
                             <input type="hidden" name="kelas" id="kelas_input" value="<?= htmlspecialchars($filter_kelas); ?>">
                         </div>
 
@@ -1253,7 +1525,7 @@ $label_tipe = [
 
                         <div>
                             <button type="submit" class="btn-dark-pill" style="border-radius: 10px; padding: 10px 18px;">
-                                <i class="fa-solid fa-filter"></i> Tampilkan
+                                <i class="tampilkan"></i> Tampilkan
                             </button>
                         </div>
                     </form>
@@ -1264,17 +1536,17 @@ $label_tipe = [
                     <div class="card-head">
                         <div>
                             <h3>Tempat Pengumpulan Tugas (<?= count($list_tugas); ?> Slot)</h3>
-                            <p>Pilih salah satu wadah tugas di bawah untuk memeriksa hasil kiriman siswa &amp; memberikan nilai.</p>
+                            <p>Pilih salah satu wadah tugas di bawah untuk mengunduh/memeriksa hasil kiriman siswa &amp; memberikan nilai.</p>
                         </div>
                         <button type="button" class="btn-light-pill" onclick="openModal('modalBuatTugas')">
-                            <i class="fa-solid fa-folder-plus"></i> Tambah Wadah Tugas
+                            <i class="tambah"></i> Tambah Wadah Tugas
                         </button>
                     </div>
 
                     <?php if (!empty($list_tugas)): ?>
                         <div class="tugas-grid">
                             <?php foreach ($list_tugas as $tg):
-                                $is_sel   = ((int)$tg['id'] === $selected_tugas);
+                                $is_sel   = ((int) $tg['id'] === $selected_tugas);
                                 $jml_k    = (int) $tg['jml_kumpul'];
                                 $jml_n    = (int) $tg['jml_dinilai'];
                                 $pct_k    = $total_siswa_kelas > 0 ? min(100, round(($jml_k / $total_siswa_kelas) * 100)) : 0;
@@ -1304,14 +1576,14 @@ $label_tipe = [
                                         <div class="tugas-meta">
                                             <span><i class="fa-regular fa-clock"></i> Deadline: <strong><?= htmlspecialchars($dl_text); ?></strong></span>
                                             <span>
-                                                <i class="fa-solid fa-inbox"></i> Terkumpul: <strong><?= $jml_k; ?>/<?= $total_siswa_kelas; ?></strong> siswa
+                                                <i class="terkumpul"></i> Terkumpul: <strong><?= $jml_k; ?>/<?= $total_siswa_kelas; ?></strong> siswa
                                                 &middot; Dinilai: <strong><?= $jml_n; ?></strong>
                                             </span>
                                             <?php if (!empty($tg['file_lampiran'])): ?>
                                                 <span>
                                                     <i class="fa-solid fa-paperclip"></i>
-                                                    <a href="uploads/tugas_soal/<?= urlencode($tg['file_lampiran']); ?>" target="_blank" style="color:#161616; font-weight:600;">
-                                                        Lihat Lampiran Soal
+                                                    <a href="daftar_nilai.php?action=download_soal&id=<?= (int) $tg['id']; ?>" style="color:var(--accent-asphalt); font-weight:600;">
+                                                        Download Lampiran Soal
                                                     </a>
                                                 </span>
                                             <?php endif; ?>
@@ -1321,26 +1593,26 @@ $label_tipe = [
                                         </div>
 
                                         <div class="tugas-slot-actions" style="margin-top: 10px;">
-                                            <a href="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int)$tg['id']; ?>#panel-penilaian"
+                                            <a href="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int) $tg['id']; ?>#panel-penilaian"
                                                class="btn-slot-open">
                                                 <?= $is_sel ? 'Sedang Dibuka' : 'Periksa & Nilai (' . $jml_k . ')'; ?>
                                             </a>
 
-                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int)$tg['id']; ?>" style="display:inline;">
+                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int) $tg['id']; ?>" style="display:inline;">
                                                 <?= csrf_field(); ?>
-                                                <input type="hidden" name="tugas_id" value="<?= (int)$tg['id']; ?>">
+                                                <input type="hidden" name="tugas_id" value="<?= (int) $tg['id']; ?>">
                                                 <button type="submit" name="toggle_status_tugas" class="btn-icon-sm" title="<?= $tg['status'] === 'buka' ? 'Tutup Pengumpulan' : 'Buka Pengumpulan'; ?>">
-                                                    <i class="fa-solid <?= $tg['status'] === 'buka' ? 'fa-lock-open' : 'fa-lock'; ?>"></i>
+                                                    <i class="tutup <?= $tg['status'] === 'buka' ? 'fa-lock-open' : 'buka'; ?>"></i>
                                                 </button>
                                             </form>
 
-                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>"
+                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>"
                                                   onsubmit="return confirm('Hapus tempat pengumpulan tugas ini beserta seluruh file kiriman siswa?');"
                                                   style="display:inline;">
                                                 <?= csrf_field(); ?>
-                                                <input type="hidden" name="tugas_id" value="<?= (int)$tg['id']; ?>">
+                                                <input type="hidden" name="tugas_id" value="<?= (int) $tg['id']; ?>">
                                                 <button type="submit" name="hapus_tugas" class="btn-icon-sm danger" title="Hapus Tempat Tugas">
-                                                    <i class="fa-solid fa-trash"></i>
+                                                    <i class="hapus"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -1373,9 +1645,16 @@ $label_tipe = [
                                 &middot; Sudah Dinilai <strong><?= $stat_dinilai; ?></strong>
                             </p>
                         </div>
-                        <button type="submit" form="formBatchNilai" name="simpan_nilai_tugas_massal" class="btn-save-green">
-                            <i class="fa-solid fa-check-double"></i> Simpan Semua Nilai
-                        </button>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                            <?php if ($stat_kumpul > 0): ?>
+                                <a href="daftar_nilai.php?action=download_zip&tugas_id=<?= (int) $active_tugas['id']; ?>" class="btn-light-pill" style="border-radius:10px; padding:8px 14px; font-size:12.5px;">
+                                    <i class="download"></i> Download Semua (.ZIP)
+                                </a>
+                            <?php endif; ?>
+                            <button type="submit" form="formBatchNilai" name="simpan_nilai_tugas_massal" class="btn-save-green">
+                                <i class="simpan"></i> Simpan Semua Nilai
+                            </button>
+                        </div>
                     </div>
 
                     <div class="sub-toolbar">
@@ -1389,9 +1668,9 @@ $label_tipe = [
                         <input type="text" id="searchSiswaTugas" class="form-control" placeholder="Cari nama / NIS siswa..." style="max-width: 240px; padding: 7px 12px;">
                     </div>
 
-                    <form id="formBatchNilai" method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int)$active_tugas['id']; ?>#panel-penilaian">
+                    <form id="formBatchNilai" method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int) $active_tugas['id']; ?>#panel-penilaian">
                         <?= csrf_field(); ?>
-                        <input type="hidden" name="tugas_id" value="<?= (int)$active_tugas['id']; ?>">
+                        <input type="hidden" name="tugas_id" value="<?= (int) $active_tugas['id']; ?>">
 
                         <div style="overflow-x: auto;">
                             <table class="data-table" id="tabelSubmisiTugas">
@@ -1400,7 +1679,7 @@ $label_tipe = [
                                         <th style="width: 44px; text-align: center;">No</th>
                                         <th>Siswa</th>
                                         <th>Status</th>
-                                        <th>Hasil Tugas Siswa</th>
+                                        <th>File / Hasil Tugas Siswa</th>
                                         <th>Waktu Kumpul</th>
                                         <th style="text-align: center;">Nilai (0-100)</th>
                                         <th>Catatan / Feedback Guru</th>
@@ -1414,9 +1693,11 @@ $label_tipe = [
                                             if ($st['has_submission'] && !empty($active_tugas['deadline']) && !empty($st['submitted_at'])) {
                                                 $is_late = (strtotime($st['submitted_at']) > strtotime($active_tugas['deadline']));
                                             }
-                                            $row_state = !$st['has_submission']
-                                                ? 'missing'
-                                                : ($st['is_graded'] ? 'graded' : 'ungraded');
+                                            $orig_filename = $st['nama_file_asli'] ?: ($st['file_tugas'] ?? 'File_Tugas');
+                                            $file_ext      = strtolower(pathinfo($orig_filename, PATHINFO_EXTENSION));
+                                            $can_preview   = in_array($file_ext, $previewable_exts, true);
+                                            $dl_url        = 'daftar_nilai.php?action=download_submisi&id=' . (int) ($st['pengumpulan_id'] ?? 0);
+                                            $preview_url   = $dl_url . '&inline=1';
                                         ?>
                                             <tr class="sub-row"
                                                 data-submitted="<?= $st['has_submission'] ? '1' : '0'; ?>"
@@ -1429,12 +1710,12 @@ $label_tipe = [
                                                 </td>
                                                 <td>
                                                     <?php if ($st['is_graded']): ?>
-                                                        <span class="st-pill graded"><i class="fa-solid fa-check"></i> Dinilai (<?= (int)$st['nilai']; ?>)</span>
+                                                        <span class="st-pill graded"><i class="fa-solid fa-check"></i> Dinilai (<?= (int) $st['nilai']; ?>)</span>
                                                     <?php elseif ($st['has_submission']): ?>
                                                         <?php if ($is_late): ?>
-                                                            <span class="st-pill late"><i class="fa-solid fa-clock"></i> Terlambat</span>
+                                                            <span class="st-pill late"><i class="terlambat"></i> Terlambat</span>
                                                         <?php else: ?>
-                                                            <span class="st-pill ok"><i class="fa-solid fa-paper-plane"></i> Terkumpul</span>
+                                                            <span class="st-pill ok"><i class="terkumpul"></i> Terkumpul</span>
                                                         <?php endif; ?>
                                                     <?php else: ?>
                                                         <span class="st-pill wait">Belum Kumpul</span>
@@ -1444,13 +1725,26 @@ $label_tipe = [
                                                     <?php if ($st['has_submission']): ?>
                                                         <div class="sub-artifact-list">
                                                             <?php if (!empty($st['file_tugas'])): ?>
-                                                                <a href="uploads/pengumpulan_tugas/<?= urlencode($st['file_tugas']); ?>"
-                                                                   target="_blank"
-                                                                   class="artifact-btn"
-                                                                   title="<?= htmlspecialchars($st['nama_file_asli'] ?? $st['file_tugas']); ?>">
-                                                                    <i class="fa-solid fa-file-arrow-down"></i>
-                                                                    <?= htmlspecialchars(mb_strimwidth($st['nama_file_asli'] ?? 'File Tugas', 0, 24, '...')); ?>
+                                                                <a href="<?= htmlspecialchars($dl_url); ?>"
+                                                                   class="artifact-btn is-dl"
+                                                                   title="Download <?= htmlspecialchars($orig_filename); ?>">
+                                                                    <i class="download2"></i>
+                                                                    <?= htmlspecialchars(mb_strimwidth($orig_filename, 0, 22, '...')); ?>
                                                                 </a>
+
+                                                                <?php if ($can_preview): ?>
+                                                                    <button type="button"
+                                                                            class="artifact-btn"
+                                                                            data-nama="<?= htmlspecialchars($st['nama']); ?>"
+                                                                            data-file="<?= htmlspecialchars($orig_filename); ?>"
+                                                                            data-ext="<?= htmlspecialchars($file_ext); ?>"
+                                                                            data-preview="<?= htmlspecialchars($preview_url); ?>"
+                                                                            data-dl="<?= htmlspecialchars($dl_url); ?>"
+                                                                            onclick="previewFileSubmisi(this)"
+                                                                            title="Pratinjau file di layar">
+                                                                        <i class="fa-solid fa-eye"></i> Preview
+                                                                    </button>
+                                                                <?php endif; ?>
                                                             <?php endif; ?>
 
                                                             <?php if (!empty($st['link_tugas'])): ?>
@@ -1460,9 +1754,16 @@ $label_tipe = [
                                                                    class="artifact-btn">
                                                                     <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Link
                                                                 </a>
+                                                                <button type="button"
+                                                                        class="artifact-btn"
+                                                                        data-link="<?= htmlspecialchars($st['link_tugas']); ?>"
+                                                                        onclick="salinLinkTugas(this)"
+                                                                        title="Salin URL">
+                                                                    <i class="fa-regular fa-copy"></i> Salin
+                                                                </button>
                                                             <?php endif; ?>
 
-                                                            <?php if (trim((string)($st['jawaban_teks'] ?? '')) !== ''): ?>
+                                                            <?php if (trim((string) ($st['jawaban_teks'] ?? '')) !== ''): ?>
                                                                 <button type="button"
                                                                         class="artifact-btn"
                                                                         data-nama="<?= htmlspecialchars($st['nama']); ?>"
@@ -1488,17 +1789,17 @@ $label_tipe = [
                                                 </td>
                                                 <td style="text-align: center;">
                                                     <input type="number"
-                                                           name="nilai_tugas[<?= (int)$st['siswa_id']; ?>]"
-                                                           id="nilai_input_<?= (int)$st['siswa_id']; ?>"
-                                                           value="<?= $st['nilai'] !== null ? (int)$st['nilai'] : ''; ?>"
+                                                           name="nilai_tugas[<?= (int) $st['siswa_id']; ?>]"
+                                                           id="nilai_input_<?= (int) $st['siswa_id']; ?>"
+                                                           value="<?= $st['nilai'] !== null ? (int) $st['nilai'] : ''; ?>"
                                                            placeholder="0-100"
                                                            min="0"
                                                            max="100">
                                                 </td>
                                                 <td>
                                                     <input type="text"
-                                                           name="catatan_guru[<?= (int)$st['siswa_id']; ?>]"
-                                                           id="catatan_input_<?= (int)$st['siswa_id']; ?>"
+                                                           name="catatan_guru[<?= (int) $st['siswa_id']; ?>]"
+                                                           id="catatan_input_<?= (int) $st['siswa_id']; ?>"
                                                            class="form-control"
                                                            value="<?= htmlspecialchars($st['catatan_guru'] ?? ''); ?>"
                                                            placeholder="Catatan untuk siswa..."
@@ -1507,8 +1808,8 @@ $label_tipe = [
                                                 <td style="text-align: center;">
                                                     <button type="button"
                                                             class="btn-save-sm"
-                                                            onclick="submitSingleGrade(<?= (int)$active_tugas['id']; ?>, <?= (int)$st['siswa_id']; ?>)">
-                                                        <i class="fa-solid fa-floppy-disk"></i> Simpan
+                                                            onclick="submitSingleGrade(<?= (int) $active_tugas['id']; ?>, <?= (int) $st['siswa_id']; ?>)">
+                                                        <i class="simpan2"></i> Simpan
                                                     </button>
                                                 </td>
                                             </tr>
@@ -1560,10 +1861,10 @@ $label_tipe = [
                                         $rata = round(($p + $k) / 2, 1);
                                     ?>
                                         <tr>
-                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>#rekap-rapor">
+                                            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>#rekap-rapor">
                                                 <?= csrf_field(); ?>
-                                                <input type="hidden" name="siswa_id" value="<?= (int)$s['siswa_id']; ?>">
-                                                <input type="hidden" name="mapel_id" value="<?= (int)$filter_mapel_id; ?>">
+                                                <input type="hidden" name="siswa_id" value="<?= (int) $s['siswa_id']; ?>">
+                                                <input type="hidden" name="mapel_id" value="<?= (int) $filter_mapel_id; ?>">
                                                 <input type="hidden" name="semester" value="<?= htmlspecialchars($filter_semester); ?>">
 
                                                 <td style="text-align: center; font-weight: 600;"><?= $idx + 1; ?></td>
@@ -1578,7 +1879,7 @@ $label_tipe = [
                                                 <td style="text-align: center;">
                                                     <input type="number" name="nilai_keterampilan" value="<?= $k; ?>" required min="0" max="100">
                                                 </td>
-                                                <td style="text-align: center; font-weight: 700; color: <?= $rata >= $kkm ? '#15803d' : '#b91c1c'; ?>;">
+                                                <td style="text-align: center; font-weight: 700; color: <?= $rata >= $kkm ? '#4A5D4E' : '#b91c1c'; ?>;">
                                                     <?= $rata; ?>
                                                 </td>
                                                 <td>
@@ -1586,7 +1887,7 @@ $label_tipe = [
                                                 </td>
                                                 <td style="text-align: center;">
                                                     <button type="submit" name="simpan_nilai" class="btn-save-sm">
-                                                        <i class="fa-solid fa-floppy-disk"></i> Simpan
+                                                        <i class="simpan2"></i> Simpan
                                                     </button>
                                                 </td>
                                             </form>
@@ -1607,9 +1908,10 @@ $label_tipe = [
             </div>
         </main>
     </div>
+</div>
 
     <!-- HIDDEN FORM UNTUK SIMPAN NILAI PER BARIS -->
-    <form id="singleGradeForm" method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int)$selected_tugas; ?>#panel-penilaian" style="display:none;">
+    <form id="singleGradeForm" method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>&tugas_id=<?= (int) $selected_tugas; ?>#panel-penilaian" style="display:none;">
         <?= csrf_field(); ?>
         <input type="hidden" name="simpan_nilai_tugas_single" value="1">
         <input type="hidden" name="tugas_id" id="sg_tugas_id">
@@ -1626,7 +1928,7 @@ $label_tipe = [
                 <button type="button" class="modal-close" onclick="closeModal('modalBuatTugas')">&times;</button>
             </div>
 
-            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int)$filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 14px;">
+            <form method="POST" action="daftar_nilai.php?mapel_id=<?= (int) $filter_mapel_id; ?>&kelas=<?= urlencode($filter_kelas); ?>&semester=<?= urlencode($filter_semester); ?>" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 14px;">
                 <?= csrf_field(); ?>
 
                 <div class="form-group">
@@ -1643,14 +1945,14 @@ $label_tipe = [
                             document.getElementById('modal_kelas').value = p[1];
                         ">
                             <?php foreach ($opsi_ajar as $opt):
-                                $sel = ((int)$opt['mapel_id'] === $filter_mapel_id && $opt['kelas'] === $filter_kelas) ? 'selected' : '';
+                                $sel = ((int) $opt['mapel_id'] === $filter_mapel_id && $opt['kelas'] === $filter_kelas) ? 'selected' : '';
                             ?>
-                                <option value="<?= (int)$opt['mapel_id'] . '|' . htmlspecialchars($opt['kelas']); ?>" <?= $sel; ?>>
+                                <option value="<?= (int) $opt['mapel_id'] . '|' . htmlspecialchars($opt['kelas']); ?>" <?= $sel; ?>>
                                     <?= htmlspecialchars($opt['nama_mapel']); ?> (<?= htmlspecialchars($opt['kelas']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <input type="hidden" name="mapel_id" id="modal_mapel_id" value="<?= (int)$filter_mapel_id; ?>">
+                        <input type="hidden" name="mapel_id" id="modal_mapel_id" value="<?= (int) $filter_mapel_id; ?>">
                         <input type="hidden" name="kelas" id="modal_kelas" value="<?= htmlspecialchars($filter_kelas); ?>">
                     </div>
 
@@ -1703,10 +2005,30 @@ $label_tipe = [
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
                     <button type="button" class="btn-light-pill" onclick="closeModal('modalBuatTugas')">Batal</button>
                     <button type="submit" name="buat_tugas" class="btn-dark-pill">
-                        <i class="fa-solid fa-check"></i> Buat Tempat Tugas
+                        <i class="add"></i> Buat Tempat Tugas
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW FILE SISWA (GAMBAR / PDF / KODE / TEKS) -->
+    <div class="modal-backdrop" id="modalPreviewFile">
+        <div class="modal-card is-wide">
+            <div class="modal-header">
+                <div>
+                    <h3 id="pfTitle">Pratinjau File Tugas</h3>
+                    <p id="pfSubtitle" style="margin:3px 0 0; font-size:12px; color:#64748b;"></p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('modalPreviewFile')">&times;</button>
+            </div>
+            <div id="pfContainer" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; min-height:260px; display:flex; align-items:center; justify-content:center;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px;">
+                <a id="pfDownloadBtn" href="#" class="btn-dark-pill">
+                    <i class="fa-solid fa-download"></i> Download File Asli
+                </a>
+                <button type="button" class="btn-light-pill" onclick="closeModal('modalPreviewFile')">Tutup</button>
+            </div>
         </div>
     </div>
 
@@ -1717,8 +2039,11 @@ $label_tipe = [
                 <h3 id="previewTeksTitle">Jawaban Siswa</h3>
                 <button type="button" class="modal-close" onclick="closeModal('modalPreviewTeks')">&times;</button>
             </div>
-            <div id="previewTeksBody" style="white-space: pre-wrap; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13.5px; line-height: 1.6; color: #161616; max-height: 60vh; overflow-y: auto;"></div>
-            <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+            <div id="previewTeksBody" style="white-space: pre-wrap; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13.5px; line-height: 1.6; color: var(--accent-asphalt); max-height: 60vh; overflow-y: auto;"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                <button type="button" class="btn-light-pill" onclick="salinTeksModal(this)">
+                    <i class="fa-regular fa-copy"></i> Salin Teks
+                </button>
                 <button type="button" class="btn-dark-pill" onclick="closeModal('modalPreviewTeks')">Tutup</button>
             </div>
         </div>
@@ -1731,14 +2056,19 @@ function openModal(id) {
 }
 function closeModal(id) {
     var el = document.getElementById(id);
-    if (el) el.classList.remove('is-open');
+    if (el) {
+        el.classList.remove('is-open');
+        if (id === 'modalPreviewFile') {
+            var box = document.getElementById('pfContainer');
+            if (box) box.innerHTML = '';
+        }
+    }
 }
 
-// Tutup modal saat klik area gelap di luar kartu
 document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
     backdrop.addEventListener('click', function (e) {
         if (e.target === backdrop) {
-            backdrop.classList.remove('is-open');
+            closeModal(backdrop.id);
         }
     });
 });
@@ -1747,11 +2077,60 @@ document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
 function submitSingleGrade(tugasId, siswaId) {
     var nilaiEl   = document.getElementById('nilai_input_' + siswaId);
     var catatanEl = document.getElementById('catatan_input_' + siswaId);
-    document.getElementById('sg_tugas_id').value    = tugasId;
-    document.getElementById('sg_siswa_id').value    = siswaId;
-    document.getElementById('sg_nilai_tugas').value   = nilaiEl ? nilaiEl.value : '';
-    document.getElementById('sg_catatan_guru').value  = catatanEl ? catatanEl.value : '';
+    document.getElementById('sg_tugas_id').value   = tugasId;
+    document.getElementById('sg_siswa_id').value   = siswaId;
+    document.getElementById('sg_nilai_tugas').value  = nilaiEl ? nilaiEl.value : '';
+    document.getElementById('sg_catatan_guru').value = catatanEl ? catatanEl.value : '';
     document.getElementById('singleGradeForm').submit();
+}
+
+// Preview file kiriman siswa (Gambar / PDF / Kode / Teks)
+function previewFileSubmisi(btn) {
+    var nama       = btn.getAttribute('data-nama') || 'Siswa';
+    var filename   = btn.getAttribute('data-file') || 'File';
+    var ext        = (btn.getAttribute('data-ext') || '').toLowerCase();
+    var previewUrl = btn.getAttribute('data-preview') || '#';
+    var dlUrl      = btn.getAttribute('data-dl') || '#';
+
+    document.getElementById('pfTitle').textContent    = 'Pratinjau Tugas — ' + nama;
+    document.getElementById('pfSubtitle').textContent = 'Nama file: ' + filename;
+    document.getElementById('pfDownloadBtn').href     = dlUrl;
+
+    var container = document.getElementById('pfContainer');
+    container.innerHTML = '';
+
+    var imgExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    if (imgExts.indexOf(ext) !== -1) {
+        var img = document.createElement('img');
+        img.src = previewUrl;
+        img.alt = filename;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '65vh';
+        img.style.objectFit = 'contain';
+        img.style.display = 'block';
+        container.appendChild(img);
+    } else {
+        var iframe = document.createElement('iframe');
+        iframe.src = previewUrl;
+        iframe.style.width = '100%';
+        iframe.style.height = '65vh';
+        iframe.style.border = 'none';
+        iframe.style.background = '#ffffff';
+        container.appendChild(iframe);
+    }
+
+    openModal('modalPreviewFile');
+}
+
+// Salin link tugas ke clipboard
+function salinLinkTugas(btn) {
+    var url = btn.getAttribute('data-link') || '';
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(function () {
+        var oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin';
+        setTimeout(function () { btn.innerHTML = oldHtml; }, 1600);
+    });
 }
 
 // Preview jawaban teks siswa
@@ -1761,6 +2140,15 @@ function previewJawabanTeks(btn) {
     document.getElementById('previewTeksTitle').textContent = 'Jawaban Teks — ' + nama;
     document.getElementById('previewTeksBody').textContent  = teks;
     openModal('modalPreviewTeks');
+}
+
+function salinTeksModal(btn) {
+    var teks = document.getElementById('previewTeksBody').textContent || '';
+    navigator.clipboard.writeText(teks).then(function () {
+        var oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin';
+        setTimeout(function () { btn.innerHTML = oldHtml; }, 1600);
+    });
 }
 
 // Filter status & pencarian siswa pada tabel tugas
@@ -1802,5 +2190,6 @@ function previewJawabanTeks(btn) {
     }
 })();
 </script>
+<?php if (file_exists(__DIR__ . '/lenis_scroll.php')) { include __DIR__ . '/lenis_scroll.php'; } ?>
 </body>
 </html>

@@ -84,7 +84,7 @@ if (isset($_GET['hapus']) && csrf_check($_GET['t'] ?? null)) {
     if ($hapus_id !== $user_id) {
         if (mysqli_query($koneksi, "DELETE FROM users WHERE id = '$hapus_id'")) {
             $msg_type = "success";
-            $msg_text = "User berhasil dihapus!";
+            $msg_text = "➤\u{00A0}\u{00A0}\u{00A0}User berhasil dihapus!";
         }
     } else {
         $msg_type = "error";
@@ -152,7 +152,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
             --du-tile:  #f2f2f4;
             --du-line:  #e4e4dc;
             --du-hatch: #b4b4a8;
-            --du-ok:    #25683d;
+            --du-ok:    #ffffff;
             --du-bad:   #a8432d;
 
             display: flex;
@@ -233,7 +233,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #2d7a47;
+            background: #4A5D4E;
             display: inline-block;
         }
 
@@ -409,7 +409,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
         }
 
         .du-alert.is-success {
-            background: #eaf4ed;
+            background: #4A5D4E;
             color: var(--du-ok);
             border: 1px solid #cce3d3;
         }
@@ -607,7 +607,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
             margin-left: 6px;
             padding: 2px 7px;
             border-radius: 999px;
-            background: #eaf4ed;
+            background: ##4A5D4E;
             color: var(--du-ok);
             font-size: 10px;
             font-weight: 700;
@@ -794,7 +794,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
             gap: 8px;
             padding: 11px 20px;
             border-radius: 999px;
-            background: var(--du-ink);
+            background: #4A5D4E;
             color: #ffffff;
             font-size: 13px;
             font-weight: 600;
@@ -804,7 +804,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
         }
 
         .du-btn-submit:hover {
-            background: #2f2f2c;
+            background: #38463A;
             transform: translateY(-1px);
         }
 
@@ -985,7 +985,6 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
 
                 <?php if (!empty($msg_text)): ?>
                     <div class="du-alert <?= ($msg_type === 'success') ? 'is-success' : 'is-error'; ?>" role="status">
-                        <i class="fa-solid <?= ($msg_type === 'success') ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
                         <span><?= htmlspecialchars($msg_text); ?></span>
                     </div>
                 <?php endif; ?>
@@ -1123,7 +1122,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
 
                             <div class="du-field">
                                 <label for="username">Username</label>
-                                <input type="text" name="username" id="username" class="du-input" placeholder="Masukkan username unik" required>
+                                <input type="text" name="username" id="username" class="du-input" placeholder="Masukkan username" required>
                             </div>
 
                             <div class="du-field">
@@ -1131,7 +1130,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
                                 <div class="du-input-wrap">
                                     <input type="password" name="password" id="password" class="du-input" placeholder="••••••••" style="padding-right: 38px;">
                                     <button type="button" class="du-eye-btn" onclick="togglePassVisibility()" title="Tampilkan / Sembunyikan Password">
-                                        <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                                        <i class="fa-regular unpw" id="eyeIcon"></i>
                                     </button>
                                 </div>
                             </div>
@@ -1155,7 +1154,7 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
                             </div>
 
                             <button type="submit" name="simpan_user" class="du-btn-submit">
-                                <i class="fa-solid fa-check"></i> <span id="submitLabel">Simpan Akun</span>
+                                <i class="simpanakun"></i> <span id="submitLabel">Simpan Akun</span>
                             </button>
                         </form>
                     </div>
@@ -1183,10 +1182,10 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
         const icon = document.getElementById('eyeIcon');
         if (inp.type === 'password') {
             inp.type = 'text';
-            icon.className = 'fa-regular fa-eye-slash';
+            icon.className = 'fa-regular pw';
         } else {
             inp.type = 'password';
-            icon.className = 'fa-regular fa-eye';
+            icon.className = 'fa-regular unpw';
         }
     }
 

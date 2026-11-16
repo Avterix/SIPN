@@ -88,11 +88,55 @@ for ($bi = 0; $bi < 12; $bi++) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
+<<<<<<< HEAD
     <!-- Vercel Speed Insights -->
     <script>
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+=======
+    <style>
+        .input-group {
+            position: relative;
+        }
+
+        .du-eye-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--du-muted);
+            padding: 4px 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .du-eye-btn:hover {
+            color: var(--du-ink);
+        }
+
+        .unpw {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: url('<?= $base_url ?? ''; ?>/icons/master_data/daftar_user/eye.png') center/contain no-repeat;
+            flex-shrink: 0;
+        }
+
+        .pw {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: url('<?= $base_url ?? ''; ?>/icons/master_data/daftar_user/invisible.png') center/contain no-repeat;
+            flex-shrink: 0;
+        }
+    </style>
+>>>>>>> 96c83e4 (maintenance update)
 </head>
 <body>
 <?php include __DIR__ . '/lenis_scroll.php'; ?>
@@ -253,8 +297,10 @@ for ($bi = 0; $bi < 12; $bi++) {
                     <div class="au-field reveal" style="--i:5">
                         <label for="regPass" class="au-label">Password</label>
                         <div class="input-group">
-                            <input type="password" id="regPass" name="password" class="auth-input" placeholder="Minimal 6 karakter" required>
-                            <i class="fa-regular fa-eye-slash toggle-password" aria-label="Tampilkan password"></i>
+                            <input type="password" id="regPass" name="password" class="auth-input" placeholder="Minimal 6 karakter" style="padding-right: 38px;" required>
+                            <button type="button" class="du-eye-btn toggle-password" title="Tampilkan / Sembunyikan Password" aria-label="Tampilkan password">
+                                <i class="unpw"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -280,7 +326,7 @@ for ($bi = 0; $bi < 12; $bi++) {
     </section>
 </main>
 
-<script src="<?= $base_url ?? ''; ?>/auth.js?v=1.0"></script>
+<script src="<?= $base_url ?? ''; ?>/auth.js?v=1.1"></script>
 <script>
     function tampilkanJurusan() {
         var tingkat = document.getElementById("tingkat_kelas").value;
