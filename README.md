@@ -545,8 +545,8 @@ Pastikan tidak ada secret (password, token, client secret) yang ikut ter-commit.
 
 ## Lisensi
 
-Tentukan lisensi proyek ini (misalnya MIT) dan tambahkan file `LICENSE` di root repository.
+Proyek ini dilisensikan di bawah skema multi-lisensi (*multi-licensed*). Anda bebas memilih salah satu dari lisensi berikut sesuai kebutuhan Anda:
 
----
-
-<p align="center">Dibuat untuk memudahkan penilaian dan administrasi sekolah. <b>SIPN</b></p>
+* **MIT License** — lihat file [LICENSE-MIT](LICENSE-MIT)
+* **Apache License 2.0** — lihat file [LICENSE-APACHE](LICENSE-APACHE)
+* **GNU General Public License v3.0 (GPL-3.0)** — lihat file [LICENSE-GPL](LICENSE-GPL)
