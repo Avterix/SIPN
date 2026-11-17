@@ -771,12 +771,6 @@ $label_tipe = [
                     <span class="storage-badge">Role: <?= strtoupper($role); ?></span>
                 </div>
                 <div class="topbar-actions">
-                    <a href="#pengumpulan-tugas" class="rp-pill rp-pill-line" style="text-decoration:none;">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Pengumpulan Tugas
-                        <?php if ($t_belum > 0): ?>
-                            <span style="background:#161616; color:#fff; padding:1px 7px; border-radius:999px; font-size:11px;"><?= $t_belum; ?></span>
-                        <?php endif; ?>
-                    </a>
                     <a href="profile.php" class="icon-btn settings-btn" title="Settings"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/settings.webp"/></a>
                     <a href="logout.php" class="upgrade-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">Sign Out</a>
                 </div>
@@ -923,7 +917,7 @@ $label_tipe = [
                                                 <span class="rp-tbadge kat"><?= ucfirst(e($tg['kategori'])); ?></span>
 
                                                 <?php if ($is_graded): ?>
-                                                    <span class="rp-tbadge st-graded"><i class="fa-solid fa-check"></i> Dinilai</span>
+                                                    <span class="rp-tbadge st-graded">Dinilai&nbsp&nbsp✓</span>
                                                 <?php elseif ($has_sub): ?>
                                                     <span class="rp-tbadge st-sent"><i class="fa-solid fa-paper-plane"></i> Terkumpul</span>
                                                 <?php elseif (!$is_open): ?>
@@ -939,16 +933,16 @@ $label_tipe = [
                                             </p>
 
                                             <div class="rp-task-info">
-                                                <span><i class="fa-solid fa-user-tie"></i> Guru: <strong><?= e($tg['nama_guru'] ?? 'Guru Mapel'); ?></strong> (Semester <?= e($tg['semester']); ?>)</span>
-                                                <span><i class="fa-solid fa-upload"></i> Format: <strong><?= e($label_tipe[$tg['tipe_pengumpulan']] ?? 'Semua'); ?></strong></span>
+                                                <span> 〇&nbsp&nbsp&nbspGuru: <strong><?= e($tg['nama_guru'] ?? 'Guru Mapel'); ?></strong> (Semester <?= e($tg['semester']); ?>)</span>
+                                                <span>〇&nbsp&nbsp&nbspFormat: <strong><?= e($label_tipe[$tg['tipe_pengumpulan']] ?? 'Semua'); ?></strong></span>
                                                 <span style="<?= ($is_over && !$has_sub) ? 'color:#b91c1c;' : ''; ?>">
-                                                    <i class="fa-regular fa-calendar"></i> Deadline: <strong><?= e($dl_str); ?></strong>
+                                                     		〇&nbsp&nbsp&nbspDeadline: <strong><?= e($dl_str); ?></strong>
                                                 </span>
 
                                                 <?php if (!empty($tg['file_lampiran'])): ?>
                                                     <div style="margin-top: 4px;">
                                                         <a href="uploads/tugas_soal/<?= urlencode($tg['file_lampiran']); ?>" target="_blank" class="rp-art-link">
-                                                            <i class="fa-solid fa-file-arrow-down"></i> Unduh Lampiran Soal
+                                                            <i class="download"></i> Unduh Lampiran Soal
                                                         </a>
                                                     </div>
                                                 <?php endif; ?>
@@ -966,13 +960,13 @@ $label_tipe = [
                                                     <div class="rp-task-artifacts">
                                                         <?php if (!empty($tg['file_tugas'])): ?>
                                                             <a href="uploads/pengumpulan_tugas/<?= urlencode($tg['file_tugas']); ?>" target="_blank" class="rp-art-link">
-                                                                <i class="fa-solid fa-file"></i> <?= e(mb_strimwidth($tg['nama_file_asli'] ?? 'File Kamu', 0, 26, '...')); ?>
+                                                                 <?= e(mb_strimwidth($tg['nama_file_asli'] ?? 'File Kamu', 0, 26, '...')); ?>
                                                             </a>
                                                         <?php endif; ?>
 
                                                         <?php if (!empty($tg['link_tugas'])): ?>
                                                             <a href="<?= e($tg['link_tugas']); ?>" target="_blank" rel="noopener noreferrer" class="rp-art-link">
-                                                                <i class="fa-solid fa-link"></i> Lihat Link
+                                                                 Lihat Link
                                                             </a>
                                                         <?php endif; ?>
 
@@ -982,7 +976,7 @@ $label_tipe = [
                                                                     data-judul="<?= e($tg['judul']); ?>"
                                                                     data-teks="<?= e($tg['jawaban_teks']); ?>"
                                                                     onclick="bukaPreviewJawaban(this)">
-                                                                <i class="fa-solid fa-align-left"></i> Jawaban Teks
+                                                                 Jawaban Teks
                                                             </button>
                                                         <?php endif; ?>
                                                     </div>
@@ -1011,7 +1005,7 @@ $label_tipe = [
                                         <div>
                                             <?php if ($is_graded): ?>
                                                 <button type="button" class="rp-btn-submit-task is-edit" disabled style="opacity:0.65; cursor:default;">
-                                                    <i class="fa-solid fa-circle-check"></i> Sudah Dinilai Guru
+                                                    ✦&nbsp&nbsp&nbspSudah Dinilai Guru
                                                 </button>
                                             <?php elseif ($is_open): ?>
                                                 <button type="button"

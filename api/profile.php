@@ -188,7 +188,7 @@ foreach ($pf_checks as $ci => $ck) {
                 <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                 <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
                 <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
-				<li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
+                <li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
             </ul>
         </li>
         <?php endif; ?>
@@ -224,7 +224,7 @@ foreach ($pf_checks as $ci => $ck) {
                 </div>
                 <div class="topbar-actions">
                     <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <i class="zoom"></i>
                         <input type="text" placeholder="Search settings...">
                     </div>
                     <button class="icon-btn notification-btn"><img class="icons" src="<?= $base_url; ?>/icons/dashboard/bell.webp"/></button>
@@ -249,7 +249,7 @@ foreach ($pf_checks as $ci => $ck) {
                             <?php endif; ?>
 
                             <label for="avatarInput" class="pf-ava-btn" title="Ubah Foto Profil">
-                                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                                <i class="picture" aria-hidden="true"></i>
                                 <span class="pf-sr">Ubah foto profil</span>
                             </label>
                         </div>
@@ -392,7 +392,7 @@ foreach ($pf_checks as $ci => $ck) {
                                 <div class="pf-pass-wrap">
                                     <input type="password" id="pfPass" name="new_password" class="pf-input" placeholder="••••••••">
                                     <button type="button" class="pf-pass-toggle" id="pfPassToggle" aria-label="Tampilkan password">
-                                        <i class="fa-regular fa-eye"></i>
+                                        <i class="unpw"></i>
                                     </button>
                                 </div>
                             </div>
@@ -400,7 +400,7 @@ foreach ($pf_checks as $ci => $ck) {
                             <div class="pf-form-foot">
                                 <span class="pf-sub">Perubahan langsung diterapkan pada sesi aktif.</span>
                                 <button type="submit" name="update_profile" class="pf-save-btn">
-                                    <i class="fa-solid fa-check" aria-hidden="true"></i> Simpan perubahan
+                                    <i class="simpan" aria-hidden="true"></i> Simpan perubahan
                                 </button>
                             </div>
                         </form>
@@ -421,7 +421,7 @@ foreach ($pf_checks as $ci => $ck) {
 
                             <div class="pf-gh-box">
                                 <div class="pf-gh-left">
-                                    <div class="pf-gh-ico"><img src="<?= $base_url; ?>/icons/profile/github.png" aria-hidden="true"></img></div>
+                                    <div class="pf-gh-ico"><img src="<?= $base_url; ?>/icons/profile/github.png" aria-hidden="true"></div>
                                     <div class="pf-gh-text">
                                         <strong>GitHub Account</strong>
                                         <?php if ($gh_connected): ?>
@@ -509,8 +509,8 @@ foreach ($pf_checks as $ci => $ck) {
                     const isHidden = passInput.type === "password";
                     passInput.type = isHidden ? "text" : "password";
                     passToggle.innerHTML = isHidden
-                        ? '<i class="fa-regular fa-eye-slash"></i>'
-                        : '<i class="fa-regular fa-eye"></i>';
+                        ? '<i class="pw"></i>'
+                        : '<i class="unpw"></i>';
                 });
             }
         });

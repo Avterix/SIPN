@@ -889,7 +889,6 @@ $pct_siswa = $tot_users > 0 ? max(0, round(100 - $pct_admin - $pct_guru, 1)) : 0
                 <li class="has-submenu active" tabindex="0">
                     <a href="javascript:void(0)" class="active"><i class="master"></i> <span class="menu-label">Master Data</span></a>
                     <ul class="submenu">
-			<li><a href="manajemen_kelas.php"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
                         <li><a href="daftar_user.php" style="font-weight: 700; color: #fff;"><span class="dot user"></span> <span class="menu-label">Kelola User</span></a></li>
                         <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                         <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>

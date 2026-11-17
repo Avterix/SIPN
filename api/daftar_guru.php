@@ -766,7 +766,6 @@ foreach ($users_guru as $ug) {
 
         .dg-chip.is-mapel {
             background: #eef3ef;
-            color: var(--dg-ok);
         }
 
         /* Directory Cards View */
@@ -1082,7 +1081,7 @@ foreach ($users_guru as $ug) {
                             <div class="dg-field">
                                 <label for="user_id">Tautan Akun Login</label>
                                 <select name="user_id" id="user_id" class="dg-input">
-                                    <option value="">-- Tanpa Akun Login --</option>
+                                    <option value="">Tanpa Akun Login</option>
                                     <?php foreach ($users_guru as $u): ?>
                                         <option value="<?= (int)$u['id']; ?>">@<?= htmlspecialchars($u['username']); ?></option>
                                     <?php endforeach; ?>
@@ -1118,10 +1117,10 @@ foreach ($users_guru as $ug) {
 
                             <div class="dg-view-toggle" role="group" aria-label="Mode tampilan">
                                 <button type="button" class="dg-vbtn is-active" id="btnViewTable" onclick="switchRosterView('table')">
-                                    <i class="fa-solid fa-list"></i> Tabel
+                                    <i class="tabel"></i> Tabel
                                 </button>
                                 <button type="button" class="dg-vbtn" id="btnViewCards" onclick="switchRosterView('cards')">
-                                    <i class="fa-solid fa-grip"></i> Kartu
+                                    <i class="kartu"></i> Kartu
                                 </button>
                             </div>
                         </div>

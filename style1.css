@@ -958,6 +958,15 @@ img, svg {
     flex-shrink: 0;
 }
 
+.hapus2 {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/teacher_grade/delete.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
 .tutup {
     display: inline-block;
     width: 10px;     
@@ -1009,6 +1018,19 @@ img, svg {
 }
 
 /* =========================================================
+   INI PROFILE
+   ========================================================= */
+
+.picture {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/profile/diaphragm.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+/* =========================================================
    INI TEH BUAT MASTER DATA POKOKNYA
    ========================================================= */
 
@@ -1038,6 +1060,41 @@ img, svg {
     background: url('icons/master_data/daftar_user/invisible.png') center/contain no-repeat;
     flex-shrink: 0;
 }
+
+.tambah2 {
+    display: inline-block;
+    width: 15px;     
+    height: 15px;         
+    background: url('icons/teacher_grade/new-tab.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.keluarahh {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/master_data/kelas_plotting/arrow-up.png') center/contain no-repeat;
+    flex-shrink: 0;
+    filter: invert(1);
+}
+
+.tabel {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/master_data/daftar_guru/table.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
+.kartu {
+    display: inline-block;
+    width: 10px;     
+    height: 10px;         
+    background: url('icons/master_data/daftar_guru/football-card.png') center/contain no-repeat;
+    flex-shrink: 0;
+}
+
 /* =========================================================
    ADMIN CRUD ACTION & FORM EDIT HIGHLIGHT
    ========================================================= */

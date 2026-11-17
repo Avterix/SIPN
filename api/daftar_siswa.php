@@ -705,7 +705,6 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
 
         .ds-chip.is-linked {
             background: #eef3ef;
-            color: var(--ds-ok);
         }
 
         .btn-action-img {
@@ -915,10 +914,10 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <button type="button" class="ds-pill ds-pill-danger ds-btn-cancel" id="btnCancelEdit" onclick="resetFormSiswa()">
-                                <i class="fa-solid fa-xmark"></i> Batal Edit
+                                 Batal Edit
                             </button>
                             <button type="button" class="ds-pill ds-pill-dark" id="btnToggleDrawer" onclick="toggleDrawer()">
-                                <i class="fa-solid fa-chevron-up" id="drawerIcon"></i> <span id="drawerToggleLbl">Sembunyikan Form</span>
+                                <i id="drawerIcon"></i> <span id="drawerToggleLbl">Sembunyikan Form</span>
                             </button>
                         </div>
                     </div>
@@ -960,7 +959,7 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
                                 <div class="ds-field">
                                     <label for="user_id">Akun Login Siswa</label>
                                     <select name="user_id" id="user_id" class="ds-input">
-                                        <option value="">-- Tanpa Akun --</option>
+                                        <option value="">Tanpa Akun</option>
                                         <?php foreach ($users_siswa as $u): ?>
                                             <option value="<?= (int)$u['id']; ?>">@<?= htmlspecialchars($u['username']); ?></option>
                                         <?php endforeach; ?>
@@ -968,7 +967,7 @@ $max_kelas_pop = !empty($top_kelas) ? max(1, max($top_kelas)) : 1;
                                 </div>
 
                                 <button type="submit" name="simpan_siswa" class="ds-btn-submit">
-                                    <i class="fa-solid fa-check"></i> <span id="submitLabel">Simpan</span>
+                                    <span id="submitLabel">◌&nbsp&nbsp&nbspSimpan</span>
                                 </button>
                             </div>
                         </form>

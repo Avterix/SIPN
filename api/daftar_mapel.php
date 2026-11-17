@@ -972,7 +972,7 @@ $ring_dash = round(($assigned_pct / 100) * $ring_circ, 2);
                             <div class="dm-field">
                                 <label for="guru_id">Guru Pengampu</label>
                                 <select name="guru_id" id="guru_id" class="dm-input">
-                                    <option value="">-- Belum Ditentukan --</option>
+                                    <option value="">Belum Ditentukan</option>
                                     <?php foreach ($list_guru_opt as $g): ?>
                                         <option value="<?= (int)$g['id']; ?>"><?= htmlspecialchars($g['nama']); ?></option>
                                     <?php endforeach; ?>
@@ -1005,10 +1005,10 @@ $ring_dash = round(($assigned_pct / 100) * $ring_circ, 2);
 
                         <div class="dm-view-toggle" role="group" aria-label="Mode tampilan">
                             <button type="button" class="dm-vbtn is-active" id="btnViewMatrix" onclick="switchMapelView('matrix')">
-                                <i class="fa-solid fa-grip"></i> Matriks
+                                <i class="kartu"></i> Matriks
                             </button>
                             <button type="button" class="dm-vbtn" id="btnViewTable" onclick="switchMapelView('table')">
-                                <i class="fa-solid fa-list"></i> Tabel
+                                <i class="tabel"></i> Tabel
                             </button>
                         </div>
                     </div>

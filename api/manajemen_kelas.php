@@ -520,9 +520,11 @@ if ($active_kelas !== '') {
         }
         .mk-eyebrow {
             display: flex;
+            position: relative;
+            top: 15px;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 0px;
         }
         .mk-pill {
             display: inline-flex;
@@ -597,6 +599,7 @@ if ($active_kelas !== '') {
             align-items: center;
             gap: 7px;
             text-decoration: none;
+            transition: background-color 0.15s ease, transform 0.15s ease;
         }
         .btn-cream:hover {
             background: #f6f6f2;
@@ -776,21 +779,120 @@ if ($active_kelas !== '') {
             font-size: 11px;
             font-weight: 700;
         }
+
+        /* Tombol & Animasi Hover Hapus Plotting, Hapus Jadwal, dan Keluarkan dari Kelas */
         .btn-icon-danger {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            border: 1px solid #fecaca;
-            background: #fff5f5;
-            color: #b91c1c;
+            position: relative;
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: var(--accent-asphalt, #302f2c);
+            color: #ffffff;
+            border: 1px solid transparent;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 12.5px;
+            transition:
+                transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background-color 0.2s ease,
+                color 0.2s ease,
+                box-shadow 0.24s ease,
+                border-color 0.2s ease;
+        }
+        .btn-icon-danger i {
+            transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
         }
         .btn-icon-danger:hover {
-            background: #fee2e2;
+            background: #4A5D4E;
+            color: #ffffff;
+            transform: translateY(-2px) scale(1.1);
+            box-shadow: 0 6px 14px rgba(74, 93, 78, 0.34);
+        }
+        .btn-icon-danger:hover i.hapus2 {
+            animation: dangerShake 0.38s ease-in-out;
+        }
+        .btn-icon-danger:hover i.fa-xmark {
+            transform: rotate(90deg) scale(1.15);
+        }
+        .btn-icon-danger:active {
+            transform: translateY(0) scale(0.94);
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.24);
+        }
+        @keyframes dangerShake {
+            0%   { transform: rotate(0deg) scale(1); }
+            25%  { transform: rotate(-14deg) scale(1.12); }
+            50%  { transform: rotate(12deg) scale(1.12); }
+            75%  { transform: rotate(-8deg) scale(1.08); }
+            100% { transform: rotate(0deg) scale(1.08); }
+        }
+
+        /* Pagination Jadwal Pelajaran (Per 5 Jadwal) */
+        .mk-pagination-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .mk-page-info {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6f6f68;
+        }
+        .mk-page-btns {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .mk-page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 9px;
+            border: 1px solid rgba(22, 22, 22, 0.12);
+            background: #f6f6f2;
+            color: #161616;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+        }
+        .mk-page-btn:hover:not(:disabled):not(.active) {
+            background: #efefe5;
+            border-color: rgba(22, 22, 22, 0.28);
+            transform: translateY(-1px);
+        }
+        .mk-page-btn.active {
+            background: #161616;
+            color: #ffffff;
+            border-color: #161616;
+            box-shadow: 0 3px 8px rgba(22, 22, 22, 0.18);
+        }
+        .mk-page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .mk-page-ellipsis {
+            font-size: 12px;
+            color: #6f6f68;
+            padding: 0 4px;
+            user-select: none;
+        }
+        @keyframes jadwalRowFade {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .jadwal-row.is-page-enter {
+            animation: jadwalRowFade 0.2s ease-out;
         }
 
         /* Modal */
@@ -899,7 +1001,7 @@ if ($active_kelas !== '') {
                         <li><a href="daftar_siswa.php"><span class="dot siswa"></span> <span class="menu-label">Kelola Siswa</span></a></li>
                         <li><a href="daftar_guru.php"><span class="dot guru"></span> <span class="menu-label">Kelola Guru</span></a></li>
                         <li><a href="daftar_mapel.php"><span class="dot mapel"></span> <span class="menu-label">Mata Pelajaran</span></a></li>
-                        <li><a href="manajemen_kelas.php" class="active"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas</span></a></li>
+                        <li><a href="manajemen_kelas.php" class="active"><span class="dot kelas"></span> <span class="menu-label">Kelola Kelas &amp; Plotting</span></a></li>
                     </ul>
                 </li>
 
@@ -996,18 +1098,18 @@ if ($active_kelas !== '') {
                     <!-- HERO BANNER -->
                     <section class="mk-hero">
                         <div>
-                            <div class="mk-eyebrow">
-                                <span class="mk-pill"><i class="fa-solid fa-school"></i> <?= count($kelas_stats); ?> Rombel Kelas</span>
-                                <span class="mk-pill"><i class="fa-solid fa-user-graduate"></i> <?= $tot_siswa_all; ?> Total Siswa</span>
-                                <span class="mk-pill"><i class="fa-solid fa-chalkboard-user"></i> <?= $tot_plot_all; ?> Plotting Guru</span>
-                                <?php if ($tot_tanpa_kelas > 0): ?>
-                                    <span class="mk-pill warn"><i class="fa-solid fa-triangle-exclamation"></i> <?= $tot_tanpa_kelas; ?> Siswa Belum Punya Kelas</span>
-                                <?php endif; ?>
-                            </div>
                             <h2 class="mk-hero-title">Plotting Kelas <span>Siswa &amp; Guru</span></h2>
                             <p class="mk-hero-sub">
                                 Pilih kelas di bawah untuk mengatur daftar siswa anggota rombel sekaligus menentukan guru dan mata pelajaran yang mengajar di kelas tersebut.
                             </p>
+                            <div class="mk-eyebrow">
+                                <span class="mk-pill">〇&nbsp; <?= count($kelas_stats); ?> Rombel Kelas</span>
+                                <span class="mk-pill">〇&nbsp; <?= $tot_siswa_all; ?> Total Siswa</span>
+                                <span class="mk-pill">〇&nbsp; <?= $tot_plot_all; ?> Plotting Guru</span>
+                                <?php if ($tot_tanpa_kelas > 0): ?>
+                                    <span class="mk-pill warn"><i class="fa-solid fa-triangle-exclamation"></i> <?= $tot_tanpa_kelas; ?> Siswa Belum Punya Kelas</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="mk-hero-actions">
                             <button type="button" class="btn-ink" onclick="openModal('modalBuatKelas')">
@@ -1075,7 +1177,7 @@ if ($active_kelas !== '') {
                                         <div class="form-group">
                                             <label>Mata Pelajaran *</label>
                                             <select name="mapel_id" id="selectMapelPlot" class="form-control" required onchange="autoSelectDefaultGuru(this)">
-                                                <option value="">-- Pilih Mapel --</option>
+                                                <option value="">Pilih Mapel</option>
                                                 <?php foreach ($list_mapel_all as $m): ?>
                                                     <option value="<?= (int) $m['id']; ?>" data-default-guru="<?= (int) ($m['guru_id'] ?? 0); ?>">
                                                         <?= htmlspecialchars($m['nama_mapel']); ?><?= !empty($m['kode_mapel']) ? ' (' . htmlspecialchars($m['kode_mapel']) . ')' : ''; ?>
@@ -1087,7 +1189,7 @@ if ($active_kelas !== '') {
                                         <div class="form-group">
                                             <label>Guru Pengampu *</label>
                                             <select name="guru_id" id="selectGuruPlot" class="form-control" required>
-                                                <option value="">-- Pilih Guru --</option>
+                                                <option value="">Pilih Guru</option>
                                                 <?php foreach ($list_guru_all as $g): ?>
                                                     <option value="<?= (int) $g['id']; ?>">
                                                         <?= htmlspecialchars($g['nama']); ?><?= !empty($g['nip']) ? ' (NIP: ' . htmlspecialchars($g['nip']) . ')' : ''; ?>
@@ -1127,7 +1229,7 @@ if ($active_kelas !== '') {
                                     </div>
 
                                     <button type="submit" name="plot_guru_kelas" class="btn-ink" style="border-radius:10px; padding:9px 16px;">
-                                        <i class="fa-solid fa-user-plus"></i> Tambahkan Guru ke Kelas <?= htmlspecialchars($active_kelas); ?>
+                                        <i class="tambah2"></i> Tambahkan Guru ke Kelas <?= htmlspecialchars($active_kelas); ?>
                                     </button>
                                 </form>
 
@@ -1165,7 +1267,7 @@ if ($active_kelas !== '') {
                                                                 <input type="hidden" name="target_kelas" value="<?= htmlspecialchars($active_kelas); ?>">
                                                                 <input type="hidden" name="hapus_jadwal_terkait" value="1">
                                                                 <button type="submit" name="hapus_plotting" class="btn-icon-danger" title="Hapus Plotting">
-                                                                    <i class="fa-solid fa-trash"></i>
+                                                                    <i class="hapus2"></i>
                                                                 </button>
                                                             </form>
                                                         </td>
@@ -1183,7 +1285,7 @@ if ($active_kelas !== '') {
                                 </div>
                             </div>
 
-                            <!-- CARD JADWAL PELAJARAN KELAS -->
+                            <!-- CARD JADWAL PELAJARAN KELAS (PAGINATION PER 5 JADWAL) -->
                             <div class="card-box">
                                 <div class="card-head">
                                     <div>
@@ -1193,7 +1295,7 @@ if ($active_kelas !== '') {
                                 </div>
 
                                 <div style="overflow-x:auto;">
-                                    <table class="data-table">
+                                    <table class="data-table" id="tabelJadwalKelas" data-kelas="<?= htmlspecialchars($active_kelas); ?>">
                                         <thead>
                                             <tr>
                                                 <th>Hari</th>
@@ -1205,7 +1307,7 @@ if ($active_kelas !== '') {
                                         <tbody>
                                             <?php if (!empty($jadwal_kelas)): ?>
                                                 <?php foreach ($jadwal_kelas as $jd): ?>
-                                                    <tr>
+                                                    <tr class="jadwal-row">
                                                         <td><strong><?= htmlspecialchars($jd['hari']); ?></strong></td>
                                                         <td style="white-space:nowrap;">
                                                             <?= htmlspecialchars(substr($jd['jam_mulai'], 0, 5)); ?> – <?= htmlspecialchars(substr($jd['jam_selesai'], 0, 5)); ?>
@@ -1221,7 +1323,7 @@ if ($active_kelas !== '') {
                                                                 <input type="hidden" name="jadwal_id" value="<?= (int) $jd['id']; ?>">
                                                                 <input type="hidden" name="target_kelas" value="<?= htmlspecialchars($active_kelas); ?>">
                                                                 <button type="submit" name="hapus_jadwal" class="btn-icon-danger" title="Hapus Jadwal">
-                                                                    <i class="fa-solid fa-trash"></i>
+                                                                    <i class="hapus2"></i>
                                                                 </button>
                                                             </form>
                                                         </td>
@@ -1237,6 +1339,9 @@ if ($active_kelas !== '') {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <!-- NAVIGASI HALAMAN JADWAL (OTOMATIS MUNCUL JIKA > 5 JADWAL) -->
+                                <div id="jadwalPaginationBar" class="mk-pagination-bar" style="display:none;"></div>
                             </div>
                         </div>
 
@@ -1248,7 +1353,7 @@ if ($active_kelas !== '') {
                                     <p>Siswa dalam daftar ini otomatis menerima tempat pengumpulan tugas kelas <?= htmlspecialchars($active_kelas); ?>.</p>
                                 </div>
                                 <button type="button" class="btn-ink" style="padding:9px 15px; font-size:12.5px;" onclick="openModal('modalTambahSiswa')">
-                                    <i class="fa-solid fa-user-plus"></i> Masukkan Siswa
+                                    <i class="tambah2"></i> Masukkan Siswa
                                 </button>
                             </div>
 
@@ -1290,7 +1395,7 @@ if ($active_kelas !== '') {
                                                             <input type="hidden" name="siswa_id" value="<?= (int) $sw['id']; ?>">
                                                             <input type="hidden" name="target_kelas" value="<?= htmlspecialchars($active_kelas); ?>">
                                                             <button type="submit" name="keluarkan_siswa" class="btn-icon-danger" title="Keluarkan dari kelas">
-                                                                <i class="fa-solid fa-xmark"></i>
+                                                                <i class="keluarahh"></i>
                                                             </button>
                                                         </form>
                                                     </td>
@@ -1372,7 +1477,7 @@ if ($active_kelas !== '') {
     <div class="modal-backdrop" id="modalTambahSiswa">
         <div class="modal-card">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-user-plus"></i> Masukkan Siswa ke <?= htmlspecialchars($active_kelas); ?></h3>
+                <h3>Masukkan Siswa ke <?= htmlspecialchars($active_kelas); ?></h3>
                 <button type="button" class="modal-close" onclick="closeModal('modalTambahSiswa')">&times;</button>
             </div>
 
@@ -1539,6 +1644,96 @@ function bukaModalPindah(btn) {
     document.getElementById('pindahSiswaNama').value = btn.getAttribute('data-nama');
     openModal('modalPindahSiswa');
 }
+
+// Pagination Jadwal Pelajaran (Setiap 5 jadwal akan membentuk halaman baru)
+(function () {
+    var table = document.getElementById('tabelJadwalKelas');
+    var bar = document.getElementById('jadwalPaginationBar');
+    if (!table || !bar) return;
+
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody .jadwal-row'));
+    var perPage = 5;
+    var total = rows.length;
+
+    if (total <= perPage) {
+        bar.style.display = 'none';
+        return;
+    }
+
+    var totalPages = Math.ceil(total / perPage);
+    var storageKey = 'mk_jadwal_page_' + (table.getAttribute('data-kelas') || 'default');
+    var currentPage = parseInt(sessionStorage.getItem(storageKey) || '1', 10);
+    if (isNaN(currentPage) || currentPage < 1) currentPage = 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    function buildPageList(curr, max) {
+        if (max <= 7) {
+            var arr = [];
+            for (var i = 1; i <= max; i++) arr.push(i);
+            return arr;
+        }
+        if (curr <= 3) return [1, 2, 3, 4, '...', max];
+        if (curr >= max - 2) return [1, '...', max - 3, max - 2, max - 1, max];
+        return [1, '...', curr - 1, curr, curr + 1, '...', max];
+    }
+
+    function renderPage(page, animate) {
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+        sessionStorage.setItem(storageKey, String(currentPage));
+
+        var start = (currentPage - 1) * perPage;
+        var end = start + perPage;
+
+        rows.forEach(function (row, idx) {
+            if (idx >= start && idx < end) {
+                row.style.display = '';
+                if (animate) {
+                    row.classList.remove('is-page-enter');
+                    void row.offsetWidth;
+                    row.classList.add('is-page-enter');
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        var showFrom = start + 1;
+        var showTo = Math.min(end, total);
+
+        var html = '<span class="mk-page-info">Menampilkan ' + showFrom + '–' + showTo + ' dari ' + total + ' jadwal</span>';
+        html += '<div class="mk-page-btns">';
+        html += '<button type="button" class="mk-page-btn" data-page="' + (currentPage - 1) + '"' + (currentPage === 1 ? ' disabled' : '') + ' title="Halaman Sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>';
+
+        var pages = buildPageList(currentPage, totalPages);
+        pages.forEach(function (p) {
+            if (p === '...') {
+                html += '<span class="mk-page-ellipsis">...</span>';
+            } else {
+                html += '<button type="button" class="mk-page-btn' + (p === currentPage ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+            }
+        });
+
+        html += '<button type="button" class="mk-page-btn" data-page="' + (currentPage + 1) + '"' + (currentPage === totalPages ? ' disabled' : '') + ' title="Halaman Berikutnya"><i class="fa-solid fa-chevron-right"></i></button>';
+        html += '</div>';
+
+        bar.innerHTML = html;
+        bar.style.display = 'flex';
+
+        bar.querySelectorAll('.mk-page-btn[data-page]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.disabled) return;
+                var target = parseInt(btn.getAttribute('data-page'), 10);
+                if (!isNaN(target) && target !== currentPage) {
+                    renderPage(target, true);
+                }
+            });
+        });
+    }
+
+    renderPage(currentPage, false);
+})();
 
 // Pencarian siswa anggota kelas aktif
 (function () {

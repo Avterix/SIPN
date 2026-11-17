@@ -95,12 +95,12 @@
 }
 
 .pf-pill-danger {
-    background: #faece8;
-    color: var(--pf-bad);
+    background: #4A5D4E;
+    color: #ffffff;
 }
 
 .pf-pill-danger:hover {
-    background: #f4dcd5;
+    background: #38463A;
 }
 
 .pf-dot-ok {
