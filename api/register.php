@@ -88,6 +88,10 @@ for ($bi = 0; $bi < 12; $bi++) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= $base_url ?? ''; ?>/icons/favicon.png">
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
     <style>
         .input-group {
             position: relative;
@@ -129,7 +133,6 @@ for ($bi = 0; $bi < 12; $bi++) {
             flex-shrink: 0;
         }
     </style>
->>>>>>> 96c83e4 (maintenance update)
 </head>
 <body>
 <?php include __DIR__ . '/lenis_scroll.php'; ?>
